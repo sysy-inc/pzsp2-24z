@@ -1,5 +1,5 @@
 # name of your application
-APPLICATION = saul_example
+APPLICATION = tmep-test
 
 # If no BOARD is found in the environment, use this default:
 BOARD ?= native
@@ -8,11 +8,16 @@ BOARD ?= native
 RIOTBASE ?= /home/adrwal/RIOT/
 
 # we want to use SAUL:
-USEMODULE += saul_default
+# USEMODULE += saul_default
 # include the shell:
-USEMODULE += shell_cmds_default
+# USEMODULE += shell_cmds_default
 # additional modules for debugging:
-USEMODULE += ps
+# USEMODULE += ps
+USEMODULE += dht
+USEMODULE += fmt
+USEMODULE += ztimer_msec
+
+# FEATURES_OPTIONAL += periph_rtc
 
 # Comment this out to disable code in RIOT that does safety checking
 # which is not needed in a production environment but helps in the
