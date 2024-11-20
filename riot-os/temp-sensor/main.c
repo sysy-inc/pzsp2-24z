@@ -1,52 +1,8 @@
-/*
- * Copyright (C) 2021 Ioannis Chatzigiannakis
- *
- * This file is subject to the terms and conditions of the MIT License.
- * See the file LICENSE in the top level directory for more details.
- */
-
-/**
- * @{
- *
- * @file
- * @brief       Measure the ambient temperature and humidity using a digital
- *              sensor.
- *
- * @author      Ioannis Chatzigiannakis <ichatz@gmail.com>
- *
- * @}
- */
-
 #include <stdio.h>
 
-#include "fmt.h"
-#include "dht.h"
-#include "dht_params.h"
-
-// #include "periph/pm.h"
-// #include "periph/rtc.h"
-// #include "shell.h"
 #include "periph/gpio.h"
 #include "ztimer.h"
 
-/**
- * Call-back function invoked when RTC alarm triggers wakeup.
- */
-// static void callback_rtc(void *arg)
-// {
-//     puts(arg);
-// }
-
-bool print_gpio_state(gpio_t pin)
-{
-    bool state = gpio_read(pin);
-    if (state) {
-        printf("Pin is high\n");
-    } else {
-        printf("Pin is low\n");
-    }
-    return state;
-}
 
 int main(void)
 {
@@ -54,9 +10,13 @@ int main(void)
     puts("Type `help` for help, type `saul` to see all SAUL devices\n");
     int i = 0;
     int tabl[40];
+    int hu_integral = 0;
+    int hu_decimal = 0;
+    int te_integral = 0;
+    int te_decimal = 0;
+
     gpio_t pin = GPIO_PIN(PORT_A, 4);
 
-    // =======
     if (gpio_init(pin, GPIO_OUT) < 0) {
         printf("Error initializing GPIO\n");
         return 1;
@@ -112,6 +72,15 @@ int main(void)
     int j = 1;
     for (int i = 0; i < 40; i++)
     {
+        if ( i < 8) {
+            hu_integral = hu_integral << 1 | tabl[i];
+        } else if (i < 16) {
+            hu_decimal = hu_decimal << 1 | tabl[i];
+        } else if (i < 24) {
+            te_integral = te_integral << 1 | tabl[i];
+        } else if (i < 32) {
+            te_decimal = te_decimal << 1 | tabl[i];
+        }
         printf("%d", tabl[i]);
         if (j % 8 == 0) {
             printf("\n");
@@ -119,6 +88,9 @@ int main(void)
         j++;
     }
     printf("=====================================\n");
+    printf("Humidity: %d.%d %%\n", hu_integral, hu_decimal);
+    printf("Temperature: %d.%d °C\n", te_integral, te_decimal);
+
 
     return 1;
 }
