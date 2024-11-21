@@ -94,7 +94,7 @@ function App() {
 
       {/* Footer */}
       <footer className="text-center mt-4">
-        <p>&copy; 2024 Sensors App. All rights reserved.</p>
+        <p>&copy; 2024 Sensors App</p>
       </footer>
     </div>
   );
