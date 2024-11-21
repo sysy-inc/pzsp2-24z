@@ -3,7 +3,7 @@
 A simple web application that displays temperature and humidity data. The app consists of a **React frontend** and a **FastAPI backend**.
 
 ## Project Structure
-
+    ```bash
 sensors_app/
 ├── backend
 │   ├── app.py
