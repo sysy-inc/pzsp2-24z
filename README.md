@@ -3,20 +3,20 @@
 A simple web application that displays temperature and humidity data. The app consists of a **React frontend** and a **FastAPI backend**.
 
 ## Project Structure
-```bash
-sensors_app/
-├── backend
-│   ├── app.py
-└── frontend
-    ├── README.md
-    ├── eslint.config.js
-    ├── index.html
-    ├── node_modules
-    ├── package-lock.json
-    ├── package.json
-    ├── public
-    ├── src
-    └── vite
+    ```bash
+    sensors_app/
+    ├── backend
+    │   ├── app.py
+    └── frontend
+        ├── README.md
+        ├── eslint.config.js
+        ├── index.html
+        ├── node_modules
+        ├── package-lock.json
+        ├── package.json
+        ├── public
+        ├── src
+        └── vite
 
 ## Prerequisites
 
