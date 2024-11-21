@@ -55,6 +55,7 @@ Make sure the following are installed on your system:
     ```bash
     npm install
     npm install axios
+    npm install bootstrap
 
 3. Start the React development server:
     ```bash
