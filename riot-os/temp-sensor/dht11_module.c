@@ -16,6 +16,7 @@ int read_dht(
     uint8_t hu_decimal_ = 0;
     uint8_t te_integral_ = 0;
     uint8_t te_decimal_ = 0;
+    uint8_t checksum = 0;
 
     if (gpio_init(*pin, GPIO_OUT) < 0) {
         return DHT_READ_ERROR_GPIO_INIT;
@@ -76,8 +77,14 @@ int read_dht(
             te_integral_ = te_integral_ << 1 | tabl[i];
         } else if (i < 32) {
             te_decimal_ = te_decimal_ << 1 | tabl[i];
+        } else {
+            checksum = checksum << 1 | tabl[i];
         }
         j++;
+    }
+
+    if (checksum != (hu_integral_ + hu_decimal_ + te_integral_ + te_decimal_)) {
+        return DHT_READ_ERROR_CHECKSUM;
     }
 
     *hu_integral = hu_integral_;
