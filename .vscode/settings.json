@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "compare": "c",
+        "cstdint": "c",
+        "dht11_module.h": "c"
+    }
+}
