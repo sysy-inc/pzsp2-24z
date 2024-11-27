@@ -1,1 +1,3 @@
-# pzsp2-24z
+# Sensor
+
+**SENSOR** to projekt systemu monitorowania środowiska, który umożliwia automatyczny pomiar, przesyłanie i wizualizację danych środowiskowych w czasie rzeczywistym oraz agreguje dane historyczne. System wykrywa anomalie, powiadamiając użytkowników. Obejmuje wiele fizycznych platform obsługujących różne sensory, backend obsługujący bazę danych oraz aplikację webową dla intuicyjnego dostępu do pomiarów.
