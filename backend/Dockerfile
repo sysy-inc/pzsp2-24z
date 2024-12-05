@@ -4,7 +4,7 @@ FROM python:3.12-slim AS base
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 
-# Set the working directory to /psi_backend
+# Set the working directory to /backend
 WORKDIR /backend
 
 # Copy project files
