@@ -10,6 +10,7 @@ engine = create_engine(DATABASE_URL)
 
 async def init_db():
     await database.connect()
+    metadata.create_all(engine)
     print("Database connection established")
 
 
