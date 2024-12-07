@@ -1,22 +1,27 @@
 import json
 
-from src.backend.models import UserTable
-from src.backend.db_controller import database
+from src.backend.models import User
+from sqlalchemy import select
+from src.backend.db_controller import async_session
 
 
 async def fetch_user_data():
-    query = UserTable.select()
-    return await database.fetch_all(query)
+    async with async_session() as session:
+        query = select(User)
+        result = await session.execute(query)
+        users = result.scalars().all()
+        return users
 
 
 async def initialize_test_user_data():
-    insert_query = UserTable.insert().values(
-        [
-            {"name": "user1"},
-            {"name": "user2"},
-        ]
-    )
-    await database.execute(insert_query)
+    async with async_session() as session:
+        async with session.begin():
+            session.add_all(
+                [
+                    User("user1"),
+                    User("user2"),
+                ]
+            )
     return {"message": "Users table initialized with example rows."}
 
 
@@ -35,11 +40,8 @@ async def save_sample_to_db(message: str):
     if "error" in message_dict:
         return
 
-    insert_query = UserTable.insert().values(
-        [
-            {"name": message_dict["name"]},
-        ]
-    )
+    async with async_session() as session:
+        async with session.begin():
+            session.add_all([message_dict["name"]])
 
     print("Inserting data into the database")
-    await database.execute(insert_query)

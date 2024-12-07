@@ -1,20 +1,29 @@
-from sqlalchemy import create_engine, MetaData
-from databases import Database
+from sqlalchemy.ext.asyncio import (
+    async_sessionmaker,
+    create_async_engine,
+    AsyncAttrs,
+)
+from sqlalchemy.orm import DeclarativeBase
+
 
 # Within docker network:
-# DATABASE_URL = "postgresql://user:password@db:5432/testdatabase"
-DATABASE_URL = "postgresql://user:password@localhost:5432/testdatabase"
+DATABASE_URL = "postgresql+asyncpg://user:password@db:5432/testdatabase"
+# DATABASE_URL = "postgresql+asyncpg://user:password@localhost:5432/testdatabase"
 
-database = Database(DATABASE_URL)
-metadata = MetaData()
-engine = create_engine(DATABASE_URL)
+engine = create_async_engine(DATABASE_URL)
+
+async_session = async_sessionmaker(engine, expire_on_commit=False)
+
+
+class Base(AsyncAttrs, DeclarativeBase):
+    pass
 
 
 async def init_db():
-    await database.connect()
-    metadata.create_all(engine)
-    print("Database connection established")
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    print("Database connection established.")
 
 
 async def close_db():
-    await database.disconnect()
+    await engine.dispose()
