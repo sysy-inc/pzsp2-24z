@@ -1,4 +1,3 @@
-import re
 from fastapi import APIRouter
 from src.backend.utils import fetch_user_data, initialize_test_user_data
 

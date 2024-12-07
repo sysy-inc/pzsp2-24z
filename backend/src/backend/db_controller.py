@@ -1,7 +1,9 @@
 from sqlalchemy import create_engine, MetaData
 from databases import Database
 
-DATABASE_URL = "postgresql://user:password@db:5432/testdatabase"
+# Within docker network:
+# DATABASE_URL = "postgresql://user:password@db:5432/testdatabase"
+DATABASE_URL = "postgresql://user:password@localhost:5432/testdatabase"
 
 database = Database(DATABASE_URL)
 metadata = MetaData()
