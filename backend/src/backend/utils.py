@@ -18,8 +18,18 @@ async def initialize_test_user_data():
         async with session.begin():
             session.add_all(
                 [
-                    User("user1"),
-                    User("user2"),
+                    User(
+                        name="Jan",
+                        surname="Kowalski",
+                        email="jan.kowalski@pw.edu.pl",
+                        passwd="abcd",
+                    ),
+                    User(
+                        name="Piotr",
+                        surname="Nowak",
+                        email="piotr.nowak@pw.edu.pl",
+                        passwd="efgh",
+                    ),
                 ]
             )
     return {"message": "Users table initialized with example rows."}
@@ -42,6 +52,6 @@ async def save_sample_to_db(message: str):
 
     async with async_session() as session:
         async with session.begin():
-            session.add_all([message_dict["name"]])
+            session.add_all(name=[message_dict["name"]])
 
     print("Inserting data into the database")
