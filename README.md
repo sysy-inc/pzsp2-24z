@@ -4,19 +4,25 @@ A simple web application that displays temperature and humidity data. The app co
 
 ## Project Structure
     ```bash
-    sensors_app/
-    ├── backend
-    │   ├── app.py
-    └── frontend
-        ├── README.md
-        ├── eslint.config.js
-        ├── index.html
-        ├── node_modules
-        ├── package-lock.json
-        ├── package.json
-        ├── public
-        ├── src
-        └── vite
+    ├── README.md
+    └── sensors_app
+        ├── app
+        ├── backend
+        │   ├── Dockerfile
+        │   ├── __pycache__
+        │   └── app.py
+        ├── docker-compose.yml
+        └── frontend
+            ├── Dockerfile
+            ├── README.md
+            ├── eslint.config.js
+            ├── index.html
+            ├── node_modules
+            ├── package-lock.json
+            ├── package.json
+            ├── public
+            ├── src
+            └── vite.config.js
 
 ## Prerequisites
 
@@ -27,6 +33,23 @@ Make sure the following are installed on your system:
 - **npm** (comes with Node.js)
 
 ## Setup Instructions
+
+### DOCKER UPDATE!
+    The program is using Docker Compose version v2.3.3!
+    Installation
+    ```bash
+    In directory sensons_app ->  docker compose up
+    mkdir -p ~/.docker/cli-plugins/
+    curl -SL https://github.com/docker/compose/releases/download/v2.3.3/docker-compose-linux-x86_64 -o ~/.docker/cli-plugins/docker-compose
+    
+    chmod +x ~/.docker/cli-plugins/docker-compose
+    docker compose version
+    
+    In case of docker.sock problems
+    sudo groupadd docker
+    sudo usermod -aG docker ${USER}
+    sudo chmod 666 /var/run/docker.sock
+    sudo systemctl restart docker
 
 ### Backend (FastAPI)
 
