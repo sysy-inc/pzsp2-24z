@@ -4,16 +4,15 @@
 
 System monitorowania parametrów środowiskowych składa się z kilku kluczowych encji, które wspólnie opisują strukturę danych oraz sposób, w jaki system funkcjonuje.
 
-Pierwszą z encji jest `płytka`, która reprezentuje urządzenie stanowiące fizyczną bazę dla instalacji systemu. Każda płytka ma przypisane unikalne id, dzięki której będzie identyfikowana w systemie. Można nadać jej rónież nazwę. Płytka umożliwia montowanie na niej sensorów, co oznacza, że wiele sensorów może być powiązanych z jedną płytą. Dodatkowo każda płyta musi być przypisana do przynajmniej jednego użytkownika, lecz system umożliwia również przypisanie jednej płyty do wielu użytkowników, co pozwala na współdzielenie urządzeń.
+Pierwszą z encji jest `płytka`, która reprezentuje urządzenie stanowiące fizyczną bazę dla instalacji systemu. Każda płytka ma przypisane unikalne id, dzięki której będzie identyfikowana w systemie. Można nadać jej również nazwę. Płytka umożliwia montowanie na niej sensorów, co oznacza, że wiele sensorów może być powiązanych z jedną płytą. Dodatkowo każda płyta musi być przypisana do przynajmniej jednego użytkownika, lecz system umożliwia również przypisanie jednej płyty do wielu użytkowników, co pozwala na współdzielenie urządzeń.
 
-Encja `Sensor` opisuje urządzenia wykonujące pomiary. Każdy sensor jest przypisany do jednej konkretnej płyty i mierzy określony rodzaj wielkości fizycznej, np. temperaturę, wilgotność lub ciśnienie. Relacja między sensorem a płytą ma charakter „wiele do jednego”. Sensor posiada także powiązanie z encją `Rodzaj pomiaru`.
+Encja `Sensor` opisuje urządzenia wykonujące pomiary. Każdy sensor jest przypisany do jednej konkretnej płyty i mierzy określony rodzaj wielkości fizycznej, np. temperaturę lub wilgotność. Relacja między sensorem a płytką ma charakter „wiele do jednego”.
 
-Encja `Rodzaj pomiaru` opisuje typy wielkości fizycznych mierzonych przez sensory, np. temperaturę w `°C` lub wilgotność w `%`. Dzięki tej encji każdy sensor wie, co mierzy, co ułatwia interpretację wyników.
+Encja `Rodzaj pomiaru` opisuje typy wielkości fizycznych mierzonych przez sensory, np. temperaturę w `°C` lub wilgotność w `%`. Dzięki tej encji każdy sensor wie, co mierzy.
 
-Wyniki pomiarów są zapisywane w encji `Pomiar`, reprezentującej pojedyncze zdarzenie pomiarowe. Zawiera ona wartość liczbową zarejestrowanej wielkości oraz czas wykonania. Każdy pomiar jest powiązany z konkretnym sensorem, co pozwala przypisać wyniki do odpowiedniego urządzenia.
+Wyniki pomiarów są zapisywane w encji `Pomiar`, reprezentującej pojedyncze zdarzenie pomiarowe. Zawiera ono wartość liczbową zarejestrowanej wielkości oraz czas wykonania. Każdy pomiar jest powiązany z konkretnym sensorem.
 
-System przewiduje również encję `Użytkownik`, opisującą osoby korzystające z systemu. Użytkownik ma podstawowe dane identyfikacyjne, takie jak id, imię, nazwisko i e-mail, wykorzystywane do logowania. Każdy użytkownik ma dostęp do przypisanych mu płyt. Relacja ta umożliwia użytkownikom przeglądanie danych historycznych, monitorowanie bieżących pomiarów i otrzymywanie informacji o anomaliach, np. nagłych zmianach temperatury.
-
+System przewiduje również encję `Użytkownik`, opisującą osoby korzystające z systemu. Użytkownik ma podstawowe dane identyfikacyjne wykorzystywane do logowania, takie jak id, imię, nazwisko i e-mail. Każdy użytkownik ma dostęp do przypisanych mu płyt.
 
 ## Model logiczny
 
