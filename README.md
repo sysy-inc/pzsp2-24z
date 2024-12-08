@@ -29,12 +29,10 @@ Make sure the following are installed on your system:
 ## Setup Instructions
 
 ### DOCKER UPDATE!
-In directory sensons_app -> 
-    ```bash
-    docker compose up
     The program is using Docker Compose version v2.3.3!
     Installation
-    
+    ```bash
+    In directory sensons_app ->  docker compose up
     mkdir -p ~/.docker/cli-plugins/
     curl -SL https://github.com/docker/compose/releases/download/v2.3.3/docker-compose-linux-x86_64 -o ~/.docker/cli-plugins/docker-compose
     
