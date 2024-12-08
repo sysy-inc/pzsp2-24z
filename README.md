@@ -4,7 +4,6 @@ A simple web application that displays temperature and humidity data. The app co
 
 ## Project Structure
     ```bash
-   .
     ├── README.md
     └── sensors_app
         ├── app
