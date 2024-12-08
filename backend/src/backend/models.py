@@ -44,7 +44,7 @@ class Sensor(Base):
     __tablename__ = "sensors"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    measurment_type_id: Mapped[int] = mapped_column(ForeignKey("measurement_types.id"))
+    measurement_type_id: Mapped[int] = mapped_column(ForeignKey("measurement_types.id"))
     platform_id: Mapped[int] = mapped_column(ForeignKey("platforms.id"))
 
     platform: Mapped["Platform"] = relationship(back_populates="sensors")

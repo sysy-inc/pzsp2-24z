@@ -9,8 +9,15 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("http://127.0.0.1:8000/api/data");
-        setData(response.data);
+        const response = await axios.get("http://127.0.0.1:8000/api/test_db");
+
+        // Process the API data to extract temperature and humidity
+        const sensorData = response.data.data;
+        const temperature = sensorData.find((item) => item.sensor_id === 1)?.value || 0;
+        const humidity = sensorData.find((item) => item.sensor_id === 2)?.value || 0;
+
+        // Update state
+        setData({ temperature, humidity });
         setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -72,7 +79,7 @@ function App() {
                 <div className="card-body">
                   <h5 className="card-title">Temperature</h5>
                   <p className="card-text">
-                    <strong>{data.temperature} °C</strong>
+                    <strong>{data.temperature.toFixed(1)} °C</strong>
                   </p>
                 </div>
               </div>
@@ -83,7 +90,7 @@ function App() {
                 <div className="card-body">
                   <h5 className="card-title">Humidity</h5>
                   <p className="card-text">
-                    <strong>{data.humidity} %</strong>
+                    <strong>{data.humidity.toFixed(1)} %</strong>
                   </p>
                 </div>
               </div>
