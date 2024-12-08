@@ -5,25 +5,25 @@ A simple web application that displays temperature and humidity data. The app co
 ## Project Structure
     ```bash
    .
-├── README.md
-└── sensors_app
-    ├── app
-    ├── backend
-    │   ├── Dockerfile
-    │   ├── __pycache__
-    │   └── app.py
-    ├── docker-compose.yml
-    └── frontend
-        ├── Dockerfile
-        ├── README.md
-        ├── eslint.config.js
-        ├── index.html
-        ├── node_modules
-        ├── package-lock.json
-        ├── package.json
-        ├── public
-        ├── src
-        └── vite.config.js
+    ├── README.md
+    └── sensors_app
+        ├── app
+        ├── backend
+        │   ├── Dockerfile
+        │   ├── __pycache__
+        │   └── app.py
+        ├── docker-compose.yml
+        └── frontend
+            ├── Dockerfile
+            ├── README.md
+            ├── eslint.config.js
+            ├── index.html
+            ├── node_modules
+            ├── package-lock.json
+            ├── package.json
+            ├── public
+            ├── src
+            └── vite.config.js
 
 ## Prerequisites
 
