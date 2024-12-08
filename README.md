@@ -4,10 +4,17 @@ A simple web application that displays temperature and humidity data. The app co
 
 ## Project Structure
     ```bash
-    sensors_app/
+   .
+├── README.md
+└── sensors_app
+    ├── app
     ├── backend
-    │   ├── app.py
+    │   ├── Dockerfile
+    │   ├── __pycache__
+    │   └── app.py
+    ├── docker-compose.yml
     └── frontend
+        ├── Dockerfile
         ├── README.md
         ├── eslint.config.js
         ├── index.html
@@ -16,7 +23,7 @@ A simple web application that displays temperature and humidity data. The app co
         ├── package.json
         ├── public
         ├── src
-        └── vite
+        └── vite.config.js
 
 ## Prerequisites
 
