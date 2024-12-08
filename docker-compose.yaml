@@ -1,15 +1,14 @@
 
 services:
+
   backend:
     build:
-      context: .
+      context: backend
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
     depends_on:
       - db
-    networks:
-      - backend_network
 
   db:
     image: postgres:15
@@ -21,11 +20,19 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - backend_network
+  
 
-networks:
-  backend_network:
+  frontend:
+        build:
+          context: ./frontend
+        ports:
+          - "3000:3000"
+        restart: always
+        depends_on:
+          - backend
+          - db
+        environment:
+          - VITE_BACKEND_URL=http://backend:8000
 
 volumes:
   postgres_data:
