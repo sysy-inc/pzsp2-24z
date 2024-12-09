@@ -16,8 +16,8 @@ async def test_db():
 
 
 # Test endpoint
-@api_router.get("/initialize_users")
-async def initialize_users():
+@api_router.get("/initialize_test_data")
+async def initialize_dummy():
     # Check if the users table is empty
     users = await fetch_test_data()
 
