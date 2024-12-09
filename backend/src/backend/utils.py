@@ -15,6 +15,34 @@ async def fetch_test_data():
         return measurements
 
 
+async def fetch_latest_measurement():
+    # Fetch the latest measurement from sensor 1 and the latest from sensor 2.
+    async with async_session() as session:
+        query_sensor1 = (
+            select(Measurement)
+            .where(Measurement.sensor_id == 1)
+            .order_by(Measurement.date.desc())
+            .limit(1)
+        )
+        query_sensor2 = (
+            select(Measurement)
+            .where(Measurement.sensor_id == 2)
+            .order_by(Measurement.date.desc())
+            .limit(1)
+        )
+
+        result_sensor1 = await session.execute(query_sensor1)
+        result_sensor2 = await session.execute(query_sensor2)
+
+        latest_measurement_sensor1 = result_sensor1.scalars().first()
+        latest_measurement_sensor2 = result_sensor2.scalars().first()
+
+        return {
+            "sensor_1": latest_measurement_sensor1,
+            "sensor_2": latest_measurement_sensor2,
+        }
+
+
 async def initialize_test_data():
     async with async_session() as session:
         async with session.begin():
