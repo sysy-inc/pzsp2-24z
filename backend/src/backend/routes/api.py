@@ -19,11 +19,15 @@ api_router = APIRouter()
 
 @api_router.get("/health")
 async def health_check():
+    """Health check endpoint."""
     return {"status": "ok"}
 
 
 @api_router.get("/test_db")
 async def test_db():
+    """
+    Test data fetching from the database. (development only)
+    """
     query_result = await fetch_test_data()
     return {"data": query_result}
 
@@ -33,6 +37,9 @@ async def get_latest_measurements_from_platform_by_user(
     platform_id: int = Path(..., description="ID of the platform"),
     user_id: int = Depends(get_current_user),
 ):
+    """
+    Get the latest measurements from a platform that the user has access to.
+    """
     user_has_platform_access = await fetch_user_platform_access(user_id, platform_id)
 
     if user_has_platform_access is False:

@@ -7,7 +7,7 @@ from sqlalchemy.orm import DeclarativeBase
 
 
 # Within docker network:
-DATABASE_URL = "postgresql+asyncpg://user:password@db:5432/testdatabase"
+DATABASE_URL = "postgresql+asyncpg://user:password@db:5432/testdatabase"  # TODO: This should be an environment variable. Password should be a secret.
 # DATABASE_URL = "postgresql+asyncpg://user:password@localhost:5432/testdatabase"
 
 engine = create_async_engine(DATABASE_URL)
@@ -20,10 +20,16 @@ class Base(AsyncAttrs, DeclarativeBase):
 
 
 async def init_db():
+    """
+    Initializes the database connection.
+    """
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     print("Database connection established.")
 
 
 async def close_db():
+    """
+    Closes the database connection.
+    """
     await engine.dispose()

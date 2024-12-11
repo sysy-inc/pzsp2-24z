@@ -2,7 +2,10 @@ import json
 
 
 def parse_message(message: str) -> dict:
-    # The message is a json string, turn it into a dictionary
+    """
+    If a message string is a JSON, parse it into a dictionary
+    """
+
     try:
         message_dict = json.loads(message)
     except json.JSONDecodeError:

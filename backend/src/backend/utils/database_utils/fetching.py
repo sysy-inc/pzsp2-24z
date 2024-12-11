@@ -9,6 +9,9 @@ from src.backend.utils.database_utils.models import (
 
 
 async def fetch_test_data():
+    """
+    Fetch all measurements from the database.
+    """
     async with async_session() as session:
         query = select(Measurement)
         result = await session.execute(query)
@@ -17,6 +20,9 @@ async def fetch_test_data():
 
 
 async def fetch_latest_measurements_for_platform(platform_id: int) -> dict:
+    """
+    Fetch the latest measurements for each sensor on a platform.
+    """
     async with async_session() as session:
         # Subquery: Get the latest measurement date for each sensor on the platform
         latest_measurements_dates_subquery = (
