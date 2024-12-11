@@ -8,7 +8,6 @@ from fastapi import (
 
 from src.backend.utils.database_utils.fetching import (
     fetch_latest_measurements_for_platform,
-    fetch_test_data,
     fetch_user_platform_access,
 )
 from src.backend.utils.auth_utils import get_current_user
