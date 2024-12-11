@@ -1,9 +1,18 @@
-from fastapi import APIRouter
-from src.backend.utils import (
-    fetch_test_data,
-    initialize_test_data,
-    fetch_latest_measurement,
+from typing import List, Dict
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    Path,
 )
+
+from src.backend.utils.database_utils.fetching import (
+    fetch_latest_measurements_for_platform,
+    fetch_test_data,
+    fetch_user_platform_access,
+)
+from src.backend.utils.auth_utils import get_current_user
+
 
 api_router = APIRouter()
 
@@ -19,21 +28,20 @@ async def test_db():
     return {"data": query_result}
 
 
-@api_router.get("/get_latest_measurement")
-async def get_latest_measurement():
-    # Return the latest measurement from sensor 1 and 2
-    query_result = await fetch_latest_measurement()
-    return {"data": query_result}
+@api_router.get("/platforms/{platform_id}/latest-measurements", response_model=Dict)
+async def get_latest_measurements_from_platform_by_user(
+    platform_id: int = Path(..., description="ID of the platform"),
+    user_id: int = Depends(get_current_user),
+):
+    user_has_platform_access = await fetch_user_platform_access(user_id, platform_id)
 
+    if user_has_platform_access is False:
+        raise HTTPException(
+            status_code=403, detail="User has no access to this platform."
+        )
 
-# Test endpoint
-@api_router.get("/initialize_test_data")
-async def initialize_dummy():
-    # Check if the users table is empty
-    users = await fetch_test_data()
+    latest_measurements = await fetch_latest_measurements_for_platform(
+        platform_id=platform_id
+    )
 
-    if not users:  # If the table is empty
-        # Insert two example rows
-        return await initialize_test_data()
-
-    return {"message": "Users table is not empty."}
+    return latest_measurements
