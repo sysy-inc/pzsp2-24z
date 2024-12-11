@@ -1,6 +1,6 @@
 import asyncio
 from typing import Callable
-from src.backend.utils import save_sample_to_db
+from src.backend.utils.database_utils.storing import save_sample_to_db
 
 
 class UDPServer(asyncio.DatagramProtocol):
