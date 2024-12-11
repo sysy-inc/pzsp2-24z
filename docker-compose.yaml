@@ -1,3 +1,4 @@
+
 services:
 
   backend:
@@ -24,16 +25,16 @@ services:
       - ./scripts/init_database.sql:/docker-entrypoint-initdb.d/init_database.sql
 
   frontend:
-    build:
-      context: ./frontend
-    ports:
-      - "3000:3000"
-    restart: always
-    depends_on:
-      - backend
-      - db
-    environment:
-      - VITE_BACKEND_URL=http://backend:8000
+        build:
+          context: ./frontend
+        ports:
+          - "3000:3000"
+        restart: always
+        depends_on:
+          - backend
+          - db
+        environment:
+          - VITE_BACKEND_URL=http://backend:8000
 
 volumes:
   postgres_data:
