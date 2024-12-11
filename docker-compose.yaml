@@ -21,6 +21,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/src/backend/scripts/create_database.sql:/docker-entrypoint-initdb.d/create_database.sql
+      - ./backend/src/backend/scripts/init_database.sql:/docker-entrypoint-initdb.d/init_database.sql
 
   frontend:
     build:
