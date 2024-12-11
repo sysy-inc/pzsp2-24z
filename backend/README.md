@@ -30,6 +30,6 @@ curl -X GET http://localhost:8000/api/initialize_users
 
 ```bash
 docker-compose down
-docker volume rm backend_postgres_data
+docker volume rm pzsp2-24z_postgres_data
 docker-compose up -d
 ```
