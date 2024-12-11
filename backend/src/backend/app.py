@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from src.backend.db_controller import close_db, init_db
+from src.backend.utils.database_utils.db_controller import close_db, init_db
 from src.backend.routes.api import api_router
 from src.backend.udp_controller import init_udp_server
 
