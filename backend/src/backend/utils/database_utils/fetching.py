@@ -8,17 +8,6 @@ from src.backend.utils.database_utils.models import (
 )
 
 
-async def fetch_test_data():
-    """
-    Fetch all measurements from the database.
-    """
-    async with async_session() as session:
-        query = select(Measurement)
-        result = await session.execute(query)
-        measurements = result.scalars().all()
-        return measurements
-
-
 async def fetch_latest_measurements_for_platform(platform_id: int) -> dict:
     """
     Fetch the latest measurements for each sensor on a platform.
