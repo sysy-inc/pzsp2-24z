@@ -23,15 +23,6 @@ async def health_check():
     return {"status": "ok"}
 
 
-@api_router.get("/test_db")
-async def test_db():
-    """
-    Test data fetching from the database. (development only)
-    """
-    query_result = await fetch_test_data()
-    return {"data": query_result}
-
-
 @api_router.get("/platforms/{platform_id}/latest-measurements", response_model=Dict)
 async def get_latest_measurements_from_platform_by_user(
     platform_id: int = Path(..., description="ID of the platform"),
