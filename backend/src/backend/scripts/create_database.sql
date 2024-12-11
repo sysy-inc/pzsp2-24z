@@ -11,7 +11,7 @@ CREATE TABLE platforms (
 
 CREATE TABLE sensors (
     id int  PRIMARY KEY,
-    measurement_type_id int  NOT NULL REFERENCES measurement_types (id),
+    measuremen_type_id int  NOT NULL REFERENCES measurement_types (id),
     platform_id int  NOT NULL REFERENCES platforms (id)
 );
 

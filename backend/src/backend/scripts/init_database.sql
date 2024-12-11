@@ -11,6 +11,6 @@ INSERT INTO platforms (id, name) VALUES
 INSERT INTO users_platforms (id, user_id, platform_id) VALUES
     (1, 1, 1);
 
-INSERT INTO sensors (id, measurement_type_id, platform_id) VALUES
+INSERT INTO sensors ( id, measuremen_type_id, platform_id) VALUES
     (1, 1, 1),
     (2, 2, 1);

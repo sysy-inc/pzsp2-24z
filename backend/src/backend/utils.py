@@ -9,7 +9,7 @@ from datetime import datetime
 
 async def fetch_test_data():
     async with async_session() as session:
-        query = select(Sensor)
+        query = select(Measurement)
         result = await session.execute(query)
         measurements = result.scalars().all()
         return measurements
