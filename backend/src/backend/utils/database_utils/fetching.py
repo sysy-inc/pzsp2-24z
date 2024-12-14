@@ -6,6 +6,10 @@ from src.backend.utils.database_utils.models import (
     MeasurementType,
     UserPlatform,
 )
+from src.backend.utils.database_utils.data_models import (
+    MeasurementsResponse,
+    MeasurementData,
+)
 
 
 async def fetch_latest_measurements_for_platform(platform_id: int) -> dict:
@@ -53,15 +57,19 @@ async def fetch_latest_measurements_for_platform(platform_id: int) -> dict:
 
         rows = result.mappings().all()
 
-        return {
-            row["physical_parameter"]: {
-                "sensor_id": row["sensor_id"],
-                "value": row["value"],
-                "date": row["date"],
-                "unit": row["unit"],
+        latest_measurements = MeasurementsResponse(
+            measurements={
+                row["physical_parameter"]: MeasurementData(
+                    sensor_id=row["sensor_id"],
+                    value=row["value"],
+                    date=row["date"],
+                    unit=row["unit"],
+                )
+                for row in rows
             }
-            for row in rows
-        }
+        )
+
+        return latest_measurements
 
 
 async def fetch_user_platform_access(user_id: int, platform_id: int) -> bool:

@@ -1,14 +1,40 @@
 import json
+from pydantic import BaseModel, ValidationError
+from functools import wraps
+from typing import Generic, TypeVar, Type
+
+Model = TypeVar("Model", bound=BaseModel)
 
 
-def parse_message(message: str) -> dict:
+class jsonToModel(Generic[Model]):
     """
-    If a message string is a JSON, parse it into a dictionary
+    A marker type for JSON strings that will be converted to a Pydantic model.
     """
 
-    try:
-        message_dict = json.loads(message)
-    except json.JSONDecodeError:
-        print("Error parsing message")
-        return {"error": "Invalid JSON format"}
-    return message_dict
+    pass
+
+
+def validate_and_convert_arguments(model: Type[Model]):
+    """
+    A decorator to validate and convert a JSON string argument into a Pydantic model instance.
+    :param model_class: The Pydantic model class to validate against.
+    """
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(argument, *args, **kwargs):
+            try:
+                data = json.loads(argument)
+
+                model_instance = model(**data)
+
+                return func(model_instance, *args, **kwargs)
+
+            except json.JSONDecodeError as e:
+                raise ValueError(f"Invalid JSON format: {e}")
+            except ValidationError as e:
+                raise ValueError(f"Validation error: {e}")
+
+        return wrapper
+
+    return decorator
