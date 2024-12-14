@@ -11,6 +11,7 @@ from src.backend.utils.database_utils.fetching import (
     fetch_user_platform_access,
 )
 from src.backend.utils.auth_utils import get_current_user
+from src.backend.utils.database_utils.data_models import MeasurementsResponse
 
 
 api_router = APIRouter()
@@ -22,7 +23,9 @@ async def health_check():
     return {"status": "ok"}
 
 
-@api_router.get("/platforms/{platform_id}/latest-measurements", response_model=Dict)
+@api_router.get(
+    "/platforms/{platform_id}/latest-measurements", response_model=MeasurementsResponse
+)
 async def get_latest_measurements_from_platform_by_user(
     platform_id: int = Path(..., description="ID of the platform"),
     user_id: int = Depends(get_current_user),
