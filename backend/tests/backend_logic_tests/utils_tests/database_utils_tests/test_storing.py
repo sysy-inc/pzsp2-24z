@@ -1,11 +1,11 @@
 import pytest
 from src.backend.utils.database_utils.storing import save_sample_to_db
-from src.backend.utils.database_utils.data_models import MeasurementFromPlatform
+from src.backend.utils.data_models import MeasurementFromPlatform
 
 
 import pytest
 from src.backend.utils.database_utils.storing import save_sample_to_db
-from src.backend.utils.database_utils.data_models import MeasurementFromPlatform
+from src.backend.utils.data_models import MeasurementFromPlatform
 
 
 @pytest.mark.asyncio
