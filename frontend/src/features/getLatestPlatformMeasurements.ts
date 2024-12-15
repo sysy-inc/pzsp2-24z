@@ -13,7 +13,7 @@ export type PlatformLastestMeasurement = {
             value: number
             date: string
             unit: string
-        }
+        }[]
     }
 }
 
