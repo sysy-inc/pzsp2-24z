@@ -10,7 +10,7 @@ class MeasurementData(BaseModel):
 
 
 class MeasurementsResponse(BaseModel):
-    measurements: dict[str, MeasurementData]
+    measurements: dict[str, list[MeasurementData]]
 
 
 class MeasurementFromPlatform(BaseModel):
