@@ -16,12 +16,12 @@ const MainPage: React.FC = () => {
         justifyContent: 'center',
         height: '100vh',
         position: 'relative',
-        background: 'linear-gradient(to bottom, #cce7ff, #e3f2fd)', // Light blue gradient
+        background: 'linear-gradient(to bottom, #cce7ff, #e3f2fd)', 
         overflow: 'hidden',
-        color: '#004c8c', // Deep blue for contrast
+        color: '#004c8c', 
       }}
     >
-      {/* Header */}
+     
       <Box
         sx={{
           position: 'absolute',
@@ -32,11 +32,11 @@ const MainPage: React.FC = () => {
           justifyContent: 'space-between',
           alignItems: 'center',
           p: 2,
-          backgroundColor: 'rgba(255, 255, 255, 0.6)', // Semi-transparent header
+          backgroundColor: 'rgba(255, 255, 255, 0.6)', 
           boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
         }}
       >
-        {/* Logo & Title */}
+    
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <FaCloud size={36} style={{ color: '#004c8c' }} />
           <Typography
@@ -51,7 +51,7 @@ const MainPage: React.FC = () => {
           </Typography>
         </Box>
 
-        {/* Admin Icon (Navigates to Admin Page) */}
+       
         <IconButton
           onClick={() => navigate('/admin')}
           sx={{
@@ -63,13 +63,13 @@ const MainPage: React.FC = () => {
         </IconButton>
       </Box>
 
-      {/* Slogan */}
+     
       <Typography
         variant="h3"
         sx={{
           fontFamily: 'Poppins, sans-serif',
           textAlign: 'center',
-          mt: 10, // Increased the top margin to ensure the header doesn't overlap the slogan
+          mt: 10, 
           color: '#004c8c',
           textShadow: '2px 2px 4px rgba(255, 255, 255, 0.7)',
           fontWeight: 'bold',
@@ -78,7 +78,7 @@ const MainPage: React.FC = () => {
         Track the Climate, Feel the Changes
       </Typography>
 
-      {/* Main Content */}
+      
       <Box
         sx={{
           display: 'flex',
@@ -90,7 +90,7 @@ const MainPage: React.FC = () => {
           width: '100%',
         }}
       >
-        {/* Current Weather Icon */}
+      
         <Box
           sx={{
             display: 'flex',
@@ -115,7 +115,7 @@ const MainPage: React.FC = () => {
           </Typography>
         </Box>
 
-        {/* Historical Data Icon */}
+        
         <Box
           sx={{
             display: 'flex',

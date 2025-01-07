@@ -15,17 +15,17 @@ const ParticlesBackground: React.FC = () => {
         fpsLimit: 60,
         particles: {
           number: {
-            value: 50, // Number of particles
+            value: 50, 
             density: {
               enable: true,
-              value_area: 800, // Density of particles in the viewport
+              value_area: 800, 
             },
           },
           color: {
-            value: "#ffffff", // Particle color
+            value: "#ffffff", 
           },
           shape: {
-            type: "circle", // Shape of particles
+            type: "circle", 
           },
           opacity: {
             value: 0.5,
@@ -39,30 +39,30 @@ const ParticlesBackground: React.FC = () => {
             enable: true,
             speed: 2,
             direction: "none",
-            out_mode: "bounce", // How particles behave when they hit edges
+            out_mode: "bounce", 
           },
         },
         interactivity: {
           events: {
             onHover: {
               enable: true,
-              mode: "repulse", // Particles move away from the cursor
+              mode: "repulse", 
             },
             onClick: {
               enable: true,
-              mode: "push", // Adds more particles on click
+              mode: "push", 
             },
           },
           modes: {
             repulse: {
-              distance: 100, // How far particles repulse
+              distance: 100, 
             },
             push: {
-              quantity: 4, // Number of particles added on click
+              quantity: 4, 
             },
           },
         },
-        detectRetina: true, // Improves particle resolution on high-DPI screens
+        detectRetina: true, 
       }}
       style={{
         position: "absolute",
@@ -70,7 +70,7 @@ const ParticlesBackground: React.FC = () => {
         left: 0,
         width: "100%",
         height: "100%",
-        zIndex: -1, // Push the particles behind other content
+        zIndex: -1, 
       }}
     />
   );

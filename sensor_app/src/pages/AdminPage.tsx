@@ -60,7 +60,6 @@ const AdminPage: React.FC = () => {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100vh', background: 'linear-gradient(to bottom, #cce7ff, #e3f2fd)', color: '#004c8c', paddingTop: 10 }}>
-      {/* Header */}
       <Box sx={{ position: 'absolute', top: 0, left: 0, width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, backgroundColor: 'rgba(255, 255, 255, 0.6)', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography variant="h4" fontWeight="bold" sx={{ fontFamily: 'Poppins, sans-serif', textShadow: '1px 1px 3px rgba(0, 0, 0, 0.3)' }}>
@@ -68,9 +67,9 @@ const AdminPage: React.FC = () => {
           </Typography>
         </Box>
 
-        {/* Return to Main Page Button */}
+       
         <Button
-          onClick={() => navigate('/main')} // Navigate to Main Page directly
+          onClick={() => navigate('/main')} 
           variant="contained"
           color="primary"
           sx={{ backgroundColor: '#6e8efb', '&:hover': { backgroundColor: '#5b75d9' } }}
@@ -79,14 +78,14 @@ const AdminPage: React.FC = () => {
         </Button>
       </Box>
 
-      {/* Admin Page Content */}
+  
       <Box sx={{ width: '80%', maxWidth: '1200px', textAlign: 'center', mt: 6 }}>
 
         <Typography variant="h4" fontWeight="bold" sx={{ color: '#004c8c', mb: 4 }}>
           Platform Management
         </Typography>
 
-        {/* Platforms Table */}
+    
         {platforms.map((platform, index) => (
           <Box key={index} sx={{ mb: 6 }}>
             <Typography variant="h5" fontWeight="bold" sx={{ color: '#004c8c', mb: 2 }}>
@@ -145,7 +144,6 @@ const AdminPage: React.FC = () => {
           </Box>
         ))}
 
-        {/* Add New Platform Button */}
         <Button
           onClick={() => setOpenDialog(true)}
           variant="contained"
@@ -155,7 +153,6 @@ const AdminPage: React.FC = () => {
           <MdAddCircle size={28} /> Add Platform
         </Button>
 
-        {/* Add Platform Dialog */}
         <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
           <DialogTitle>Add a New Platform</DialogTitle>
           <DialogContent>

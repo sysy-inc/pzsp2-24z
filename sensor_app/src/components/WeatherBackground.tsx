@@ -17,7 +17,7 @@ const WeatherBackground: React.FC = () => {
         options={{
           background: {
             color: {
-              value: "#87CEEB", // Sky blue background
+              value: "#87CEEB", 
             },
           },
           particles: {
@@ -25,7 +25,7 @@ const WeatherBackground: React.FC = () => {
               value: 50,
             },
             color: {
-              value: ["#FFFFFF", "#00A9FF"], // White clouds & blue accents
+              value: ["#FFFFFF", "#00A9FF"], 
             },
             shape: {
               type: "circle",

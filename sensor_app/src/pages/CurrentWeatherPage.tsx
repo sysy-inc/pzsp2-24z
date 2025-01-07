@@ -5,27 +5,27 @@ import { useNavigate } from 'react-router-dom';
 
 const CurrentWeatherPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
-  const [weatherData, setWeatherData] = useState<any>(null); // Replace with appropriate data type
+  const [weatherData, setWeatherData] = useState<any>(null); 
   const [previousWeatherData, setPreviousWeatherData] = useState<any>(null);
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const navigate = useNavigate();
 
-  // Simulating weather data fetching
+ 
   useEffect(() => {
     setTimeout(() => {
       const newWeatherData = {
-        temperature: 22 + Math.floor(Math.random() * 5), // Randomly change temperature
-        humidity: 65 + Math.floor(Math.random() * 5), // Randomly change humidity
+        temperature: 22 + Math.floor(Math.random() * 5), 
+        humidity: 65 + Math.floor(Math.random() * 5), 
       };
 
       if (previousWeatherData) {
-        // Check for rapid changes in temperature or humidity
+        
         const tempDifference = Math.abs(newWeatherData.temperature - previousWeatherData.temperature);
         const humidityDifference = Math.abs(newWeatherData.humidity - previousWeatherData.humidity);
 
         if (tempDifference > 2 || humidityDifference > 10) {
-          // If change is significant, show an alert
+         
           setAlertMessage(`Rapid change detected: Temperature ${tempDifference > 2 ? tempDifference + "°C" : ''} and Humidity ${humidityDifference > 10 ? humidityDifference + "%" : ''}`);
           setAlertOpen(true);
         }
@@ -52,13 +52,13 @@ const CurrentWeatherPage: React.FC = () => {
           </Typography>
         </Box>
 
-        {/* Return to Main Page Button */}
+       
         <Button onClick={() => navigate('/main')} variant="contained" color="primary" sx={{ backgroundColor: '#6e8efb', '&:hover': { backgroundColor: '#5b75d9' } }}>
           <FaChevronLeft size={20} /> Back to Main Page
         </Button>
       </Box>
 
-      {/* Weather Content */}
+    
       <Box sx={{ width: '80%', maxWidth: '800px', textAlign: 'center', mt: 10 }}>
         {loading ? (
           <CircularProgress size={60} sx={{ color: '#004c8c' }} />
@@ -78,7 +78,7 @@ const CurrentWeatherPage: React.FC = () => {
         )}
       </Box>
 
-      {/* Alert Notification */}
+    
       <Snackbar
         open={alertOpen}
         autoHideDuration={6000}

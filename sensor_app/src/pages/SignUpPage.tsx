@@ -8,7 +8,7 @@ const SignUpPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const navigate = useNavigate(); // Add this
+  const navigate = useNavigate(); 
 
   const handleSignUp = () => {
     if (password !== confirmPassword) {
@@ -16,7 +16,7 @@ const SignUpPage: React.FC = () => {
       return;
     }
     console.log('Email:', email, 'Password:', password);
-    navigate('/signin'); // Navigate to SignInPage after successful signup
+    navigate('/signin'); 
   };
 
   return (

@@ -7,12 +7,12 @@ import ParticlesBackground from '../components/common/ParticlesBackground';
 const SignInPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const navigate = useNavigate(); // Add this
+  const navigate = useNavigate(); 
 
   const handleSignIn = () => {
-    // Simulate a successful login
+  
     console.log('Email:', email, 'Password:', password);
-    navigate('/main'); // Navigate to the MainPage after successful login
+    navigate('/main'); 
   };
 
   return (

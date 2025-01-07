@@ -5,10 +5,10 @@ import { Line } from 'react-chartjs-2';
 import { SelectChangeEvent } from '@mui/material/Select';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 
-// Register Chart.js components
+
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-// Define the types for the chart data
+
 interface ChartData {
   labels: string[];
   datasets: {
@@ -23,7 +23,7 @@ const HistoricalDataPage: React.FC = () => {
   const navigate = useNavigate();
   const [selectedRange, setSelectedRange] = useState<string>('hour');
 
-  // Correctly type the chart data state
+ 
   const [chartData, setChartData] = useState<ChartData>({
     labels: [],
     datasets: [
@@ -49,7 +49,7 @@ const HistoricalDataPage: React.FC = () => {
   };
 
   const fetchDataForRange = (range: string) => {
-    // Simulate API call for historical data based on time range (hour, day, week, month)
+    
     let labels: string[] = [];
     let tempData: number[] = [];
     let humidityData: number[] = [];
@@ -82,7 +82,7 @@ const HistoricalDataPage: React.FC = () => {
   };
 
   React.useEffect(() => {
-    fetchDataForRange(selectedRange); // Fetch data on initial load
+    fetchDataForRange(selectedRange); 
   }, []);
 
   return (
@@ -98,7 +98,7 @@ const HistoricalDataPage: React.FC = () => {
         position: 'relative',
       }}
     >
-      {/* Header */}
+      
       <Box
         sx={{
           position: 'absolute',
@@ -126,7 +126,7 @@ const HistoricalDataPage: React.FC = () => {
           </Typography>
         </Box>
 
-        {/* Return to Main Page Button */}
+       
         <Button
           onClick={() => navigate('/main')}
           variant="contained"
@@ -140,13 +140,13 @@ const HistoricalDataPage: React.FC = () => {
         </Button>
       </Box>
 
-      {/* Page Content */}
+    
       <Box sx={{ width: '80%', maxWidth: '1200px', textAlign: 'center', mt: 6 }}>
         <Typography variant="h4" fontWeight="bold" sx={{ color: '#004c8c', mb: 4 }}>
           Weather Data Over Time
         </Typography>
 
-        {/* Time Range Selector */}
+        
         <FormControl fullWidth sx={{ mb: 4 }}>
           <InputLabel id="select-time-range-label">Select Time Range</InputLabel>
           <Select
@@ -162,7 +162,7 @@ const HistoricalDataPage: React.FC = () => {
           </Select>
         </FormControl>
 
-        {/* Chart */}
+      
         <Box sx={{ width: '100%', maxWidth: '900px', margin: '0 auto' }}>
           <Line data={chartData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} />
         </Box>
