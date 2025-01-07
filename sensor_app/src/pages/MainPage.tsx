@@ -51,9 +51,9 @@ const MainPage: React.FC = () => {
           </Typography>
         </Box>
 
-        {/* Admin Icon */}
+        {/* Admin Icon (Navigates to Admin Page) */}
         <IconButton
-          onClick={() => alert('Admin page will be added soon!')}
+          onClick={() => navigate('/admin')}
           sx={{
             backgroundColor: 'rgba(255, 255, 255, 0.5)',
             '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.7)' },
