@@ -1,3 +1,4 @@
+import React from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
 const Dropdown: React.FC<{ items: { label: string; onClick: () => void }[] }> = ({ items }) => {

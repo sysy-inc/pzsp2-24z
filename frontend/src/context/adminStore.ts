@@ -1,10 +1,10 @@
-import create from 'zustand';
+import {create} from 'zustand';
 
 interface AdminState {
-  users: { id: number; name: string; email: string; role: string }[];
+  users: { id: number; email: string; role: string }[];
   platforms: { id: number; name: string; status: string }[];
-  setUsers: (users: AdminState['users']) => void;
-  setPlatforms: (platforms: AdminState['platforms']) => void;
+  setUsers: (users: { id: number; email: string; role: string }[]) => void;
+  setPlatforms: (platforms: { id: number; name: string; status: string }[]) => void;
 }
 
 export const useAdminStore = create<AdminState>((set) => ({

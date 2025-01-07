@@ -1,3 +1,11 @@
-export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000';
-export const ROLES = ['Admin', 'User'];
-export const PLATFORM_STATUSES = ['Active', 'Inactive'];
+export const API_BASE_URL = (() => {
+    // Dynamically determine the base URL
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+      return 'http://localhost:3000'; // Development
+    }
+    return 'https://api.production-domain.com'; // Production
+  })();
+  
+  export const ROLES = ['Admin', 'User'];
+  export const PLATFORM_STATUSES = ['Active', 'Inactive'];
+  

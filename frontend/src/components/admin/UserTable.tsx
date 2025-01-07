@@ -1,11 +1,11 @@
 import React from 'react';
 
 interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-}
+    id: number;
+    name?: string; // Mark name as optional
+    email: string;
+    role: string;
+  }
 
 const UserTable: React.FC<{ users: User[] }> = ({ users }) => {
   return (
