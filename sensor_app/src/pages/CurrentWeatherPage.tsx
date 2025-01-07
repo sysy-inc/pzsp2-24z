@@ -1,23 +1,45 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, CircularProgress, Paper } from '@mui/material';
+import { Box, Typography, Button, CircularProgress, Paper, Snackbar } from '@mui/material';
 import { FaCloud, FaChevronLeft } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
 const CurrentWeatherPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [weatherData, setWeatherData] = useState<any>(null); // Replace with appropriate data type
+  const [previousWeatherData, setPreviousWeatherData] = useState<any>(null);
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
   const navigate = useNavigate();
 
   // Simulating weather data fetching
   useEffect(() => {
     setTimeout(() => {
-      setWeatherData({
-        temperature: 22, // example temperature in Celsius
-        humidity: 65,    // example humidity percentage
-      });
+      const newWeatherData = {
+        temperature: 22 + Math.floor(Math.random() * 5), // Randomly change temperature
+        humidity: 65 + Math.floor(Math.random() * 5), // Randomly change humidity
+      };
+
+      if (previousWeatherData) {
+        // Check for rapid changes in temperature or humidity
+        const tempDifference = Math.abs(newWeatherData.temperature - previousWeatherData.temperature);
+        const humidityDifference = Math.abs(newWeatherData.humidity - previousWeatherData.humidity);
+
+        if (tempDifference > 2 || humidityDifference > 10) {
+          // If change is significant, show an alert
+          setAlertMessage(`Rapid change detected: Temperature ${tempDifference > 2 ? tempDifference + "°C" : ''} and Humidity ${humidityDifference > 10 ? humidityDifference + "%" : ''}`);
+          setAlertOpen(true);
+        }
+      }
+
+      setPreviousWeatherData(newWeatherData);
+      setWeatherData(newWeatherData);
       setLoading(false);
     }, 2000);
-  }, []);
+  }, [previousWeatherData]);
+
+  const handleCloseAlert = () => {
+    setAlertOpen(false);
+  };
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100vh', background: 'linear-gradient(to bottom, #cce7ff, #e3f2fd)', color: '#004c8c', paddingTop: 10 }}>
@@ -55,6 +77,15 @@ const CurrentWeatherPage: React.FC = () => {
           </Paper>
         )}
       </Box>
+
+      {/* Alert Notification */}
+      <Snackbar
+        open={alertOpen}
+        autoHideDuration={6000}
+        onClose={handleCloseAlert}
+        message={alertMessage}
+        sx={{ bottom: 50 }}
+      />
     </Box>
   );
 };
