@@ -1,7 +1,4 @@
-from collections import defaultdict
-from sqlalchemy import select, func, between
-from datetime import datetime
-
+from sqlalchemy import select, func
 from src.backend.utils.database_utils.db_controller import async_session
 from src.backend.utils.database_utils.models import (
     Sensor,
@@ -9,15 +6,13 @@ from src.backend.utils.database_utils.models import (
     MeasurementType,
     UserPlatform,
 )
-from src.backend.utils.data_models import (
+from src.backend.utils.database_utils.data_models import (
     MeasurementsResponse,
     MeasurementData,
 )
 
 
-async def fetch_latest_measurements_for_platform(
-    platform_id: int,
-) -> MeasurementsResponse:
+async def fetch_latest_measurements_for_platform(platform_id: int) -> dict:
     """
     Fetch the latest measurements for each sensor on a platform.
     """
@@ -62,18 +57,19 @@ async def fetch_latest_measurements_for_platform(
 
         rows = result.mappings().all()
 
-        measurements: defaultdict[str, list[Measurement]] = defaultdict(list)
-        for row in rows:
-            measurements[row["physical_parameter"]].append(
-                MeasurementData(
+        latest_measurements = MeasurementsResponse(
+            measurements={
+                row["physical_parameter"]: MeasurementData(
                     sensor_id=row["sensor_id"],
                     value=row["value"],
                     date=row["date"],
                     unit=row["unit"],
                 )
-            )
+                for row in rows
+            }
+        )
 
-        return MeasurementsResponse(measurements=measurements)
+        return latest_measurements
 
 
 async def fetch_user_platform_access(user_id: int, platform_id: int) -> bool:
@@ -90,48 +86,3 @@ async def fetch_user_platform_access(user_id: int, platform_id: int) -> bool:
         )
         result = await session.execute(query)
         return result.scalars().first() is not None
-
-
-async def fetch_latest_measurements_for_platform_within_range(
-    platform_id: int, date_from: datetime, date_to: datetime
-) -> MeasurementsResponse:
-    """Retrieve measurements from a specified platform within the specified time range.
-
-    Args:
-        platform_id (int): ID of the platform from which we want to retrieve measurements.
-        date_from (datetime): Beginning of the timeframe.
-        date_to (datetime): End of the timeframe.
-    """
-
-    async with async_session() as session:
-
-        query = (
-            select(
-                Measurement.sensor_id,
-                Measurement.value,
-                Measurement.date,
-                MeasurementType.physical_parameter,
-                MeasurementType.unit,
-            )
-            .join(Sensor, Sensor.id == Measurement.sensor_id)
-            .where(Sensor.platform_id == platform_id)
-            .join(MeasurementType, MeasurementType.id == Sensor.measurement_type_id)
-            .where(between(Measurement.date, date_from, date_to))
-        )
-
-        result = await session.execute(query)
-
-        rows = result.mappings().all()
-
-        measurements: defaultdict[str, list[Measurement]] = defaultdict(list)
-        for row in rows:
-            measurements[row["physical_parameter"]].append(
-                MeasurementData(
-                    sensor_id=row["sensor_id"],
-                    value=row["value"],
-                    date=row["date"],
-                    unit=row["unit"],
-                )
-            )
-
-        return MeasurementsResponse(measurements=measurements)

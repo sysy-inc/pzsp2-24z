@@ -5,15 +5,13 @@ from fastapi import (
     HTTPException,
     Path,
 )
-from datetime import datetime
 
 from src.backend.utils.database_utils.fetching import (
     fetch_latest_measurements_for_platform,
-    fetch_latest_measurements_for_platform_within_range,
     fetch_user_platform_access,
 )
 from src.backend.utils.auth_utils import get_current_user
-from src.backend.utils.data_models import MeasurementsResponse
+from src.backend.utils.database_utils.data_models import MeasurementsResponse
 
 
 api_router = APIRouter()
@@ -47,24 +45,3 @@ async def get_latest_measurements_from_platform_by_user(
     )
 
     return latest_measurements
-
-
-@api_router.get("/platforms/{platform_id}/", response_model=MeasurementsResponse)
-async def get_measurements_from_platform_between_dates(
-    date_from: datetime,
-    date_to: datetime,
-    platform_id: int = Path(..., description="ID of the platform"),
-    user_id: int = Depends(get_current_user),
-):
-    user_has_platform_access = await fetch_user_platform_access(user_id, platform_id)
-
-    if user_has_platform_access is False:
-        raise HTTPException(
-            status_code=403, detail="User has no access to this platform."
-        )
-
-    range_measurements = await fetch_latest_measurements_for_platform_within_range(
-        platform_id, date_from, date_to
-    )
-
-    return range_measurements
