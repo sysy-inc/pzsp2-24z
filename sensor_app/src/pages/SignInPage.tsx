@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Paper } from '@mui/material';
 import { FaLock } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import ParticlesBackground from '../components/common/ParticlesBackground';
 
 const SignInPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate(); // Add this
 
   const handleSignIn = () => {
+    // Simulate a successful login
     console.log('Email:', email, 'Password:', password);
-    // Add sign-in logic here
+    navigate('/main'); // Navigate to the MainPage after successful login
   };
 
   return (
@@ -22,7 +24,7 @@ const SignInPage: React.FC = () => {
         height: '100vh',
         position: 'relative',
         overflow: 'hidden',
-        background: 'linear-gradient(to bottom, #87CEEB, #f8f9fa)', // Sky blue gradient
+        background: 'linear-gradient(to bottom, #87CEEB, #f8f9fa)',
       }}
     >
       <ParticlesBackground />

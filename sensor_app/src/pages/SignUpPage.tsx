@@ -1,21 +1,22 @@
 import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Paper } from '@mui/material';
 import { FaUserPlus } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import ParticlesBackground from '../components/common/ParticlesBackground';
 
 const SignUpPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const navigate = useNavigate(); // Add this
 
   const handleSignUp = () => {
     if (password !== confirmPassword) {
-      alert("Passwords do not match!");
+      alert('Passwords do not match!');
       return;
     }
     console.log('Email:', email, 'Password:', password);
-    // Add sign-up logic here
+    navigate('/signin'); // Navigate to SignInPage after successful signup
   };
 
   return (
@@ -27,7 +28,7 @@ const SignUpPage: React.FC = () => {
         height: '100vh',
         position: 'relative',
         overflow: 'hidden',
-        background: 'linear-gradient(to bottom, #f8f9fa, #87CEEB)', // Gradient background
+        background: 'linear-gradient(to bottom, #f8f9fa, #87CEEB)',
       }}
     >
       <ParticlesBackground />
