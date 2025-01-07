@@ -1,5 +1,5 @@
 import pytest
-from src.backend.utils.data_models import (
+from src.backend.utils.database_utils.data_models import (
     MeasurementsResponse,
     MeasurementData,
 )
@@ -61,19 +61,15 @@ async def test_fetch_latest_measurements_for_platform(monkeypatch):
 
     expected = MeasurementsResponse(
         measurements={
-            "Temperature": [
-                MeasurementData(
-                    sensor_id=1, value=42.5, date="2024-12-14", unit="Celsius"
-                )
-            ],
-            "Humidity": [
-                MeasurementData(
-                    sensor_id=2,
-                    value=78.9,
-                    date="2024-12-14",
-                    unit="%",
-                )
-            ],
+            "Temperature": MeasurementData(
+                sensor_id=1, value=42.5, date="2024-12-14", unit="Celsius"
+            ),
+            "Humidity": MeasurementData(
+                sensor_id=2,
+                value=78.9,
+                date="2024-12-14",
+                unit="%",
+            ),
         }
     )
 
