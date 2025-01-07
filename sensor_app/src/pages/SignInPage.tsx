@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Paper } from '@mui/material';
 import { FaLock } from 'react-icons/fa';
-import ParticlesBackground from '../components/common/ParticlesBackground';
+import Particles from 'react-tsparticles';
+import { loadFull } from 'tsparticles';
 
 const SignInPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  const particlesInit = async (engine: any) => {
+    await loadFull(engine); // Ensures all features are loaded
+  };
 
   const handleSignIn = () => {
     console.log('Email:', email, 'Password:', password);
@@ -21,10 +26,44 @@ const SignInPage: React.FC = () => {
         height: '100vh',
         position: 'relative',
         overflow: 'hidden',
+        background: 'linear-gradient(to bottom, #87CEEB, #f8f9fa)', // Sky blue gradient
       }}
     >
-      {/* Particle Background */}
-      <ParticlesBackground />
+      {/* Particle Weather Background */}
+      <Particles
+        id="tsparticles"
+        init={particlesInit}
+        options={{
+          background: {
+            color: { value: '#87CEEB' },
+          },
+          particles: {
+            number: {
+              value: 50,
+            },
+            color: {
+              value: ['#ffffff', '#00A9FF'],
+            },
+            shape: {
+              type: 'circle',
+            },
+            opacity: {
+              value: 0.7,
+            },
+            size: {
+              value: 8,
+              random: true,
+            },
+            move: {
+              enable: true,
+              speed: 2,
+              direction: 'top',
+              outModes: 'out',
+            },
+          },
+        }}
+        style={{ position: 'absolute', zIndex: 0 }}
+      />
 
       {/* Sign-In Card */}
       <Paper elevation={6} sx={{ p: 4, width: 400, borderRadius: 3, zIndex: 1 }}>
