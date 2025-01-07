@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Paper } from '@mui/material';
-import { FaLock } from 'react-icons/fa';
+import { FaUserPlus } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import ParticlesBackground from '../components/common/ParticlesBackground';
 
-const SignInPage: React.FC = () => {
+const SignUpPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleSignIn = () => {
+  const handleSignUp = () => {
+    if (password !== confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
     console.log('Email:', email, 'Password:', password);
-    // Add sign-in logic here
+    // Add sign-up logic here
   };
 
   return (
@@ -22,22 +27,22 @@ const SignInPage: React.FC = () => {
         height: '100vh',
         position: 'relative',
         overflow: 'hidden',
-        background: 'linear-gradient(to bottom, #87CEEB, #f8f9fa)', // Sky blue gradient
+        background: 'linear-gradient(to bottom, #f8f9fa, #87CEEB)', // Gradient background
       }}
     >
       <ParticlesBackground />
       <Paper elevation={6} sx={{ p: 4, width: 400, borderRadius: 3, zIndex: 1 }}>
         <Box display="flex" justifyContent="center" mb={2}>
-          <FaLock size={32} color="#6e8efb" />
+          <FaUserPlus size={32} color="#6e8efb" />
         </Box>
         <Typography variant="h5" textAlign="center" fontWeight="bold" gutterBottom>
-          Sign In
+          Sign Up
         </Typography>
         <Box
           component="form"
           onSubmit={(e) => {
             e.preventDefault();
-            handleSignIn();
+            handleSignUp();
           }}
           sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
         >
@@ -58,6 +63,15 @@ const SignInPage: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          <TextField
+            label="Confirm Password"
+            type="password"
+            variant="outlined"
+            fullWidth
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+          />
           <Button
             type="submit"
             variant="contained"
@@ -67,13 +81,13 @@ const SignInPage: React.FC = () => {
               '&:hover': { backgroundColor: '#5b75d9' },
             }}
           >
-            Sign In
+            Sign Up
           </Button>
         </Box>
         <Typography variant="body2" textAlign="center" mt={2}>
-          Don’t have an account?{' '}
-          <Link to="/signup" style={{ color: '#6e8efb' }}>
-            Sign Up
+          Already have an account?{' '}
+          <Link to="/signin" style={{ color: '#6e8efb' }}>
+            Sign In
           </Link>
         </Typography>
       </Paper>
@@ -81,4 +95,4 @@ const SignInPage: React.FC = () => {
   );
 };
 
-export default SignInPage;
+export default SignUpPage;
