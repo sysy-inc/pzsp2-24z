@@ -1,102 +1,144 @@
 import React from 'react';
-import { Box, Button, Typography } from '@mui/material';
-import { FaUserCircle } from 'react-icons/fa';
+import { Box, Typography, IconButton } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import WeatherBackground from '../components/WeatherBackground';
-import cloudLogo from '../assets/cloud_logo.png'; // Ensure this path matches your project structure
+import { FaCloud, FaHistory } from 'react-icons/fa';
+import { MdAdminPanelSettings, MdOutlineCloudQueue } from 'react-icons/md';
 
 const MainPage: React.FC = () => {
   const navigate = useNavigate();
 
-  const handleCurrentWeather = () => {
-    alert('Navigating to Current Weather page (to be implemented)');
-    // navigate('/weather'); // Uncomment when CurrentWeatherPage is ready
-  };
-
-  const handleHistoricalData = () => {
-    alert('Navigating to Historical Data page (to be implemented)');
-    // navigate('/historical'); // Uncomment when HistoricalDataPage is ready
-  };
-
   return (
     <Box
       sx={{
-        height: '100vh',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
+        height: '100vh',
         position: 'relative',
+        background: 'linear-gradient(to bottom, #cce7ff, #e3f2fd)', // Light blue gradient
         overflow: 'hidden',
+        color: '#004c8c', // Deep blue for contrast
       }}
     >
-      <WeatherBackground />
-      {/* Header Section */}
+      {/* Header */}
       <Box
         sx={{
           position: 'absolute',
           top: 0,
+          left: 0,
           width: '100%',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           p: 2,
-          zIndex: 1,
+          backgroundColor: 'rgba(255, 255, 255, 0.6)', // Semi-transparent header
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <img src={cloudLogo} alt="CloudPulse Logo" style={{ width: 40, height: 40 }} />
-          <Typography variant="h6" fontWeight="bold">
+        {/* Logo & Title */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <FaCloud size={36} style={{ color: '#004c8c' }} />
+          <Typography
+            variant="h4"
+            fontWeight="bold"
+            sx={{
+              fontFamily: 'Poppins, sans-serif',
+              textShadow: '1px 1px 3px rgba(0, 0, 0, 0.3)',
+            }}
+          >
             CloudPulse
           </Typography>
         </Box>
-        <Typography variant="subtitle1" sx={{ textAlign: 'center', flexGrow: 1 }}>
-          Track the Climate, Feel the Changes
-        </Typography>
-        <Button
-          onClick={() => alert('Navigating to Admin Page (to be implemented)')}
-          startIcon={<FaUserCircle />}
-          sx={{ color: '#fff' }}
+
+        {/* Admin Icon */}
+        <IconButton
+          onClick={() => alert('Admin page will be added soon!')}
+          sx={{
+            backgroundColor: 'rgba(255, 255, 255, 0.5)',
+            '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.7)' },
+          }}
         >
-          Admin
-        </Button>
+          <MdAdminPanelSettings size={28} color="#004c8c" />
+        </IconButton>
       </Box>
 
-      {/* Content Section */}
+      {/* Slogan */}
+      <Typography
+        variant="h3"
+        sx={{
+          fontFamily: 'Poppins, sans-serif',
+          textAlign: 'center',
+          mt: 10, // Increased the top margin to ensure the header doesn't overlap the slogan
+          color: '#004c8c',
+          textShadow: '2px 2px 4px rgba(255, 255, 255, 0.7)',
+          fontWeight: 'bold',
+        }}
+      >
+        Track the Climate, Feel the Changes
+      </Typography>
+
+      {/* Main Content */}
       <Box
         sx={{
           display: 'flex',
-          flexDirection: 'column',
+          justifyContent: 'center',
           alignItems: 'center',
-          gap: 4,
-          mt: 10,
-          zIndex: 1,
+          flexWrap: 'wrap',
+          gap: 10,
+          mt: 8,
+          width: '100%',
         }}
       >
-        <Button
-          onClick={handleCurrentWeather}
-          variant="contained"
+        {/* Current Weather Icon */}
+        <Box
           sx={{
-            backgroundColor: '#6e8efb',
-            '&:hover': { backgroundColor: '#5b75d9' },
-            width: 200,
-            height: 50,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 3,
+            cursor: 'pointer',
+            textAlign: 'center',
           }}
+          onClick={() => navigate('/current-weather')}
         >
-          Current Weather
-        </Button>
-        <Button
-          onClick={handleHistoricalData}
-          variant="contained"
+          <MdOutlineCloudQueue size={120} style={{ color: '#6e8efb' }} />
+          <Typography
+            variant="h5"
+            sx={{
+              fontFamily: 'Poppins, sans-serif',
+              fontWeight: 'bold',
+              color: '#004c8c',
+            }}
+          >
+            Current Weather
+          </Typography>
+        </Box>
+
+        {/* Historical Data Icon */}
+        <Box
           sx={{
-            backgroundColor: '#6e8efb',
-            '&:hover': { backgroundColor: '#5b75d9' },
-            width: 200,
-            height: 50,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 3,
+            cursor: 'pointer',
+            textAlign: 'center',
           }}
+          onClick={() => navigate('/historical-data')}
         >
-          Historical Data
-        </Button>
+          <FaHistory size={120} style={{ color: '#4CAF50' }} />
+          <Typography
+            variant="h5"
+            sx={{
+              fontFamily: 'Poppins, sans-serif',
+              fontWeight: 'bold',
+              color: '#004c8c',
+            }}
+          >
+            Historical Data
+          </Typography>
+        </Box>
       </Box>
     </Box>
   );
