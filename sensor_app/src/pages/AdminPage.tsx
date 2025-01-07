@@ -11,12 +11,21 @@ const AdminPage: React.FC = () => {
     { name: 'John Doe', email: 'john@example.com', accessGranted: true },
     { name: 'Jane Smith', email: 'jane@example.com', accessGranted: false },
   ]);
+  const [platforms, setPlatforms] = useState<any[]>([]); // Store platforms and associated sensors
   const [newUserEmail, setNewUserEmail] = useState('');
   const navigate = useNavigate();
 
   const handleAddPlatform = () => {
     // Logic for adding a platform to the system (e.g., API call)
-    console.log('New platform added:', platformName);
+    const newPlatform = {
+      name: platformName,
+      sensors: [
+        { id: 1, name: 'Temperature Sensor', status: 'Active' },
+        { id: 2, name: 'Humidity Sensor', status: 'Inactive' },
+      ], // Example sensors
+    };
+
+    setPlatforms([...platforms, newPlatform]);
     setPlatformName('');
     setOpenDialog(false);
   };
@@ -24,6 +33,12 @@ const AdminPage: React.FC = () => {
   const handleGrantAccess = (email: string) => {
     setUserList(userList.map(user =>
       user.email === email ? { ...user, accessGranted: true } : user
+    ));
+  };
+
+  const handleRemoveAccess = (email: string) => {
+    setUserList(userList.map(user =>
+      user.email === email ? { ...user, accessGranted: false } : user
     ));
   };
 
@@ -73,22 +88,22 @@ const AdminPage: React.FC = () => {
 
         {/* Return to Main Page Button */}
         <Button
-  onClick={() => navigate('/main')} // Navigate to Main Page directly
-  variant="contained"
-  color="primary"
-  sx={{
-    backgroundColor: '#6e8efb',
-    '&:hover': { backgroundColor: '#5b75d9' },
-  }}
->
-  Return to Main Page
-</Button>
+          onClick={() => navigate('/main')} // Navigate to Main Page directly
+          variant="contained"
+          color="primary"
+          sx={{
+            backgroundColor: '#6e8efb',
+            '&:hover': { backgroundColor: '#5b75d9' },
+          }}
+        >
+          Return to Main Page
+        </Button>
       </Box>
 
       {/* Admin Page Content */}
       <Box sx={{ width: '80%', maxWidth: '1200px', textAlign: 'center', mt: 6 }}>
 
-        {/* Section Title */}
+        {/* User Access Management */}
         <Typography variant="h4" fontWeight="bold" sx={{ color: '#004c8c', mb: 4 }}>
           User Access Management
         </Typography>
@@ -111,7 +126,7 @@ const AdminPage: React.FC = () => {
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.accessGranted ? 'Granted' : 'Pending'}</TableCell>
                   <TableCell>
-                    {!user.accessGranted && (
+                    {!user.accessGranted ? (
                       <Button
                         variant="contained"
                         sx={{
@@ -121,6 +136,17 @@ const AdminPage: React.FC = () => {
                         onClick={() => handleGrantAccess(user.email)}
                       >
                         Grant Access
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="contained"
+                        sx={{
+                          backgroundColor: '#e74c3c',
+                          '&:hover': { backgroundColor: '#c0392b' },
+                        }}
+                        onClick={() => handleRemoveAccess(user.email)}
+                      >
+                        Remove Access
                       </Button>
                     )}
                   </TableCell>
@@ -168,6 +194,34 @@ const AdminPage: React.FC = () => {
             </Button>
           </DialogActions>
         </Dialog>
+
+        {/* Platforms List */}
+        <Typography variant="h5" fontWeight="bold" sx={{ color: '#004c8c', mt: 4 }}>
+          Platforms
+        </Typography>
+        <Box sx={{ mt: 3 }}>
+          {platforms.length > 0 ? (
+            platforms.map((platform, index) => (
+              <Box key={index} sx={{ mb: 3 }}>
+                <Typography variant="h6" sx={{ color: '#004c8c' }}>
+                  {platform.name}
+                </Typography>
+                <Typography variant="body1" sx={{ color: '#555' }}>
+                  Sensors:
+                </Typography>
+                <ul>
+                  {platform.sensors.map((sensor: any) => (
+                    <li key={sensor.id}>{sensor.name} - {sensor.status}</li>
+                  ))}
+                </ul>
+              </Box>
+            ))
+          ) : (
+            <Typography variant="body1" sx={{ color: '#555' }}>
+              No platforms added yet.
+            </Typography>
+          )}
+        </Box>
       </Box>
     </Box>
   );
