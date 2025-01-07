@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import { MdAddCircle } from 'react-icons/md';
+import { useNavigate } from 'react-router-dom';
 
 interface User {
   name: string;
@@ -17,6 +18,7 @@ const AdminPage: React.FC = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [platformName, setPlatformName] = useState('');
   const [platforms, setPlatforms] = useState<Platform[]>([]);
+  const navigate = useNavigate();
 
   const handleAddPlatform = () => {
     const newPlatform: Platform = { name: platformName, users: [] };
@@ -65,6 +67,16 @@ const AdminPage: React.FC = () => {
             CloudPulse Admin
           </Typography>
         </Box>
+
+        {/* Return to Main Page Button */}
+        <Button
+          onClick={() => navigate('/main')} // Navigate to Main Page directly
+          variant="contained"
+          color="primary"
+          sx={{ backgroundColor: '#6e8efb', '&:hover': { backgroundColor: '#5b75d9' } }}
+        >
+          Return to Main Page
+        </Button>
       </Box>
 
       {/* Admin Page Content */}
