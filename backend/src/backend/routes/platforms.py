@@ -2,7 +2,7 @@ from datetime import datetime
 from pprint import pprint
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import select
+from sqlalchemy import between, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.backend.utils.database_utils.db_controller import get_session
@@ -92,6 +92,14 @@ async def read_measurements(
     measurement_type: str = Query(
         alias="measurementType", description="Measurement type"
     ),
+    date_from: datetime = Query(
+        datetime.now().replace(hour=0, minute=0, second=0, microsecond=0),
+        alias="dateFrom",
+        description="Start date for the range",
+    ),
+    date_to: datetime = Query(
+        datetime.now(), alias="dateTo", description="End date for the range"
+    ),
 ):
     sensor_query = await session.execute(
         select(Sensor)
@@ -106,6 +114,7 @@ async def read_measurements(
     measurements_query = await session.execute(
         select(Measurement)
         .where(Measurement.sensor_id == sensor.id)
+        .where(between(Measurement.date, date_from, date_to))
         .order_by(Measurement.date.desc())
     )
 
