@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import cast
 
 from src.backend.utils.data_models import MeasurementFromPlatform
-from src.backend.utils.database_utils.db_controller import async_session
+from src.backend.utils.database_utils.db_controller import session_factory
 from src.backend.utils.database_utils.models import Measurement
 from src.backend.utils.utils import validate_and_convert_arguments, jsonToModel
 
@@ -32,8 +32,8 @@ async def save_sample_to_db(measurement: jsonToModel[MeasurementFromPlatform]):
         )
 
         # Save the measurement to the database
-        async with async_session() as session:
-            async with session.begin():
+        with session_factory() as session:
+            with session.begin():
                 session.add(measurement_object)
                 print(
                     f"Successfully saved measurement: {measurement_object.sensor_id} - {measurement_object.value} - {measurement_object.date}"
