@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Callable
+from typing import Any, Callable
 import psycopg2
 
 
@@ -36,7 +36,7 @@ def postgres_db_fixture(
     db_port: int,
     queries: list[str],
 ):
-    def decorator(func: Callable[..., None]):
+    def decorator(func: Any):
         @wraps(func)
         def wrapper():
             for query in queries:
