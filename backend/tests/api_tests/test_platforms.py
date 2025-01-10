@@ -28,19 +28,25 @@ def test_get_all_platforms():
         {
             "name": "Example Platform",
             "id": 1,
-            "measurement_types": [
-                {"physical_parameter": "Temperature", "unit": "°C"},
-                {"physical_parameter": "Humidity", "unit": "%"},
+            "sensors": [
+                {
+                    "id": 1,
+                    "measurement_type": {
+                        "id": 1,
+                        "physical_parameter": "Temperature",
+                        "unit": "°C",
+                    },
+                },
+                {
+                    "id": 2,
+                    "measurement_type": {
+                        "id": 2,
+                        "physical_parameter": "Humidity",
+                        "unit": "%",
+                    },
+                },
             ],
-        },
-        {
-            "name": "Second Platform",
-            "id": 2,
-            "measurement_types": [
-                {"physical_parameter": "Temperature", "unit": "°C"},
-                {"physical_parameter": "Humidity", "unit": "%"},
-            ],
-        },
+        }
     ]
 
 
@@ -63,31 +69,58 @@ def test_get_single_platform():
     assert response.json() == {
         "name": "Example Platform",
         "id": 1,
-        "measurement_types": [
-            {"physical_parameter": "Temperature", "unit": "°C"},
-            {"physical_parameter": "Humidity", "unit": "%"},
+        "sensors": [
+            {
+                "id": 1,
+                "measurement_type": {
+                    "id": 1,
+                    "physical_parameter": "Temperature",
+                    "unit": "°C",
+                },
+            },
+            {
+                "id": 2,
+                "measurement_type": {
+                    "id": 2,
+                    "physical_parameter": "Humidity",
+                    "unit": "%",
+                },
+            },
         ],
     }
 
     response2 = client.get("/api/platforms/2")
-    assert response2.status_code == 200
-    assert response2.json() == {
-        "name": "Second Platform",
-        "id": 2,
-        "measurement_types": [
-            {"physical_parameter": "Temperature", "unit": "°C"},
-            {"physical_parameter": "Humidity", "unit": "%"},
-        ],
-    }
+    assert response2.status_code == 404
+    assert response2.json() == {"detail": "Platform not found"}
 
 
 @pytest.mark.parametrize(
-    "measurement_type, date_from, date_to, expected_status_code, expected_response",
+    "platform_id, measurement_type, date_from, date_to, expected_status_code, expected_response",
     [
-        ("Temperature", "2021-01-01T00:00:00", "2021-01-01T23:59:59", 200, []),
+        (1, "Temperature", "2021-01-01T00:00:00", "2021-01-01T23:59:59", 200, []),
+        (  # type: ignore
+            1,
+            "Temperature",
+            "2021-01-01T00:00:00",
+            "2025-01-01T00:00:00",
+            200,
+            [
+                {"date": "2024-12-11T13:00:00", "value": 23.7},
+                {"date": "2024-12-11T12:00:00", "value": 22.5},
+            ],
+        ),
+        (
+            2,
+            "Temperature",
+            "2021-01-01T00:00:00",
+            "2025-01-01T23:59:59",
+            404,
+            {"detail": "Sensor not found"},
+        ),
     ],
 )
 def test_get_platform_measurements(
+    platform_id: int,
     measurement_type: str,
     date_from: str,
     date_to: str,
@@ -108,7 +141,7 @@ def test_get_platform_measurements(
     )
     def test_wrapper():
         response = client.get(
-            f"/api/platforms/1/measurements/?measurementType={measurement_type}&dateFrom={date_from}&dateTo={date_to}"
+            f"/api/platforms/{platform_id}/measurements/?measurementType={measurement_type}&dateFrom={date_from}&dateTo={date_to}"
         )
 
         assert response.status_code == expected_status_code
