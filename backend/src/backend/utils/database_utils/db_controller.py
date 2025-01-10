@@ -15,6 +15,14 @@ engine = create_async_engine(DATABASE_URL)
 async_session = async_sessionmaker(engine, expire_on_commit=False)
 
 
+async def get_session():
+    db = async_session()
+    try:
+        yield db
+    finally:
+        await db.close()
+
+
 class Base(AsyncAttrs, DeclarativeBase):
     pass
 
