@@ -7,7 +7,7 @@ from sqlalchemy.orm import DeclarativeBase
 
 
 # Within docker network:
-DATABASE_URL = "postgresql+asyncpg://user:password@db:5432/testdatabase"  # TODO: This should be an environment variable. Password should be a secret.
+DATABASE_URL = "postgresql+asyncpg://postgres:postgres@localhost:5432/postgres"  # TODO: This should be an environment variable. Password should be a secret.
 # DATABASE_URL = "postgresql+asyncpg://user:password@localhost:5432/testdatabase"
 
 engine = create_async_engine(DATABASE_URL)
