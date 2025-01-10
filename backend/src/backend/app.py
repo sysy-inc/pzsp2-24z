@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.backend.utils.database_utils.db_controller import close_db, init_db
 from src.backend.routes.api import api_router
 from src.backend.udp_controller import init_udp_server
+from src.backend.routes.platforms import platforms
 
 udp_server = None
 
@@ -19,6 +20,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(api_router, prefix="/api")
+app.include_router(platforms, prefix="/api/platforms")
 
 # Allow requests from the frontend
 app.add_middleware(

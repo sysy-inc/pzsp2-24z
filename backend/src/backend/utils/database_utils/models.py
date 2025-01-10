@@ -1,5 +1,6 @@
 from typing import List, Optional
 from datetime import datetime
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import String, ForeignKey, DECIMAL, TIMESTAMP
 from sqlalchemy.orm import relationship, mapped_column, Mapped
 from src.backend.utils.database_utils.db_controller import Base
@@ -27,6 +28,13 @@ class Platform(Base):
         back_populates="platform"
     )
     sensors: Mapped[List["Sensor"]] = relationship(back_populates="platform")
+
+
+class PlatformSchema(BaseModel):
+    name: str = Field(..., title="Name of the platform")
+    id: int = Field(..., title="ID of the platform")
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserPlatform(Base):
