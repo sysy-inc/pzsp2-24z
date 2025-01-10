@@ -1,11 +1,13 @@
+from datetime import datetime
 from pprint import pprint
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.backend.utils.database_utils.db_controller import get_session
 from src.backend.utils.database_utils.models import (
+    Measurement,
     MeasurementTypeSchema,
     Platform,
     Sensor,
@@ -73,3 +75,42 @@ async def read_platform(platform_id: int, session: AsyncSession = Depends(get_se
             "measurement_types": platform_sensors_types,
         }
     )
+
+
+class MeasurementsResponseEntry(BaseModel):
+    date: datetime = Field(..., title="Timestamp of the measurement")
+    value: float = Field(..., title="Value of the measurement")
+
+
+@platforms.get(
+    "/{platform_id}/measurements/",
+    response_model=list[MeasurementsResponseEntry],
+)
+async def read_measurements(
+    platform_id: int,
+    session: AsyncSession = Depends(get_session),
+    measurement_type: str = Query(
+        alias="measurementType", description="Measurement type"
+    ),
+):
+    sensor_query = await session.execute(
+        select(Sensor)
+        .where(Sensor.platform_id == platform_id)
+        .options(joinedload(Sensor.measurement_type))
+        .where(Sensor.measurement_type.has(physical_parameter=measurement_type))
+    )
+    sensor = sensor_query.scalars().unique().first()
+    if sensor is None:
+        raise HTTPException(status_code=404, detail="Sensor not found")
+
+    measurements_query = await session.execute(
+        select(Measurement)
+        .where(Measurement.sensor_id == sensor.id)
+        .order_by(Measurement.date.desc())
+    )
+
+    measurements = measurements_query.scalars().unique().all()
+    return [
+        MeasurementsResponseEntry.model_validate(measurement.__dict__)
+        for measurement in measurements
+    ]
