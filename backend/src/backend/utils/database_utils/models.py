@@ -89,6 +89,7 @@ class MeasurementType(Base):
 
 
 class MeasurementTypeSchema(BaseModel):
+    id: int = Field(..., title="ID of the measurement type")
     physical_parameter: str = Field(..., title="Physical parameter")
     unit: str = Field(..., title="Unit")
 

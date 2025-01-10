@@ -1,5 +1,6 @@
 from datetime import datetime
 from pprint import pprint
+from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.orm.session import Session
@@ -8,11 +9,15 @@ from sqlalchemy import between, select
 from src.backend.utils.database_utils.db_controller import get_session
 from src.backend.utils.database_utils.models import (
     Measurement,
+    MeasurementType,
     MeasurementTypeSchema,
     Platform,
     Sensor,
+    SensorSchema,
+    User,
+    UserPlatform,
 )
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 
 platforms = APIRouter()
@@ -26,38 +31,71 @@ class PlatformsResponseSingle(BaseModel):
     )
 
 
-@platforms.get("/", response_model=list[PlatformsResponseSingle])
-def read_platforms(session: Session = Depends(get_session)):
-    results: list[PlatformsResponseSingle] = []
-
-    res = session.execute(
-        select(Platform).options(
-            joinedload(Platform.sensors).joinedload(Sensor.measurement_type)
-        )
+class PlatformsResponseSensor(BaseModel):
+    id: int = Field(..., title="ID of the sensor")
+    measurement_type: MeasurementTypeSchema = Field(
+        ..., title="Measurement type of the sensor"
     )
 
-    for platform in res.scalars().unique().all():
-        platform_sensors_types = [
-            sensor.__dict__["measurement_type"].__dict__ for sensor in platform.sensors
-        ]
-        results.append(
-            PlatformsResponseSingle.model_validate(
+
+class PlatformsResponsePlatform(BaseModel):
+    name: str = Field(..., title="Name of the platform")
+    id: int = Field(..., title="ID of the platform")
+    sensors: list[PlatformsResponseSensor] = Field(
+        ..., title="List of sensors on the platform"
+    )
+
+
+@platforms.get("/", response_model=list[PlatformsResponsePlatform])
+def read_platforms(session: Session = Depends(get_session)):
+    _user_id = 1
+
+    results: list[PlatformsResponsePlatform] = []
+
+    query = session.execute(
+        select(Platform)
+        .join(UserPlatform, Platform.id == UserPlatform.platform_id)
+        .join(User, User.id == UserPlatform.user_id)
+        .join(Sensor, Sensor.platform_id == Platform.id)
+        .join(MeasurementType, Sensor.measurement_type_id == MeasurementType.id)
+        .options(selectinload(Platform.sensors).selectinload(Sensor.measurement_type))
+        .where(User.id == _user_id)
+        .distinct()
+    )
+    user_platforms = query.scalars().unique().all()
+
+    for platform in user_platforms:
+        plat_sensors: list[dict[str, Any]] = []
+        for sensor in platform.sensors:
+            plat_sensors.append(
                 {
-                    **platform.__dict__,
-                    "measurement_types": platform_sensors_types,
+                    **sensor.__dict__,
+                    "measurement_type": sensor.measurement_type.__dict__,
                 }
+            )
+        results.append(
+            PlatformsResponsePlatform.model_validate(
+                {**platform.__dict__, "sensors": plat_sensors}
             )
         )
 
     return results
 
 
-@platforms.get("/{platform_id}", response_model=PlatformsResponseSingle)
+@platforms.get("/{platform_id}", response_model=PlatformsResponsePlatform)
 def read_platform(platform_id: int, session: Session = Depends(get_session)):
+    _user_id = 1
+
     res = session.execute(
         select(Platform)
-        .options(joinedload(Platform.sensors).joinedload(Sensor.measurement_type))
+        .join(UserPlatform, Platform.id == UserPlatform.platform_id)
+        .join(User, User.id == UserPlatform.user_id)
+        .join(Sensor, Sensor.platform_id == Platform.id)
+        .join(MeasurementType, Sensor.measurement_type_id == MeasurementType.id)
+        .options(selectinload(Platform.sensors).selectinload(Sensor.measurement_type))
+        .where(User.id == _user_id)
         .where(Platform.id == platform_id)
+        .distinct()
     )
 
     platform = res.scalars().unique().first()
@@ -65,14 +103,15 @@ def read_platform(platform_id: int, session: Session = Depends(get_session)):
     if platform is None:
         raise HTTPException(status_code=404, detail="Platform not found")
 
-    platform_sensors_types = [
-        sensor.__dict__["measurement_type"].__dict__ for sensor in platform.sensors
+    platform_sensors: list[dict[str, Any]] = [
+        {**sensor.__dict__, "measurement_type": sensor.measurement_type.__dict__}
+        for sensor in platform.sensors
     ]
 
-    return PlatformsResponseSingle.model_validate(
+    return PlatformsResponsePlatform.model_validate(
         {
             **platform.__dict__,
-            "measurement_types": platform_sensors_types,
+            "sensors": platform_sensors,
         }
     )
 
@@ -101,10 +140,16 @@ def read_measurements(
         datetime.now(), alias="dateTo", description="End date for the range"
     ),
 ):
+    _user_id = 1
+
     sensor_query = session.execute(
         select(Sensor)
+        .join(Platform, Sensor.platform_id == Platform.id)
+        .join(UserPlatform, Platform.id == UserPlatform.platform_id)
+        .join(User, User.id == UserPlatform.user_id)
+        .join(MeasurementType, Sensor.measurement_type_id == MeasurementType.id)
         .where(Sensor.platform_id == platform_id)
-        .options(joinedload(Sensor.measurement_type))
+        .where(User.id == _user_id)
         .where(Sensor.measurement_type.has(physical_parameter=measurement_type))
     )
     sensor = sensor_query.scalars().unique().first()
