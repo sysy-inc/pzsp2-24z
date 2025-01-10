@@ -34,8 +34,6 @@ class PlatformSchema(BaseModel):
     name: str = Field(..., title="Name of the platform")
     id: int = Field(..., title="ID of the platform")
 
-    model_config = ConfigDict(from_attributes=True)
-
 
 class UserPlatform(Base):
     __tablename__ = "users_platforms"
@@ -60,6 +58,12 @@ class Sensor(Base):
     measurements: Mapped[List["Measurement"]] = relationship(back_populates="sensor")
 
 
+class SensorSchema(BaseModel):
+    id: int = Field(..., title="ID of the sensor")
+    measurement_type_id: int = Field(..., title="ID of the measurement type")
+    platform_id: int = Field(..., title="ID of the platform")
+
+
 class MeasurementType(Base):
     __tablename__ = "measurement_types"
 
@@ -68,6 +72,11 @@ class MeasurementType(Base):
     unit: Mapped[str] = mapped_column(String(15))
 
     sensors: Mapped[List["Sensor"]] = relationship(back_populates="measurement_type")
+
+
+class MeasurementTypeSchema(BaseModel):
+    physical_parameter: str = Field(..., title="Physical parameter")
+    unit: str = Field(..., title="Unit")
 
 
 class Measurement(Base):
