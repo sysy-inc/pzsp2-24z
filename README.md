@@ -3,7 +3,7 @@
 A simple web application that displays temperature and humidity data. The app consists of a **React frontend** and a **FastAPI backend**.
 
 ## Project Structure
-    ```bash
+```bash
     ├── README.md
     └── sensors_app
         ├── app
@@ -23,7 +23,7 @@ A simple web application that displays temperature and humidity data. The app co
             ├── public
             ├── src
             └── vite.config.js
-
+```
 ## Prerequisites
 
 Make sure the following are installed on your system:
@@ -37,7 +37,7 @@ Make sure the following are installed on your system:
 ### DOCKER UPDATE!
     The program is using Docker Compose version v2.3.3!
     Installation
-    ```bash
+```bash
     In directory sensons_app ->  docker compose up
     mkdir -p ~/.docker/cli-plugins/
     curl -SL https://github.com/docker/compose/releases/download/v2.3.3/docker-compose-linux-x86_64 -o ~/.docker/cli-plugins/docker-compose
@@ -50,38 +50,48 @@ Make sure the following are installed on your system:
     sudo usermod -aG docker ${USER}
     sudo chmod 666 /var/run/docker.sock
     sudo systemctl restart docker
-
+```
 ### Backend (FastAPI)
 
 1. Navigate to the `backend` directory:
-   ```bash
+```bash
    cd sensors_app/backend
-
+```
 
 2. Install the required Python packages
-    ```bash
+```bash
     pip install fastapi uvicorn
-
+```
 3. Run the FastAPI backend:
-   ```bash
+```bash
    uvicorn app:app --reload
-
+```
 4. The backend will be available at http://127.0.0.1:8000
 
-### Frontend (React)
+## Setting up Database for development
 
-1. Open a new terminal and navigate to the frontend directory:
-    ```bash
-    cd sensors_app/frontend
+Create a Postgres database container
+```bash
+docker run --name postgres15-pzsp2-dev \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=postgres \
+  -p 5432:5432 \
+  -v ./scripts:/var/scripts \
+  postgres:15
+```
 
-2. Install the dependencies
-    ```bash
-    npm install
-    npm install axios
-    npm install bootstrap
+Create tables in the database
+```bash
+docker exec -it postgres15-pzsp2-dev psql -U postgres -d postgres -f /var/scripts/create_database.sql
+```
 
-3. Start the React development server:
-    ```bash
-    npm run dev
+Seed Database
+```bash
+docker exec -it postgres15-pzsp2-dev psql -U postgres -d postgres -f /var/scripts/init_database.sql
+```
 
-4. The frontend will be available at http://127.0.0.1:5173
+Clear Database
+```bash
+docker exec -it postgres15-pzsp2-dev psql -U postgres -d postgres -f /var/scripts/clear_db.sql
+```
