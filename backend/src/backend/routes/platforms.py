@@ -2,8 +2,8 @@ from datetime import datetime
 from pprint import pprint
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
+from sqlalchemy.orm.session import Session
 from sqlalchemy import between, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.backend.utils.database_utils.db_controller import get_session
 from src.backend.utils.database_utils.models import (
@@ -27,10 +27,10 @@ class PlatformsResponseSingle(BaseModel):
 
 
 @platforms.get("/", response_model=list[PlatformsResponseSingle])
-async def read_platforms(session: AsyncSession = Depends(get_session)):
+def read_platforms(session: Session = Depends(get_session)):
     results: list[PlatformsResponseSingle] = []
 
-    res = await session.execute(
+    res = session.execute(
         select(Platform).options(
             joinedload(Platform.sensors).joinedload(Sensor.measurement_type)
         )
@@ -53,8 +53,8 @@ async def read_platforms(session: AsyncSession = Depends(get_session)):
 
 
 @platforms.get("/{platform_id}", response_model=PlatformsResponseSingle)
-async def read_platform(platform_id: int, session: AsyncSession = Depends(get_session)):
-    res = await session.execute(
+def read_platform(platform_id: int, session: Session = Depends(get_session)):
+    res = session.execute(
         select(Platform)
         .options(joinedload(Platform.sensors).joinedload(Sensor.measurement_type))
         .where(Platform.id == platform_id)
@@ -86,9 +86,9 @@ class MeasurementsResponseEntry(BaseModel):
     "/{platform_id}/measurements/",
     response_model=list[MeasurementsResponseEntry],
 )
-async def read_measurements(
+def read_measurements(
     platform_id: int,
-    session: AsyncSession = Depends(get_session),
+    session: Session = Depends(get_session),
     measurement_type: str = Query(
         alias="measurementType", description="Measurement type"
     ),
@@ -101,7 +101,7 @@ async def read_measurements(
         datetime.now(), alias="dateTo", description="End date for the range"
     ),
 ):
-    sensor_query = await session.execute(
+    sensor_query = session.execute(
         select(Sensor)
         .where(Sensor.platform_id == platform_id)
         .options(joinedload(Sensor.measurement_type))
@@ -111,7 +111,7 @@ async def read_measurements(
     if sensor is None:
         raise HTTPException(status_code=404, detail="Sensor not found")
 
-    measurements_query = await session.execute(
+    measurements_query = session.execute(
         select(Measurement)
         .where(Measurement.sensor_id == sensor.id)
         .where(between(Measurement.date, date_from, date_to))

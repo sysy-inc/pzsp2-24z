@@ -2,7 +2,7 @@ from collections import defaultdict
 from sqlalchemy import select, func, between
 from datetime import datetime
 
-from src.backend.utils.database_utils.db_controller import async_session
+from src.backend.utils.database_utils.db_controller import session_factory
 from src.backend.utils.database_utils.models import (
     Sensor,
     Measurement,
@@ -15,13 +15,13 @@ from src.backend.utils.data_models import (
 )
 
 
-async def fetch_latest_measurements_for_platform(
+def fetch_latest_measurements_for_platform(
     platform_id: int,
 ) -> MeasurementsResponse:
     """
     Fetch the latest measurements for each sensor on a platform.
     """
-    async with async_session() as session:
+    with session_factory() as session:
         # Subquery: Get the latest measurement date for each sensor on the platform
         latest_measurements_dates_subquery = (
             select(
@@ -58,7 +58,7 @@ async def fetch_latest_measurements_for_platform(
             .join(MeasurementType, MeasurementType.id == Sensor.measurement_type_id)
         )
 
-        result = await session.execute(query)
+        result = session.execute(query)
 
         rows = result.mappings().all()
 
@@ -76,11 +76,11 @@ async def fetch_latest_measurements_for_platform(
         return MeasurementsResponse(measurements=measurements)
 
 
-async def fetch_user_platform_access(user_id: int, platform_id: int) -> bool:
+def fetch_user_platform_access(user_id: int, platform_id: int) -> bool:
     """
     Check if a user has access to a specific platform.
     """
-    async with async_session() as session:
+    with session_factory() as session:
         query = (
             select(UserPlatform)
             .filter(
@@ -88,11 +88,11 @@ async def fetch_user_platform_access(user_id: int, platform_id: int) -> bool:
             )
             .limit(1)
         )
-        result = await session.execute(query)
+        result = session.execute(query)
         return result.scalars().first() is not None
 
 
-async def fetch_latest_measurements_for_platform_within_range(
+def fetch_latest_measurements_for_platform_within_range(
     platform_id: int, date_from: datetime, date_to: datetime
 ) -> MeasurementsResponse:
     """Retrieve measurements from a specified platform within the specified time range.
@@ -103,7 +103,7 @@ async def fetch_latest_measurements_for_platform_within_range(
         date_to (datetime): End of the timeframe.
     """
 
-    async with async_session() as session:
+    with session_factory() as session:
 
         query = (
             select(
@@ -119,7 +119,7 @@ async def fetch_latest_measurements_for_platform_within_range(
             .where(between(Measurement.date, date_from, date_to))
         )
 
-        result = await session.execute(query)
+        result = session.execute(query)
 
         rows = result.mappings().all()
 

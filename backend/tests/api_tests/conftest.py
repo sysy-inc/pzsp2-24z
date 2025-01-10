@@ -36,7 +36,7 @@ def postgres_db_fixture(
     db_port: int,
     queries: list[str],
 ):
-    def decorator(func: Any):
+    def decorator(func: Callable[..., Any]):
         @wraps(func)
         def wrapper():
             for query in queries:

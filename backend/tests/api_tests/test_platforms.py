@@ -1,5 +1,5 @@
+from typing import Any
 from fastapi.testclient import TestClient
-from httpx import ASGITransport, AsyncClient
 import pytest
 
 from tests.api_tests.conftest import postgres_db_fixture
@@ -20,12 +20,8 @@ client = TestClient(app)
         "../scripts/init_database.sql",
     ],
 )
-@pytest.mark.anyio
-async def test_get_all_platforms():
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://localhost"
-    ) as ac:
-        response = await ac.get("/api/platforms/")
+def test_get_all_platforms():
+    response = client.get("/api/platforms/")
 
     assert response.status_code == 200
     assert response.json() == [
@@ -60,12 +56,8 @@ async def test_get_all_platforms():
         "../scripts/init_database.sql",
     ],
 )
-@pytest.mark.anyio
-async def test_get_single_platform():
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://localhost"
-    ) as ac:
-        response = await ac.get("/api/platforms/1")
+def test_get_single_platform():
+    response = client.get("/api/platforms/1")
 
     assert response.status_code == 200
     assert response.json() == {
@@ -87,3 +79,39 @@ async def test_get_single_platform():
             {"physical_parameter": "Humidity", "unit": "%"},
         ],
     }
+
+
+@pytest.mark.parametrize(
+    "measurement_type, date_from, date_to, expected_status_code, expected_response",
+    [
+        ("Temperature", "2021-01-01T00:00:00", "2021-01-01T23:59:59", 200, []),
+    ],
+)
+def test_get_platform_measurements(
+    measurement_type: str,
+    date_from: str,
+    date_to: str,
+    expected_status_code: int,
+    expected_response: list[dict[str, Any]],
+):
+    @postgres_db_fixture(
+        db_host="localhost",
+        db_name="postgres",
+        db_password="postgres",
+        db_port=5432,
+        db_user="postgres",
+        queries=[
+            "../scripts/clear_db.sql",
+            "../scripts/create_database.sql",
+            "../scripts/init_database.sql",
+        ],
+    )
+    def test_wrapper():
+        response = client.get(
+            f"/api/platforms/1/measurements/?measurementType={measurement_type}&dateFrom={date_from}&dateTo={date_to}"
+        )
+
+        assert response.status_code == expected_status_code
+        assert response.json() == expected_response
+
+    test_wrapper()
