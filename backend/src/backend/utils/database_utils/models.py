@@ -18,6 +18,14 @@ class User(Base):
     users_platforms: Mapped[List["UserPlatform"]] = relationship(back_populates="user")
 
 
+class UserSchema(BaseModel):
+    name: str = Field(..., title="Name of the user")
+    surname: str = Field(..., title="Surname of the user")
+    email: str = Field(..., title="Email of the user")
+    passwd: str = Field(..., title="Password of the user")
+    id: int = Field(..., title="ID of the user")
+
+
 class Platform(Base):
     __tablename__ = "platforms"
 
@@ -44,6 +52,12 @@ class UserPlatform(Base):
 
     user: Mapped["User"] = relationship(back_populates="users_platforms")
     platform: Mapped["Platform"] = relationship(back_populates="users_platforms")
+
+
+class UserPlatformSchema(BaseModel):
+    id: int = Field(..., title="ID of the user platform")
+    user_id: int = Field(..., title="ID of the user")
+    platform_id: int = Field(..., title="ID of the platform")
 
 
 class Sensor(Base):
@@ -88,3 +102,10 @@ class Measurement(Base):
     date: Mapped[datetime] = mapped_column(TIMESTAMP)
 
     sensor: Mapped["Sensor"] = relationship(back_populates="measurements")
+
+
+class MeasurementSchema(BaseModel):
+    sensor_id: int = Field(..., title="ID of the sensor")
+    value: float = Field(..., title="Value of the measurement")
+    date: datetime = Field(..., title="Date of the measurement")
+    id: int = Field(..., title="ID of the measurement")
