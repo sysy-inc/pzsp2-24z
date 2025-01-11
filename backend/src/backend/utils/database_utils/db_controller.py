@@ -28,17 +28,17 @@ def get_session():
 Base = declarative_base()
 
 
-# def init_db():
-#     """
-#     Initializes the database connection.
-#     """
-#     with engine.begin() as conn:
-#         Base.metadata.create_all(conn)
-#     print("Database connection established.")
+def init_db():
+    """
+    Initializes the database connection.
+    """
+    with engine.begin() as conn:
+        Base.metadata.create_all(conn)
+    print("Database connection established.")
 
 
-# def close_db():
-#     """
-#     Closes the database connection.
-#     """
-#     engine.dispose()
+def close_db():
+    """
+    Closes the database connection.
+    """
+    engine.dispose()
