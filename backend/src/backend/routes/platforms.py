@@ -228,3 +228,28 @@ def add_user_to_platform(
 
     session.refresh(user_platform)
     return UserPlatformSchema.model_validate(user_platform.__dict__)
+
+
+@platforms.delete("/{platform_id}/users/{user_id}")
+def delete_user_from_platform(
+    platform_id: int,
+    user_id: int,
+    session: Session = Depends(get_session),
+):
+    is_user_admin = True
+
+    if not is_user_admin:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    user_platform = (
+        session.query(UserPlatform)
+        .filter(UserPlatform.user_id == user_id)
+        .filter(UserPlatform.platform_id == platform_id)
+        .first()
+    )
+    if user_platform is None:
+        raise HTTPException(status_code=404, detail="User not found on platform")
+
+    session.delete(user_platform)
+    session.commit()
+    return {"message": "User deleted from platform"}
