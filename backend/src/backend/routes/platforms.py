@@ -1,5 +1,6 @@
 from datetime import datetime
-from pprint import pprint
+from os import name
+from pprint import pp, pprint
 from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
@@ -12,12 +13,12 @@ from src.backend.utils.database_utils.models import (
     MeasurementType,
     MeasurementTypeSchema,
     Platform,
+    PlatformSchema,
     Sensor,
-    SensorSchema,
     User,
     UserPlatform,
 )
-from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.orm import selectinload
 
 
 platforms = APIRouter()
@@ -168,3 +169,24 @@ def read_measurements(
         MeasurementsResponseEntry.model_validate(measurement.__dict__)
         for measurement in measurements
     ]
+
+
+class PlatformCreateRequest(BaseModel):
+    name: str = Field(..., title="Name of the platform")
+
+
+@platforms.post("/")
+def create_platform(
+    platform: PlatformCreateRequest, session: Session = Depends(get_session)
+):
+    is_user_admin = True
+
+    if not is_user_admin:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    new_platform = Platform(name=platform.name)
+    session.add(new_platform)
+    session.commit()
+    session.refresh(new_platform)
+
+    return PlatformSchema.model_validate(new_platform.__dict__)
