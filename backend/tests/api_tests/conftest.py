@@ -1,6 +1,8 @@
 from functools import wraps
 from typing import Any, Callable
 import psycopg2
+import pytest
+from psycopg2.extensions import connection
 
 
 def run_pg_query(
@@ -28,6 +30,19 @@ def run_pg_query(
     connection.close()
 
 
+def call_no_params(func: Callable[..., Any]):
+    """
+    Wrapper for pytest tests.
+    When test function is decorated and given some arguments from decorator,
+    tells pytest that these arguments are not fixtures.
+    """
+
+    def wrapper():
+        func()
+
+    return wrapper
+
+
 def postgres_db_fixture(
     db_name: str,
     db_user: str,
@@ -36,7 +51,7 @@ def postgres_db_fixture(
     db_port: int,
     queries: list[str],
 ):
-    def decorator(func: Callable[..., Any]):
+    def decorator(func: Callable[[connection], Any]):
         @wraps(func)
         def wrapper():
             for query in queries:
@@ -48,7 +63,16 @@ def postgres_db_fixture(
                     db_port=db_port,
                     query_file=query,
                 )
-            func()
+            connection = psycopg2.connect(
+                user=db_user,
+                password=db_password,
+                host=db_host,
+                port=db_port,
+                database=db_name,
+            )
+
+            func(connection)
+            connection.close()
 
         return wrapper
 

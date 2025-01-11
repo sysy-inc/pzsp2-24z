@@ -1,13 +1,16 @@
 from typing import Any
 from fastapi.testclient import TestClient
+import psycopg2
 import pytest
 
-from tests.api_tests.conftest import postgres_db_fixture
+from tests.api_tests.conftest import call_no_params, postgres_db_fixture
 from src.backend.app import app
+from psycopg2.extensions import connection
 
 client = TestClient(app)
 
 
+@call_no_params
 @postgres_db_fixture(
     db_host="localhost",
     db_name="postgres",
@@ -20,7 +23,7 @@ client = TestClient(app)
         "../scripts/init_database.sql",
     ],
 )
-def test_get_all_platforms():
+def test_get_all_platforms(_):
     response = client.get("/api/platforms/")
 
     assert response.status_code == 200
@@ -50,6 +53,7 @@ def test_get_all_platforms():
     ]
 
 
+@call_no_params
 @postgres_db_fixture(
     db_host="localhost",
     db_name="postgres",
@@ -62,7 +66,7 @@ def test_get_all_platforms():
         "../scripts/init_database.sql",
     ],
 )
-def test_get_single_platform():
+def test_get_single_platform(_):
     response = client.get("/api/platforms/1")
 
     assert response.status_code == 200
@@ -139,7 +143,7 @@ def test_get_platform_measurements(
             "../scripts/init_database.sql",
         ],
     )
-    def test_wrapper():
+    def test_wrapper(_):
         response = client.get(
             f"/api/platforms/{platform_id}/measurements/?measurementType={measurement_type}&dateFrom={date_from}&dateTo={date_to}"
         )
@@ -148,3 +152,71 @@ def test_get_platform_measurements(
         assert response.json() == expected_response
 
     test_wrapper()
+
+
+@call_no_params
+@postgres_db_fixture(
+    db_host="localhost",
+    db_name="postgres",
+    db_password="postgres",
+    db_port=5432,
+    db_user="postgres",
+    queries=[
+        "../scripts/clear_db.sql",
+        "../scripts/create_database.sql",
+        "../scripts/init_database.sql",
+    ],
+)
+def test_create_platform_ok(connection: connection):
+    response = client.post(
+        "/api/platforms/",
+        json={"name": "New Platform"},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"id": 3, "name": "New Platform"}
+
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM platforms WHERE name = 'New Platform'")
+    result = cursor.fetchone()
+    assert result is not None
+    assert result[0] == 3
+    assert result[1] == "New Platform"
+
+
+@call_no_params
+@postgres_db_fixture(
+    db_host="localhost",
+    db_name="postgres",
+    db_password="postgres",
+    db_port=5432,
+    db_user="postgres",
+    queries=[
+        "../scripts/clear_db.sql",
+        "../scripts/create_database.sql",
+        "../scripts/init_database.sql",
+    ],
+)
+def test_create_platform_bad_request(connection: connection):
+    response = client.post(
+        "/api/platforms/",
+        json={"not-name": "test"},
+    )
+
+    assert response.status_code == 422
+    assert response.json() == {
+        "detail": [
+            {
+                "type": "missing",
+                "loc": ["body", "name"],
+                "msg": "Field required",
+                "input": {"not-name": "test"},
+            }
+        ]
+    }
+
+    cursor = connection.cursor()
+    cursor.execute("SELECT COUNT(*) FROM platforms")
+    result = cursor.fetchone()
+    assert result is not None
+    assert result[0] == 2
