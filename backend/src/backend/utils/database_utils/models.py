@@ -46,16 +46,16 @@ class PlatformSchema(BaseModel):
 class UserPlatform(Base):
     __tablename__ = "users_platforms"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    platform_id: Mapped[int] = mapped_column(ForeignKey("platforms.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    platform_id: Mapped[int] = mapped_column(
+        ForeignKey("platforms.id"), primary_key=True
+    )
 
     user: Mapped["User"] = relationship(back_populates="users_platforms")
     platform: Mapped["Platform"] = relationship(back_populates="users_platforms")
 
 
 class UserPlatformSchema(BaseModel):
-    id: int = Field(..., title="ID of the user platform")
     user_id: int = Field(..., title="ID of the user")
     platform_id: int = Field(..., title="ID of the platform")
 
