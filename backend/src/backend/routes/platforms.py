@@ -248,7 +248,7 @@ def delete_user_from_platform(
         .first()
     )
     if user_platform is None:
-        raise HTTPException(status_code=404, detail="User not found on platform")
+        raise HTTPException(status_code=400, detail="User not found on platform")
 
     session.delete(user_platform)
     session.commit()
