@@ -3,7 +3,10 @@ from os import name
 from pprint import pp, pprint
 from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query
+import psycopg2
 from pydantic import BaseModel, Field
+import sqlalchemy
+import sqlalchemy.exc
 from sqlalchemy.orm.session import Session
 from sqlalchemy import between, select
 
@@ -17,6 +20,7 @@ from src.backend.utils.database_utils.models import (
     Sensor,
     User,
     UserPlatform,
+    UserPlatformSchema,
 )
 from sqlalchemy.orm import selectinload
 
@@ -175,7 +179,7 @@ class PlatformCreateRequest(BaseModel):
     name: str = Field(..., title="Name of the platform")
 
 
-@platforms.post("/")
+@platforms.post("/", response_model=PlatformSchema)
 def create_platform(
     platform: PlatformCreateRequest, session: Session = Depends(get_session)
 ):
@@ -190,3 +194,37 @@ def create_platform(
     session.refresh(new_platform)
 
     return PlatformSchema.model_validate(new_platform.__dict__)
+
+
+class PlatformAddUserRequest(BaseModel):
+    email: str = Field(..., title="Email of the user")
+
+
+@platforms.post("/{platform_id}/users/")
+def add_user_to_platform(
+    platform_id: int,
+    user_data: PlatformAddUserRequest,
+    session: Session = Depends(get_session),
+):
+    is_user_admin = True
+
+    if not is_user_admin:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    user = session.query(User).filter(User.email == user_data.email).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    platform = session.query(Platform).filter(Platform.id == platform_id).first()
+    if platform is None:
+        raise HTTPException(status_code=404, detail="Platform not found")
+
+    user_platform = UserPlatform(user_id=user.id, platform_id=platform.id)
+    try:
+        session.add(user_platform)
+        session.commit()
+    except sqlalchemy.exc.IntegrityError:
+        raise HTTPException(status_code=400, detail="User already added to platform")
+
+    session.refresh(user_platform)
+    return UserPlatformSchema.model_validate(user_platform.__dict__)
