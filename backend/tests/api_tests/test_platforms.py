@@ -220,3 +220,64 @@ def test_create_platform_bad_request(connection: connection):
     result = cursor.fetchone()
     assert result is not None
     assert result[0] == 2
+
+
+@call_no_params
+@postgres_db_fixture(
+    db_host="localhost",
+    db_name="postgres",
+    db_password="postgres",
+    db_port=5432,
+    db_user="postgres",
+    queries=[
+        "../scripts/clear_db.sql",
+        "../scripts/create_database.sql",
+        "../scripts/init_database.sql",
+    ],
+)
+def test_add_user_to_platform_ok(connection: connection):
+    response = client.post(
+        "/api/platforms/2/users/",
+        json={"email": "admin@admin"},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"user_id": 1, "platform_id": 2}
+
+    cursor = connection.cursor()
+    cursor.execute(
+        "SELECT * FROM users_platforms WHERE user_id = 1 AND platform_id = 2"
+    )
+    result = cursor.fetchone()
+    assert result is not None
+    assert result[0] == 1
+    assert result[1] == 2
+
+
+@call_no_params
+@postgres_db_fixture(
+    db_host="localhost",
+    db_name="postgres",
+    db_password="postgres",
+    db_port=5432,
+    db_user="postgres",
+    queries=[
+        "../scripts/clear_db.sql",
+        "../scripts/create_database.sql",
+        "../scripts/init_database.sql",
+    ],
+)
+def test_add_user_to_platform_bad_request(connection: connection):
+    response = client.post(
+        "/api/platforms/2/users/",
+        json={"email": "john.doe@example.com"},
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {"detail": "User already added to platform"}
+
+    cursor = connection.cursor()
+    cursor.execute("SELECT COUNT(*) FROM users_platforms")
+    result = cursor.fetchone()
+    assert result is not None
+    assert result[0] == 2
