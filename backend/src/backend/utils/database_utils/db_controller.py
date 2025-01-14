@@ -1,10 +1,5 @@
 from sqlalchemy import create_engine
-from sqlalchemy.ext.asyncio import (
-    async_sessionmaker,
-    create_async_engine,
-    AsyncAttrs,
-)
-from sqlalchemy.orm import DeclarativeBase, sessionmaker, declarative_base
+from sqlalchemy.orm import sessionmaker, declarative_base
 
 
 # Within docker network:
