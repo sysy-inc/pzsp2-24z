@@ -1,6 +1,6 @@
 from typing import List, Optional
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 from sqlalchemy import String, ForeignKey, DECIMAL, TIMESTAMP
 from sqlalchemy.orm import relationship, mapped_column, Mapped
 from src.backend.utils.database_utils.db_controller import Base
