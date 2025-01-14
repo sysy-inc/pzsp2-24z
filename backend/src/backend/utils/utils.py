@@ -16,7 +16,8 @@ class jsonToModel(Generic[Model]):
 
 def validate_and_convert_arguments(model: Type[Model]):
     """
-    A decorator to validate and convert a JSON string argument into a Pydantic model instance.
+    A decorator to validate and convert a JSON string argument
+    into a Pydantic model instance.
     :param model_class: The Pydantic model class to validate against.
     """
 

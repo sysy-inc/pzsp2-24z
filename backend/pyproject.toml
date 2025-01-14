@@ -19,9 +19,19 @@ distribution = false
 start = {shell = "uvicorn src.backend.app:app --host 0.0.0.0 --port 8000"}
 start-dev = {shell = "uvicorn src.backend.app:app --reload --host 0.0.0.0 --port 8000"}
 coverage = {shell = "coverage run -m pytest && coverage report"}
+lint = {shell = "flake8 src tests && black --check src tests && isort --check-only src tests"}
+format = {shell = "black src tests && isort src tests"}
+test = {shell = "pytest"}
+
 
 [dependency-groups]
-dev = [
-    "pytest>=8.3.4",
+test = [
+    "pytest>=8.3.3",
+    "pytest-cov",
     "pytest-asyncio>=0.25.0",
+]
+lint = [
+    "black>=24.10.0",
+    "isort>=5.13.2",
+    "flake8>=7.1.1",
 ]
