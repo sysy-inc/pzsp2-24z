@@ -39,6 +39,9 @@ def udp_server(
 
 def test_sending_unencrypted_data_udp_ipv6():
     """Encapsulate the entire E2E test."""
+    print("Compiling RIOT OS app...")
+    subprocess.run(["make", "all"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    print("Finished compiling RIOT OS app.")
 
     print("Starting UDP server...")
     server_thread = threading.Thread(target=udp_server)
@@ -47,9 +50,6 @@ def test_sending_unencrypted_data_udp_ipv6():
 
     time.sleep(1)
 
-    print("Compiling RIOT OS app...")
-    subprocess.run(["make", "all"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    print("Finished compiling RIOT OS app.")
     print("Running RIOT OS app...")
     subprocess.run(["make", "term"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     print("Finished running RIOT OS app.")
