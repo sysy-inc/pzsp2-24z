@@ -16,7 +16,7 @@ received_messages: list[str] = []
 
 
 def udp_server(
-    host: str = "::", port: int = 12345, max_duration: int = 12, timeout: int = 2
+    host: str = "::", port: int = 12345, duration: int = 10, timeout: int = 2
 ):
     """Run a UDP server that collects messages for a specified duration."""
     print("IN UDP THREAD.")
@@ -26,14 +26,14 @@ def udp_server(
         start_time = time.time()
 
         print(f"UDP server started on {host}:{port}")
-        while time.time() - start_time < max_duration:
+        while time.time() - start_time < duration:
             try:
                 print("recvfrom.")
                 message, addr = server_socket.recvfrom(1024)
                 received_messages.append(message.decode())
                 print(f"Received message from {addr}: {message.decode()}")
             except socket.timeout:
-                break
+                continue
         print("UDP server stopped.")
 
 
