@@ -41,6 +41,9 @@ class PlatformsResponseSensor(BaseModel):
     measurement_type: MeasurementTypeSchema = Field(
         ..., title="Measurement type of the sensor"
     )
+    model_config = {
+        "from_attributes": True,
+    }
 
 
 class PlatformsResponsePlatform(BaseModel):
@@ -49,6 +52,9 @@ class PlatformsResponsePlatform(BaseModel):
     sensors: list[PlatformsResponseSensor] = Field(
         ..., title="List of sensors on the platform"
     )
+    model_config = {
+        "from_attributes": True,
+    }
 
 
 @platforms.get("/", response_model=list[PlatformsResponsePlatform])
@@ -70,19 +76,7 @@ def read_platforms(session: Session = Depends(get_session)):
     user_platforms = query.scalars().unique().all()
 
     for platform in user_platforms:
-        plat_sensors: list[dict[str, Any]] = []
-        for sensor in platform.sensors:
-            plat_sensors.append(
-                {
-                    **sensor.__dict__,
-                    "measurement_type": sensor.measurement_type.__dict__,
-                }
-            )
-        results.append(
-            PlatformsResponsePlatform.model_validate(
-                {**platform.__dict__, "sensors": plat_sensors}
-            )
-        )
+        results.append(PlatformsResponsePlatform.model_validate(platform))
 
     return results
 

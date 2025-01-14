@@ -24,6 +24,9 @@ class UserSchema(BaseModel):
     email: str = Field(..., title="Email of the user")
     passwd: str = Field(..., title="Password of the user")
     id: int = Field(..., title="ID of the user")
+    model_config = {
+        "from_attributes": True,
+    }
 
 
 class Platform(Base):
@@ -41,6 +44,9 @@ class Platform(Base):
 class PlatformSchema(BaseModel):
     name: str = Field(..., title="Name of the platform")
     id: int = Field(..., title="ID of the platform")
+    model_config = {
+        "from_attributes": True,
+    }
 
 
 class UserPlatform(Base):
@@ -58,6 +64,9 @@ class UserPlatform(Base):
 class UserPlatformSchema(BaseModel):
     user_id: int = Field(..., title="ID of the user")
     platform_id: int = Field(..., title="ID of the platform")
+    model_config = {
+        "from_attributes": True,
+    }
 
 
 class Sensor(Base):
@@ -76,6 +85,9 @@ class SensorSchema(BaseModel):
     id: int = Field(..., title="ID of the sensor")
     measurement_type_id: int = Field(..., title="ID of the measurement type")
     platform_id: int = Field(..., title="ID of the platform")
+    model_config = {
+        "from_attributes": True,
+    }
 
 
 class MeasurementType(Base):
@@ -92,6 +104,9 @@ class MeasurementTypeSchema(BaseModel):
     id: int = Field(..., title="ID of the measurement type")
     physical_parameter: str = Field(..., title="Physical parameter")
     unit: str = Field(..., title="Unit")
+    model_config = {
+        "from_attributes": True,
+    }
 
 
 class Measurement(Base):
@@ -110,3 +125,6 @@ class MeasurementSchema(BaseModel):
     value: float = Field(..., title="Value of the measurement")
     date: datetime = Field(..., title="Date of the measurement")
     id: int = Field(..., title="ID of the measurement")
+    model_config = {
+        "from_attributes": True,
+    }
