@@ -34,6 +34,9 @@ class PlatformsResponseSingle(BaseModel):
     measurement_types: list[MeasurementTypeSchema] = Field(
         ..., title="List of sensors on the platform"
     )
+    model_config = {
+        "from_attributes": True,
+    }
 
 
 class PlatformsResponseSensor(BaseModel):
@@ -102,22 +105,15 @@ def read_platform(platform_id: int, session: Session = Depends(get_session)):
     if platform is None:
         raise HTTPException(status_code=404, detail="Platform not found")
 
-    platform_sensors: list[dict[str, Any]] = [
-        {**sensor.__dict__, "measurement_type": sensor.measurement_type.__dict__}
-        for sensor in platform.sensors
-    ]
-
-    return PlatformsResponsePlatform.model_validate(
-        {
-            **platform.__dict__,
-            "sensors": platform_sensors,
-        }
-    )
+    return PlatformsResponsePlatform.model_validate(platform)
 
 
 class MeasurementsResponseEntry(BaseModel):
     date: datetime = Field(..., title="Timestamp of the measurement")
     value: float = Field(..., title="Value of the measurement")
+    model_config = {
+        "from_attributes": True,
+    }
 
 
 @platforms.get(
@@ -164,7 +160,7 @@ def read_measurements(
 
     measurements = measurements_query.scalars().unique().all()
     return [
-        MeasurementsResponseEntry.model_validate(measurement.__dict__)
+        MeasurementsResponseEntry.model_validate(measurement)
         for measurement in measurements
     ]
 
@@ -187,7 +183,7 @@ def create_platform(
     session.commit()
     session.refresh(new_platform)
 
-    return PlatformSchema.model_validate(new_platform.__dict__)
+    return PlatformSchema.model_validate(new_platform)
 
 
 class PlatformAddUserRequest(BaseModel):
@@ -221,7 +217,7 @@ def add_user_to_platform(
         raise HTTPException(status_code=400, detail="User already added to platform")
 
     session.refresh(user_platform)
-    return UserPlatformSchema.model_validate(user_platform.__dict__)
+    return UserPlatformSchema.model_validate(user_platform)
 
 
 @platforms.delete("/{platform_id}/users/{user_id}")
