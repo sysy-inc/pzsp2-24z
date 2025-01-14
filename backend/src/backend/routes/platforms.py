@@ -1,9 +1,5 @@
 from datetime import datetime
-from os import name
-from pprint import pp, pprint
-from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query
-import psycopg2
 from pydantic import BaseModel, Field
 import sqlalchemy
 import sqlalchemy.exc

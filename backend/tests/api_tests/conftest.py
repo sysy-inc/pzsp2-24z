@@ -1,7 +1,6 @@
 from functools import wraps
 from typing import Any, Callable
 import psycopg2
-import pytest
 from psycopg2.extensions import connection
 
 

@@ -1,6 +1,5 @@
 from typing import Any
 from fastapi.testclient import TestClient
-import psycopg2
 import pytest
 
 from tests.api_tests.conftest import call_no_params, postgres_db_fixture

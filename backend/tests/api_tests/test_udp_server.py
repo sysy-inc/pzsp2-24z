@@ -1,4 +1,3 @@
-import pprint
 from time import sleep
 from fastapi.testclient import TestClient
 from psycopg2.extensions import connection
