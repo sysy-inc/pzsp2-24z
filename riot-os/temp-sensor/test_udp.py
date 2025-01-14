@@ -40,7 +40,18 @@ def udp_server(
 def test_sending_unencrypted_data_udp_ipv6():
     """Encapsulate the entire E2E test."""
     print("Compiling RIOT OS app...")
-    subprocess.run(["make", "all"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    subprocess.run(
+        [
+            "make",
+            "HOST_IPV6=fe80::c8a:e3ff:fea4:87b9",
+            "HOST_PORT=12345",
+            "TEST_UDP_IPV6=yes",
+            "TEST=yes",
+            "all",
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
     print("Finished compiling RIOT OS app.")
 
     print("Starting UDP server...")
