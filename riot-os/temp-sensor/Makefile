@@ -1,4 +1,3 @@
-# name of your application
 APPLICATION = tmep-test
 
 # If no BOARD is found in the environment, use this default:
