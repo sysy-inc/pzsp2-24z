@@ -32,6 +32,21 @@ DEVELHELP ?= 1
 # Change this to 0 show compiler invocation lines by default:
 QUIET ?= 1
 
+ifeq ($(BOARD),nucleo-f207zg)
 CFLAGS += -mfloat-abi=soft -mfpu=vfp
+endif
+
+ifeq ($(TEST),yes)
+CFLAGS += -DTEST
+CFLAGS += -DNATIVE_AUTO_EXIT
+endif
+
+ifeq ($(TEST_UDP_IPV6),yes)
+CFLAGS += -DTEST_UDP_IPV6
+endif
+
+CFLAGS += -DHOST_IPV6=\"$(HOST_IPV6)\"
+CFLAGS += -DHOST_PORT=\"$(HOST_PORT)\"
+
 
 include $(RIOTBASE)/Makefile.include
