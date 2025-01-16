@@ -10,10 +10,10 @@ from tests.api_tests.conftest import call_no_params, postgres_db_fixture
 @call_no_params
 @postgres_db_fixture(
     db_host="localhost",
-    db_name="postgres",
-    db_password="postgres",
+    db_name="testdatabase",
+    db_password="password",
     db_port=5432,
-    db_user="postgres",
+    db_user="user",
     queries=[
         "../scripts/clear_db.sql",
         "../scripts/create_database.sql",
