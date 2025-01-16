@@ -13,7 +13,8 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(20))
     surname: Mapped[str] = mapped_column(String(30))
     email: Mapped[str] = mapped_column(String(40), unique=True)
-    passwd: Mapped[str] = mapped_column(String(30))
+    hashed_pwd: Mapped[str] = mapped_column(String(60))
+    is_admin: Mapped[bool] = mapped_column()
 
     users_platforms: Mapped[List["UserPlatform"]] = relationship(back_populates="user")
 
@@ -22,7 +23,8 @@ class UserSchema(BaseModel):
     name: str = Field(..., title="Name of the user")
     surname: str = Field(..., title="Surname of the user")
     email: str = Field(..., title="Email of the user")
-    passwd: str = Field(..., title="Password of the user")
+    hashed_pwd: str = Field(..., title="Password of the user")
+    is_admin: bool = Field(False, title="Admin status of the user")
     id: int = Field(..., title="ID of the user")
     model_config = {
         "from_attributes": True,
