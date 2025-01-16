@@ -1,29 +1,71 @@
+from atexit import register
 from typing import Any
 from fastapi.testclient import TestClient
 import pytest
 
-from tests.api_tests.conftest import call_no_params, postgres_db_fixture
+from tests.api_tests.conftest import (
+    call_no_params,
+    postgres_db_fixture,
+    make_user_admin,
+)
 from src.backend.app import app
+from src.backend.routes.auth import RegisterRequest
 from psycopg2.extensions import connection
 
 client = TestClient(app)
 
+DB_HOST = "localhost"
+DB_NAME = "testdatabase"
+DB_PASSWORD = "password"
+DB_PORT = 5432
+DB_USER = "user"
+DB_QUERIES = [
+    "../scripts/clear_db.sql",
+    "../scripts/create_database.sql",
+    "../scripts/init_database.sql",
+]
+
+
+def register_user(email: str, password: str) -> None:
+    response = client.post(
+        "/auth/register",
+        json={"name": "Test", "surname": "User", "email": email, "password": password},
+    )
+    assert response.status_code == 200
+
+
+def get_auth_token(username: str, password: str) -> str:
+    """Get an authentication token by simulating a login request."""
+    response = client.post(
+        "/auth/token",
+        data={"username": username, "password": password},
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    assert response.status_code == 200
+    return response.json()["access_token"]
+
 
 @call_no_params
 @postgres_db_fixture(
-    db_host="localhost",
-    db_name="postgres",
-    db_password="postgres",
-    db_port=5432,
-    db_user="postgres",
-    queries=[
-        "../scripts/clear_db.sql",
-        "../scripts/create_database.sql",
-        "../scripts/init_database.sql",
-    ],
+    db_host=DB_HOST,
+    db_name=DB_NAME,
+    db_password=DB_PASSWORD,
+    db_port=DB_PORT,
+    db_user=DB_USER,
+    queries=DB_QUERIES,
 )
 def test_get_all_platforms(_):
-    response = client.get("/api/platforms/")
+
+    register_user("test@admin", "admin")
+
+    make_user_admin("test@admin", DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT)
+
+    token = get_auth_token("admin@admin", "admin")
+
+    response = client.get(
+        "/api/platforms/",
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
     assert response.status_code == 200
     assert response.json() == [
@@ -54,16 +96,12 @@ def test_get_all_platforms(_):
 
 @call_no_params
 @postgres_db_fixture(
-    db_host="localhost",
-    db_name="postgres",
-    db_password="postgres",
-    db_port=5432,
-    db_user="postgres",
-    queries=[
-        "../scripts/clear_db.sql",
-        "../scripts/create_database.sql",
-        "../scripts/init_database.sql",
-    ],
+    db_host=DB_HOST,
+    db_name=DB_NAME,
+    db_password=DB_PASSWORD,
+    db_port=DB_PORT,
+    db_user=DB_USER,
+    queries=DB_QUERIES,
 )
 def test_get_single_platform(_):
     response = client.get("/api/platforms/1")
@@ -131,16 +169,12 @@ def test_get_platform_measurements(
     expected_response: list[dict[str, Any]],
 ):
     @postgres_db_fixture(
-        db_host="localhost",
-        db_name="postgres",
-        db_password="postgres",
-        db_port=5432,
-        db_user="postgres",
-        queries=[
-            "../scripts/clear_db.sql",
-            "../scripts/create_database.sql",
-            "../scripts/init_database.sql",
-        ],
+        db_host=DB_HOST,
+        db_name=DB_NAME,
+        db_password=DB_PASSWORD,
+        db_port=DB_PORT,
+        db_user=DB_USER,
+        queries=DB_QUERIES,
     )
     def test_wrapper(_):
         response = client.get(
@@ -155,16 +189,12 @@ def test_get_platform_measurements(
 
 @call_no_params
 @postgres_db_fixture(
-    db_host="localhost",
-    db_name="postgres",
-    db_password="postgres",
-    db_port=5432,
-    db_user="postgres",
-    queries=[
-        "../scripts/clear_db.sql",
-        "../scripts/create_database.sql",
-        "../scripts/init_database.sql",
-    ],
+    db_host=DB_HOST,
+    db_name=DB_NAME,
+    db_password=DB_PASSWORD,
+    db_port=DB_PORT,
+    db_user=DB_USER,
+    queries=DB_QUERIES,
 )
 def test_create_platform_ok(connection: connection):
     response = client.post(
@@ -185,16 +215,12 @@ def test_create_platform_ok(connection: connection):
 
 @call_no_params
 @postgres_db_fixture(
-    db_host="localhost",
-    db_name="postgres",
-    db_password="postgres",
-    db_port=5432,
-    db_user="postgres",
-    queries=[
-        "../scripts/clear_db.sql",
-        "../scripts/create_database.sql",
-        "../scripts/init_database.sql",
-    ],
+    db_host=DB_HOST,
+    db_name=DB_NAME,
+    db_password=DB_PASSWORD,
+    db_port=DB_PORT,
+    db_user=DB_USER,
+    queries=DB_QUERIES,
 )
 def test_create_platform_bad_request(connection: connection):
     response = client.post(
@@ -223,16 +249,12 @@ def test_create_platform_bad_request(connection: connection):
 
 @call_no_params
 @postgres_db_fixture(
-    db_host="localhost",
-    db_name="postgres",
-    db_password="postgres",
-    db_port=5432,
-    db_user="postgres",
-    queries=[
-        "../scripts/clear_db.sql",
-        "../scripts/create_database.sql",
-        "../scripts/init_database.sql",
-    ],
+    db_host=DB_HOST,
+    db_name=DB_NAME,
+    db_password=DB_PASSWORD,
+    db_port=DB_PORT,
+    db_user=DB_USER,
+    queries=DB_QUERIES,
 )
 def test_add_user_to_platform_ok(connection: connection):
     response = client.post(
@@ -255,16 +277,12 @@ def test_add_user_to_platform_ok(connection: connection):
 
 @call_no_params
 @postgres_db_fixture(
-    db_host="localhost",
-    db_name="postgres",
-    db_password="postgres",
-    db_port=5432,
-    db_user="postgres",
-    queries=[
-        "../scripts/clear_db.sql",
-        "../scripts/create_database.sql",
-        "../scripts/init_database.sql",
-    ],
+    db_host=DB_HOST,
+    db_name=DB_NAME,
+    db_password=DB_PASSWORD,
+    db_port=DB_PORT,
+    db_user=DB_USER,
+    queries=DB_QUERIES,
 )
 def test_add_user_to_platform_bad_request(connection: connection):
     response = client.post(
@@ -284,16 +302,12 @@ def test_add_user_to_platform_bad_request(connection: connection):
 
 @call_no_params
 @postgres_db_fixture(
-    db_host="localhost",
-    db_name="postgres",
-    db_password="postgres",
-    db_port=5432,
-    db_user="postgres",
-    queries=[
-        "../scripts/clear_db.sql",
-        "../scripts/create_database.sql",
-        "../scripts/init_database.sql",
-    ],
+    db_host=DB_HOST,
+    db_name=DB_NAME,
+    db_password=DB_PASSWORD,
+    db_port=DB_PORT,
+    db_user=DB_USER,
+    queries=DB_QUERIES,
 )
 def test_delete_user_from_platform_ok(connection: connection):
     response = client.delete("/api/platforms/2/users/2")
@@ -311,16 +325,12 @@ def test_delete_user_from_platform_ok(connection: connection):
 
 @call_no_params
 @postgres_db_fixture(
-    db_host="localhost",
+    db_host=DB_HOST,
     db_name="postgres",
     db_password="postgres",
-    db_port=5432,
+    db_port=DB_PORT,
     db_user="postgres",
-    queries=[
-        "../scripts/clear_db.sql",
-        "../scripts/create_database.sql",
-        "../scripts/init_database.sql",
-    ],
+    queries=DB_QUERIES,
 )
 def test_delete_user_from_platform_user_not_on_platform(connection: connection):
     response = client.delete("/api/platforms/2/users/1")

@@ -4,7 +4,7 @@ import psycopg2
 from psycopg2.extensions import connection
 
 
-def run_pg_query(
+def run_pg_query_file(
     db_name: str,
     db_user: str,
     db_password: str,
@@ -29,6 +29,29 @@ def run_pg_query(
     connection.close()
 
 
+def run_pg_query_string(
+    db_name: str,
+    db_user: str,
+    db_password: str,
+    db_host: str,
+    db_port: int,
+    query: str,
+):
+    connection = psycopg2.connect(
+        user=db_user,
+        password=db_password,
+        host=db_host,
+        port=db_port,
+        database=db_name,
+    )
+
+    cursor = connection.cursor()
+    cursor.execute(query)
+    connection.commit()
+    cursor.close()
+    connection.close()
+
+
 def call_no_params(func: Callable[..., Any]):
     """
     Wrapper for pytest tests.
@@ -40,6 +63,20 @@ def call_no_params(func: Callable[..., Any]):
         func()
 
     return wrapper
+
+
+def make_user_admin(
+    email: str, db_name: str, db_user: str, db_password: str, db_host: str, db_port: int
+):
+    query = f"UPDATE users SET is_admin = TRUE WHERE email = '{email}'"
+    run_pg_query_string(
+        db_name=db_name,
+        db_user=db_user,
+        db_password=db_password,
+        db_host=db_host,
+        db_port=db_port,
+        query=query,
+    )
 
 
 def postgres_db_fixture(
@@ -54,7 +91,7 @@ def postgres_db_fixture(
         @wraps(func)
         def wrapper():
             for query in queries:
-                run_pg_query(
+                run_pg_query_file(
                     db_name=db_name,
                     db_user=db_user,
                     db_password=db_password,
