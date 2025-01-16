@@ -73,9 +73,9 @@ Make sure the following are installed on your system:
 Create a Postgres database container
 ```bash
 docker run --name postgres15-pzsp2-dev \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=postgres \
-  -e POSTGRES_DB=postgres \
+  -e POSTGRES_USER=user \
+  -e POSTGRES_PASSWORD=password \
+  -e POSTGRES_DB=testdatabase \
   -p 5432:5432 \
   -v ./scripts:/var/scripts \
   postgres:15
