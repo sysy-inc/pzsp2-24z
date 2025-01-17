@@ -37,14 +37,17 @@ def udp_server(
         while time.time() - start_time < duration:
             try:
                 print("recvfrom.")
-                message, addr = server_socket.recvfrom(1024)
-                print(" ".join(f"{byte:02X}" for byte in message))
-                # received_messages.append(message.decode())
+                message, addr = server_socket.recvfrom(512)
+                
+                ciphertext_len = int.from_bytes(message[:4], byteorder="little")
+                print(f"Ciphertext length extracted: {ciphertext_len}")
+
+                expected_len = 16 + ciphertext_len
                 ciphertext_c = ffi.new("unsigned char[]", message)
-                ptr = lib.decrypt(ciphertext_c, len(message))
+                ptr = lib.decrypt(ciphertext_c, expected_len)
                 if ptr:
                     decrypted_text = ffi.string(ptr).decode("utf-8", errors="ignore")
-                    # print("Odszyfrowany tekst:", decrypted_text)
+                    received_messages.append(decrypted_text)
                     print(f"Received message from {addr}: {decrypted_text}")
                 else:
                     print("Decryption error.")
@@ -92,4 +95,5 @@ def test_sending_unencrypted_data_udp_ipv6():
 
 
 if __name__ == "__main__":
-    test_sending_unencrypted_data_udp_ipv6()
+    # test_sending_unencrypted_data_udp_ipv6()
+    udp_server()

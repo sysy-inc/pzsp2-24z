@@ -18,18 +18,18 @@ static unsigned char decrypted_text[MAX_FILE_SIZE];
 // Decrypting funtion, taking arguments from Python
 const unsigned char *decrypt(const unsigned char *ciphertext, size_t length)
 {
-    if (length <= 16 || length > MAX_FILE_SIZE)
+    if (length <= 0 || length > MAX_FILE_SIZE)
     {
         fprintf(stderr, "Error: incorrect datagram length: %zu\n", length);
         return NULL;
     }
 
     unsigned char iv[16];
-    memcpy(iv, ciphertext, 16); // First 16 bytes are the IV
+    memcpy(iv, ciphertext + 4, 16); // First 16 bytes are the IV
 
-    // Update the ciphertext to exclude the IV
-    const unsigned char *actual_ciphertext = ciphertext + 16;
-    size_t ciphertext_len = length - 16;
+    // Update the ciphertext to exclude the IV and length
+    const unsigned char *actual_ciphertext = ciphertext + 16 + 4;
+    size_t ciphertext_len = length;
 
     // Initialize AES context with the extracted IV
     struct AES_ctx ctx;

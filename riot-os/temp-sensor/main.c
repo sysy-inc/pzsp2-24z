@@ -31,11 +31,13 @@ int main(void)
 #endif
         char json_temp[512];
         char json_humidity[512];
+        size_t json_temp_len = 0;
+        size_t json_humidity_len = 0;
         sprintf(json_temp, "{\"sensor_id\": 1, \"value\": %d.%d}", temp_integral, temp_decimal);
-        encrypt(json_temp);
-        // printf("%s\n", json_temp);
+        json_temp_len = encrypt(json_temp);
+        printf("%s\n", json_temp);
         sprintf(json_humidity, "{\"sensor_id\": 2, \"value\": %d.%d}", humidity_integral, humidity_decimal);
-        encrypt(json_humidity);
+        json_humidity_len = encrypt(json_humidity);
         // printf("%s\n", json_humidity);
         /* json format:
          * {
@@ -43,8 +45,8 @@ int main(void)
          *     "value": <float>
          * }
          */
-        gnrc_udp_send(HOST_IPV6, HOST_PORT, json_temp, 1, 1000);
-        gnrc_udp_send(HOST_IPV6, HOST_PORT, json_humidity, 1, 1000);
+        gnrc_udp_send(HOST_IPV6, HOST_PORT, json_temp, json_temp_len, 1, 1000);
+        gnrc_udp_send(HOST_IPV6, HOST_PORT, json_humidity, json_humidity_len, 1, 1000);
 
         printf("Humidity: %d.%d %%\n", humidity_integral, humidity_decimal);
         printf("Temperature: %d.%d °C\n", temp_integral, temp_decimal);

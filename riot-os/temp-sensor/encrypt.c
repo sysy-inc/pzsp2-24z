@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include "aes.h"
 
+#define MAX_LENGTH 512
+
 unsigned char key[32] = {
     0x60, 0x3d, 0xeb, 0x10, 0x15, 0xca, 0x71, 0xbe,
     0x2b, 0x73, 0xae, 0xf0, 0x85, 0x7d, 0x77, 0x81,
@@ -16,7 +18,7 @@ void generate_random_iv(unsigned char *iv, size_t iv_len)
     }
 }
 
-void encrypt(char *plaintext)
+size_t encrypt(char *plaintext)
 {
     unsigned char iv[16];
     generate_random_iv(iv, sizeof(iv)); // Generate a new random IV
@@ -35,10 +37,19 @@ void encrypt(char *plaintext)
     // Encrypt in-place
     AES_CBC_encrypt_buffer(&ctx, padded_plaintext, padded_len);
 
-    // Append the IV at the beginning of the plaintext buffer
-    memmove(plaintext + sizeof(iv), padded_plaintext, padded_len); // Shift ciphertext forward
-    memcpy(plaintext, iv, sizeof(iv));                             // Place IV at the beginning
+    size_t total_len = sizeof(size_t) + sizeof(iv) + padded_len; // IV + length of ciphertext (4 bytes) + ciphertext
+
+    // Create a new buffer to hold the IV, length, and ciphertext
+    unsigned char encrypted_message[MAX_LENGTH];
+    memcpy(encrypted_message, &padded_len, sizeof(size_t));                                // Copy the length of ciphertext after IV
+    memcpy(encrypted_message + sizeof(size_t), iv, sizeof(iv));                            // Copy the IV to the beginning
+    memcpy(encrypted_message + sizeof(size_t) + sizeof(iv), padded_plaintext, padded_len); // Copy the ciphertext
+
+    // Copy the final encrypted message (IV + length + ciphertext) back to plaintext buffer
+    memcpy(plaintext, encrypted_message, total_len);
 
     // Null-terminate if needed
-    plaintext[sizeof(iv) + padded_len] = '\0';
+    plaintext[total_len] = '\0';
+
+    return total_len;
 }
