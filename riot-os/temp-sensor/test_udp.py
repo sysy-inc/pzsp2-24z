@@ -16,7 +16,7 @@ class MeasurementMessage(BaseModel):
 received_messages: list[str] = []
 
 ffi = FFI()
-lib = ffi.dlopen("./test_py/decrypt.so")
+lib = ffi.dlopen("./server_py/decrypt.so")
 
 # C function interface
 ffi.cdef("""
@@ -38,6 +38,7 @@ def udp_server(
             try:
                 print("recvfrom.")
                 message, addr = server_socket.recvfrom(1024)
+                print(" ".join(f"{byte:02X}" for byte in message))
                 # received_messages.append(message.decode())
                 ciphertext_c = ffi.new("unsigned char[]", message)
                 ptr = lib.decrypt(ciphertext_c, len(message))

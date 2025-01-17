@@ -12,3 +12,10 @@ make \
     BOARD=nucleo-f207zg \
     term
 ```
+
+---
+
+To compile `decrypt.c` run in `server_py`:
+```bash
+gcc -shared -o decrypt.so -fPIC decrypt.c aes.c
+```
