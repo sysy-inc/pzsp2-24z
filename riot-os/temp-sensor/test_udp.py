@@ -18,15 +18,10 @@ received_messages: list[str] = []
 ffi = FFI()
 lib = ffi.dlopen("./test_py/decrypt.so")
 
-# Definiujemy interfejs funkcji C
+# C function interface
 ffi.cdef("""
     const unsigned char *decrypt(const unsigned char *ciphertext, size_t length);
 """)
-
-
-# def decrypt_datagram(message):
-#     return message
-
 
 def udp_server(
     host: str = "::", port: int = 12345, duration: int = 10, timeout: int = 2
@@ -51,8 +46,7 @@ def udp_server(
                     # print("Odszyfrowany tekst:", decrypted_text)
                     print(f"Received message from {addr}: {decrypted_text}")
                 else:
-                    print("Błąd deszyfrowania!")
-                # print(f"Received message from {addr}: {message.decode()}")
+                    print("Decryption error.")
             except socket.timeout:
                 continue
         print("UDP server stopped.")

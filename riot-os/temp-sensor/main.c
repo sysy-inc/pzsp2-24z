@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h> // exit()
+#include <time.h>
 #include "periph/gpio.h"
 #include "dht11_module.h"
 #include "gnrc_udp.h"
@@ -13,13 +14,19 @@ unsigned char key[32] = {
     0x1f, 0x35, 0x2c, 0x07, 0x3b, 0x61, 0x08, 0xd7,
     0x2d, 0x98, 0x10, 0xa3, 0x09, 0x14, 0xdf, 0xf4};
 
-// initialization vector
-unsigned char iv[16] = {
-    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-    0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f};
+void generate_random_iv(unsigned char *iv, size_t iv_len)
+{
+    for (size_t i = 0; i < iv_len; i++)
+    {
+        iv[i] = rand() % 255 + 1; // Random value between 0-255
+    }
+}
 
 void encrypt(char *plaintext)
 {
+    unsigned char iv[16];
+    generate_random_iv(iv, sizeof(iv)); // Generate a new random IV
+
     size_t plaintext_len = strlen(plaintext);
 
     // Pad the plaintext to a multiple of 16 bytes (128 bits)
@@ -34,16 +41,18 @@ void encrypt(char *plaintext)
     // Encrypt in-place
     AES_CBC_encrypt_buffer(&ctx, padded_plaintext, padded_len);
 
-    // Copy the encrypted data back to the original buffer
-    memcpy(plaintext, padded_plaintext, padded_len);
+    // Append the IV at the beginning of the plaintext buffer
+    memmove(plaintext + sizeof(iv), padded_plaintext, padded_len); // Shift ciphertext forward
+    memcpy(plaintext, iv, sizeof(iv));                             // Place IV at the beginning
 
-    // Null-terminate the string if necessary
-    plaintext[padded_len] = '\0';
+    // Null-terminate if needed
+    plaintext[sizeof(iv) + padded_len] = '\0';
 }
 
 int main(void)
 {
     puts("Welcome to RIOT!\n");
+    srand(time(NULL));
 
 #ifdef TEST_UDP_IPV6
     int i = 0;
@@ -61,14 +70,14 @@ int main(void)
 #ifndef TEST
         read_dht(&pin, &humidity_integral, &humidity_decimal, &temp_integral, &temp_decimal);
 #endif
-        char json_temp[256];
-        char json_humidity[256];
+        char json_temp[512];
+        char json_humidity[512];
         sprintf(json_temp, "{\"sensor_id\": 1, \"value\": %d.%d}", temp_integral, temp_decimal);
         encrypt(json_temp);
-        printf("%s\n", json_temp);
+        // printf("%s\n", json_temp);
         sprintf(json_humidity, "{\"sensor_id\": 2, \"value\": %d.%d}", humidity_integral, humidity_decimal);
         encrypt(json_humidity);
-        printf("%s\n", json_humidity);
+        // printf("%s\n", json_humidity);
         /* json format:
          * {
          *     "sensor_id": <int>,
