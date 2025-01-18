@@ -1,179 +1,291 @@
-import React, { useState } from 'react';
-import { Box, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
-import { MdAddCircle } from 'react-icons/md';
-import { useNavigate } from 'react-router-dom';
-
-interface User {
-  name: string;
-  email: string;
-  accessGranted: boolean;
-}
-
-interface Platform {
-  name: string;
-  users: User[];
-}
+import React, { useState } from "react";
+import {
+  Box,
+  Typography,
+  Button,
+  TextField,
+  List,
+  ListItem,
+  ListItemText,
+  IconButton,
+  Paper,
+  Divider,
+} from "@mui/material";
+import { FaTrash, FaUserPlus, FaUserMinus } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const AdminPage: React.FC = () => {
-  const [openDialog, setOpenDialog] = useState(false);
-  const [platformName, setPlatformName] = useState('');
-  const [platforms, setPlatforms] = useState<Platform[]>([]);
-  const navigate = useNavigate();
+  const navigate = useNavigate(); 
+  const [platforms, setPlatforms] = useState<string[]>(["Platform A", "Platform B", "Platform C"]);
+  const [newPlatform, setNewPlatform] = useState("");
+  const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
+  const [userAccess, setUserAccess] = useState<{ [key: string]: string[] }>({
+    "Platform A": ["user1@example.com"],
+    "Platform B": [],
+    "Platform C": ["user2@example.com", "user3@example.com"],
+  });
+  const [newUser, setNewUser] = useState("");
 
+  
   const handleAddPlatform = () => {
-    const newPlatform: Platform = { name: platformName, users: [] };
-    setPlatforms([...platforms, newPlatform]);
-    setPlatformName('');
-    setOpenDialog(false);
-  };
-
-  const handleAddUserToPlatform = (platformName: string) => {
-    const userEmail = prompt('Enter user email:');
-    if (userEmail) {
-      setPlatforms(platforms.map(platform =>
-        platform.name === platformName
-          ? { ...platform, users: [...platform.users, { name: 'New User', email: userEmail, accessGranted: false }] }
-          : platform
-      ));
+    if (newPlatform.trim() && !platforms.includes(newPlatform)) {
+      setPlatforms([...platforms, newPlatform]);
+      setUserAccess({ ...userAccess, [newPlatform]: [] });
+      setNewPlatform("");
+    } else {
+      alert("Platform name is invalid or already exists.");
     }
   };
 
-  const handleGrantAccess = (platformName: string, email: string) => {
-    setPlatforms(platforms.map(platform => 
-      platform.name === platformName 
-        ? { ...platform, users: platform.users.map(user => 
-            user.email === email ? { ...user, accessGranted: true } : user
-          )}
-        : platform
-    ));
+  
+  const handleDeletePlatform = (platform: string) => {
+    const confirmDelete = window.confirm(`Are you sure you want to delete platform "${platform}"?`);
+    if (confirmDelete) {
+      setPlatforms(platforms.filter((p) => p !== platform));
+      const updatedAccess = { ...userAccess };
+      delete updatedAccess[platform];
+      setUserAccess(updatedAccess);
+    }
   };
 
-  const handleRevokeAccess = (platformName: string, email: string) => {
-    setPlatforms(platforms.map(platform => 
-      platform.name === platformName 
-        ? { ...platform, users: platform.users.map(user => 
-            user.email === email ? { ...user, accessGranted: false } : user
-          )}
-        : platform
-    ));
+  // Add user access
+  const handleAddUser = () => {
+    if (!newUser.trim()) {
+      alert("Please provide a valid user email.");
+      return;
+    }
+
+    if (selectedPlatform) {
+      const currentUsers = userAccess[selectedPlatform] || [];
+      if (!currentUsers.includes(newUser)) {
+        setUserAccess({
+          ...userAccess,
+          [selectedPlatform]: [...currentUsers, newUser],
+        });
+        setNewUser("");
+      } else {
+        alert("User already has access.");
+      }
+    }
+  };
+
+  
+  const handleRemoveUser = (user: string) => {
+    if (selectedPlatform) {
+      const currentUsers = userAccess[selectedPlatform] || [];
+      setUserAccess({
+        ...userAccess,
+        [selectedPlatform]: currentUsers.filter((u) => u !== user),
+      });
+    }
+  };
+
+
+  const handleReturnToMain = () => {
+    navigate("/main");
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100vh', background: 'linear-gradient(to bottom, #cce7ff, #e3f2fd)', color: '#004c8c', paddingTop: 10 }}>
-      <Box sx={{ position: 'absolute', top: 0, left: 0, width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, backgroundColor: 'rgba(255, 255, 255, 0.6)', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography variant="h4" fontWeight="bold" sx={{ fontFamily: 'Poppins, sans-serif', textShadow: '1px 1px 3px rgba(0, 0, 0, 0.3)' }}>
-            CloudPulse Admin
-          </Typography>
-        </Box>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100vh",
+        background: "linear-gradient(to bottom, #f0f4ff, #e3f2fd)",
+        p: 4,
+      }}
+    >
+      {/* Return Button */}
+      <Button
+        variant="outlined"
+        onClick={handleReturnToMain}
+        sx={{
+          position: "absolute",
+          top: 16,
+          left: 16,
+          backgroundColor: "#ffffff",
+          color: "#004c8c",
+          borderColor: "#004c8c",
+          "&:hover": { backgroundColor: "#004c8c", color: "#ffffff" },
+        }}
+      >
+        Return to Main Page
+      </Button>
 
-       
-        <Button
-          onClick={() => navigate('/main')} 
-          variant="contained"
-          color="primary"
-          sx={{ backgroundColor: '#6e8efb', '&:hover': { backgroundColor: '#5b75d9' } }}
+      {/* Header */}
+      <Typography
+        variant="h4"
+        fontWeight="bold"
+        sx={{
+          mb: 4,
+          color: "#004c8c",
+          fontFamily: "Poppins, sans-serif",
+          textShadow: "2px 2px 4px rgba(255, 255, 255, 0.7)",
+        }}
+      >
+        Admin Dashboard
+      </Typography>
+
+      {/* Platforms and User Management */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          width: "100%",
+          maxWidth: "800px",
+          mb: 4,
+          gap: 2,
+          flexWrap: "wrap",
+        }}
+      >
+        {/* Add Platform */}
+        <Paper
+          elevation={4}
+          sx={{
+            p: 3,
+            flex: "1 1 300px",
+            backgroundColor: "#ffffff",
+            borderRadius: 3,
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+          }}
         >
-          Return to Main Page
-        </Button>
+          <Typography variant="h5" sx={{ mb: 2, fontFamily: "Poppins, sans-serif", fontWeight: "bold" }}>
+            Add Platform
+          </Typography>
+          <TextField
+            label="Platform Name"
+            variant="outlined"
+            fullWidth
+            value={newPlatform}
+            onChange={(e) => setNewPlatform(e.target.value)}
+            sx={{ mb: 2 }}
+          />
+          <Button
+            variant="contained"
+            fullWidth
+            sx={{
+              backgroundColor: "#6e8efb",
+              "&:hover": { backgroundColor: "#5b75d9" },
+            }}
+            onClick={handleAddPlatform}
+          >
+            Add Platform
+          </Button>
+        </Paper>
+
+        {/* Platform List */}
+        <Paper
+          elevation={4}
+          sx={{
+            p: 3,
+            flex: "1 1 300px",
+            backgroundColor: "#ffffff",
+            borderRadius: 3,
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+          }}
+        >
+          <Typography variant="h5" sx={{ mb: 2, fontFamily: "Poppins, sans-serif", fontWeight: "bold" }}>
+            Platforms
+          </Typography>
+          <List>
+            {platforms.map((platform) => (
+              <ListItem
+                key={platform}
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  backgroundColor: "rgba(110, 142, 251, 0.1)",
+                  borderRadius: 2,
+                  mb: 1,
+                }}
+              >
+                <ListItemText
+                  primary={platform}
+                  primaryTypographyProps={{
+                    fontWeight: "bold",
+                    fontFamily: "Poppins, sans-serif",
+                  }}
+                />
+                <Box>
+                  <Button
+                    variant="outlined"
+                    onClick={() => setSelectedPlatform(platform)}
+                    sx={{ mr: 1, color: "#6e8efb", borderColor: "#6e8efb" }}
+                  >
+                    Manage
+                  </Button>
+                  <IconButton
+                    onClick={() => handleDeletePlatform(platform)}
+                    sx={{ color: "#e57373" }}
+                  >
+                    <FaTrash />
+                  </IconButton>
+                </Box>
+              </ListItem>
+            ))}
+          </List>
+        </Paper>
       </Box>
 
-  
-      <Box sx={{ width: '80%', maxWidth: '1200px', textAlign: 'center', mt: 6 }}>
-
-        <Typography variant="h4" fontWeight="bold" sx={{ color: '#004c8c', mb: 4 }}>
-          Platform Management
-        </Typography>
-
-    
-        {platforms.map((platform, index) => (
-          <Box key={index} sx={{ mb: 6 }}>
-            <Typography variant="h5" fontWeight="bold" sx={{ color: '#004c8c', mb: 2 }}>
-              {platform.name}
-            </Typography>
-
+      {/* User Management */}
+      {selectedPlatform && (
+        <Paper
+          elevation={4}
+          sx={{
+            p: 3,
+            width: "100%",
+            maxWidth: "800px",
+            backgroundColor: "#ffffff",
+            borderRadius: 3,
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+          }}
+        >
+          <Typography variant="h5" sx={{ mb: 2, fontFamily: "Poppins, sans-serif", fontWeight: "bold" }}>
+            Manage Users for: {selectedPlatform}
+          </Typography>
+          <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
+            <TextField
+              label="User Email"
+              variant="outlined"
+              fullWidth
+              value={newUser}
+              onChange={(e) => setNewUser(e.target.value)}
+            />
             <Button
               variant="contained"
-              color="success"
-              onClick={() => handleAddUserToPlatform(platform.name)}
-              sx={{ fontSize: 16, backgroundColor: '#6e8efb', '&:hover': { backgroundColor: '#5b75d9' } }}
+              sx={{ backgroundColor: "#6e8efb", "&:hover": { backgroundColor: "#5b75d9" } }}
+              onClick={handleAddUser}
             >
-              <MdAddCircle size={28} /> Add User
+              <FaUserPlus />
             </Button>
-
-            <TableContainer component={Paper} sx={{ mt: 3 }}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell><strong>Name</strong></TableCell>
-                    <TableCell><strong>Email</strong></TableCell>
-                    <TableCell><strong>Access Status</strong></TableCell>
-                    <TableCell><strong>Action</strong></TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {platform.users.map((user, userIndex) => (
-                    <TableRow key={userIndex}>
-                      <TableCell>{user.name}</TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>{user.accessGranted ? 'Granted' : 'Pending'}</TableCell>
-                      <TableCell>
-                        {!user.accessGranted ? (
-                          <Button
-                            variant="contained"
-                            sx={{ backgroundColor: '#6e8efb', '&:hover': { backgroundColor: '#5b75d9' } }}
-                            onClick={() => handleGrantAccess(platform.name, user.email)}
-                          >
-                            Grant Access
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="contained"
-                            sx={{ backgroundColor: '#f44336', '&:hover': { backgroundColor: '#e53935' } }}
-                            onClick={() => handleRevokeAccess(platform.name, user.email)}
-                          >
-                            Revoke Access
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
           </Box>
-        ))}
-
-        <Button
-          onClick={() => setOpenDialog(true)}
-          variant="contained"
-          color="success"
-          sx={{ fontSize: 20, backgroundColor: '#6e8efb', '&:hover': { backgroundColor: '#5b75d9' } }}
-        >
-          <MdAddCircle size={28} /> Add Platform
-        </Button>
-
-        <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-          <DialogTitle>Add a New Platform</DialogTitle>
-          <DialogContent>
-            <TextField
-              label="Platform Name"
-              fullWidth
-              value={platformName}
-              onChange={(e) => setPlatformName(e.target.value)}
-              sx={{ mb: 2 }}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOpenDialog(false)} color="primary">
-              Cancel
-            </Button>
-            <Button onClick={handleAddPlatform} color="primary">
-              Add Platform
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </Box>
+          <List>
+            {(userAccess[selectedPlatform] || []).map((user) => (
+              <ListItem
+                key={user}
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  backgroundColor: "rgba(110, 142, 251, 0.1)",
+                  borderRadius: 2,
+                  mb: 1,
+                }}
+              >
+                <ListItemText primary={user} />
+                <IconButton
+                  onClick={() => handleRemoveUser(user)}
+                  sx={{ color: "#e57373" }}
+                >
+                  <FaUserMinus />
+                </IconButton>
+              </ListItem>
+            ))}
+          </List>
+        </Paper>
+      )}
     </Box>
   );
 };
