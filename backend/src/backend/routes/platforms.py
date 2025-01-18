@@ -20,7 +20,7 @@ from src.backend.utils.database_utils.models import (
     UserPlatformSchema,
 )
 from sqlalchemy.orm import selectinload
-from src.backend.utils.auth_utils import get_current_user
+from src.backend.routes.auth import get_current_user
 
 
 platforms = APIRouter()
@@ -198,11 +198,11 @@ class PlatformAddUserRequest(BaseModel):
 def add_user_to_platform(
     platform_id: int,
     user_data: PlatformAddUserRequest,
-    new_user: Annotated[User, Depends(get_current_user)],
+    user: Annotated[User, Depends(get_current_user)],
     session: Session = Depends(get_session),
 ):
 
-    if not new_user.is_admin:
+    if not user.is_admin:
         raise HTTPException(status_code=403, detail="Forbidden")
 
     new_user = session.query(User).filter(User.email == user_data.email).first()
@@ -228,6 +228,7 @@ def add_user_to_platform(
 @platforms.delete("/{platform_id}/users/{user_id}")
 def delete_user_from_platform(
     platform_id: int,
+    user_id: int,
     user: Annotated[User, Depends(get_current_user)],
     session: Session = Depends(get_session),
 ):
@@ -237,7 +238,7 @@ def delete_user_from_platform(
 
     user_platform = (
         session.query(UserPlatform)
-        .filter(UserPlatform.user_id == user.id)
+        .filter(UserPlatform.user_id == user_id)
         .filter(UserPlatform.platform_id == platform_id)
         .first()
     )

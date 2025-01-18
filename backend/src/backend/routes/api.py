@@ -11,7 +11,7 @@ from src.backend.utils.database_utils.fetching import (
     fetch_latest_measurements_for_platform_within_range,
     fetch_user_platform_access,
 )
-from src.backend.utils.auth_utils import get_current_user
+from src.backend.routes.auth import get_current_user
 from src.backend.utils.data_models import MeasurementsResponse
 
 

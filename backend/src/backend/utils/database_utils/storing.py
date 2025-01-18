@@ -41,6 +41,3 @@ async def save_sample_to_db(measurement: jsonToModel[MeasurementFromPlatform]):
 
     except Exception as e:
         print(f"Error saving sample to database: {e}")
-
-    except Exception as e:
-        print(f"Error saving samples to database: {e}")
