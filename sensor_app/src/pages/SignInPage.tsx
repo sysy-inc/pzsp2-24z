@@ -12,7 +12,7 @@ const SignInPage: React.FC = () => {
   const handleSignIn = () => {
     console.log('Email:', email, 'Password:', password);
 
-    // Simulate authentication and navigate to Platform Choice Page
+  
     navigate('/platform-choice');
   };
 
