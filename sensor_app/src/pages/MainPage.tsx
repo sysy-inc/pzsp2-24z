@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Typography, IconButton } from "@mui/material";
+import { Box, Typography, IconButton, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { FaCloud, FaHistory } from "react-icons/fa";
 import { MdAdminPanelSettings, MdOutlineCloudQueue } from "react-icons/md";
@@ -153,6 +153,31 @@ const MainPage: React.FC = () => {
           </Typography>
         </Box>
       </Box>
+
+      {/* Choose Platform Button */}
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => navigate("/platform-choice")}
+        sx={{
+          position: "absolute",
+          bottom: "100px", // Positioned at the bottom of the page, just below the other buttons
+          left: "50%",
+          transform: "translateX(-50%)",
+          backgroundColor: "#6e8efb",
+          padding: "12px 24px",
+          fontSize: "16px",
+          fontWeight: "bold",
+          textTransform: "none",
+          boxShadow: "0 4px 12px rgba(0, 76, 140, 0.2)",
+          "&:hover": {
+            backgroundColor: "#5b75d9",
+            boxShadow: "0 4px 16px rgba(0, 76, 140, 0.3)",
+          },
+        }}
+      >
+        Choose Platform
+      </Button>
     </Box>
   );
 };
