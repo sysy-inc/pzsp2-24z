@@ -1,32 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, CircularProgress, Paper, Snackbar } from '@mui/material';
-import { FaCloud, FaChevronLeft } from 'react-icons/fa';
+import { Box, Typography, CircularProgress, Paper, Button } from '@mui/material';
+import { FaCloud, FaArrowLeft } from 'react-icons/fa'; 
 import { useNavigate } from 'react-router-dom';
-
+import AlertSnackbar from '../components/AlertSnackbar'; 
 const CurrentWeatherPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
-  const [weatherData, setWeatherData] = useState<any>(null); 
+  const [weatherData, setWeatherData] = useState<any>(null);
   const [previousWeatherData, setPreviousWeatherData] = useState<any>(null);
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+  const [alertSeverity, setAlertSeverity] = useState<'success' | 'error' | 'info' | 'warning'>('info');
   const navigate = useNavigate();
 
- 
   useEffect(() => {
     setTimeout(() => {
       const newWeatherData = {
-        temperature: 22 + Math.floor(Math.random() * 5), 
-        humidity: 65 + Math.floor(Math.random() * 5), 
+        temperature: 22 + Math.floor(Math.random() * 5),
+        humidity: 65 + Math.floor(Math.random() * 5),
       };
 
       if (previousWeatherData) {
-        
         const tempDifference = Math.abs(newWeatherData.temperature - previousWeatherData.temperature);
         const humidityDifference = Math.abs(newWeatherData.humidity - previousWeatherData.humidity);
 
         if (tempDifference > 2 || humidityDifference > 10) {
-         
-          setAlertMessage(`Rapid change detected: Temperature ${tempDifference > 2 ? tempDifference + "°C" : ''} and Humidity ${humidityDifference > 10 ? humidityDifference + "%" : ''}`);
+          setAlertMessage(
+            `Rapid change detected: Temperature ${tempDifference > 2 ? tempDifference + "°C" : ''} and Humidity ${humidityDifference > 10 ? humidityDifference + "%" : ''}`
+          );
+          setAlertSeverity('warning');
           setAlertOpen(true);
         }
       }
@@ -52,13 +53,32 @@ const CurrentWeatherPage: React.FC = () => {
           </Typography>
         </Box>
 
-       
-        <Button onClick={() => navigate('/main')} variant="contained" color="primary" sx={{ backgroundColor: '#6e8efb', '&:hover': { backgroundColor: '#5b75d9' } }}>
-          <FaChevronLeft size={20} /> Back to Main Page
+        {/* Back Button with Icon */}
+        <Button
+          onClick={() => navigate('/main')}
+          variant="contained"
+          color="primary"
+          startIcon={<FaArrowLeft />}
+          sx={{
+            backgroundColor: '#6e8efb',
+            '&:hover': { backgroundColor: '#5b75d9' },
+            padding: '10px 20px',
+            borderRadius: '8px',
+            fontSize: '16px',
+            textTransform: 'none',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+            transition: 'all 0.3s ease-in-out',
+            ':hover': {
+              transform: 'scale(1.05)',
+              boxShadow: '0 6px 12px rgba(0, 0, 0, 0.2)',
+            },
+          }}
+        >
+          Main Page
         </Button>
       </Box>
 
-    
+      {/* Loading and Weather Data */}
       <Box sx={{ width: '80%', maxWidth: '800px', textAlign: 'center', mt: 10 }}>
         {loading ? (
           <CircularProgress size={60} sx={{ color: '#004c8c' }} />
@@ -78,14 +98,8 @@ const CurrentWeatherPage: React.FC = () => {
         )}
       </Box>
 
-    
-      <Snackbar
-        open={alertOpen}
-        autoHideDuration={6000}
-        onClose={handleCloseAlert}
-        message={alertMessage}
-        sx={{ bottom: 50 }}
-      />
+      {/* Custom Snackbar for Alerts */}
+      <AlertSnackbar open={alertOpen} message={alertMessage} onClose={handleCloseAlert} severity={alertSeverity} />
     </Box>
   );
 };

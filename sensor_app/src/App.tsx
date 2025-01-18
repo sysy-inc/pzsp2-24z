@@ -6,10 +6,10 @@ import MainPage from './pages/MainPage';
 import AdminPage from './pages/AdminPage';
 import CurrentWeatherPage from './pages/CurrentWeatherPage';
 import HistoricalDataPage from './pages/HistoricalDataPage'; 
-import PlatformChoicePage from './pages/PlatformChoicePage'; // Import the new page
+import PlatformChoicePage from './pages/PlatformChoicePage'; 
 
 const App: React.FC = () => {
-  const platforms = ["Platform A", "Platform B", "Platform C"]; // Example platform list
+  const platforms = ["Platform A", "Platform B", "Platform C"]; 
 
   return (
     <Router>

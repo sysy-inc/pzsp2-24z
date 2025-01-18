@@ -1,12 +1,18 @@
 import React from "react";
 import { Box, Typography, IconButton, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { FaCloud, FaHistory } from "react-icons/fa";
+import { FaCloud, FaHistory, FaSignOutAlt } from "react-icons/fa";
 import { MdAdminPanelSettings, MdOutlineCloudQueue } from "react-icons/md";
 
 const MainPage: React.FC = () => {
   const navigate = useNavigate();
   const platform = localStorage.getItem("selectedPlatform") || "Default Platform";
+
+  const handleLogout = () => {
+    
+    localStorage.clear();
+    navigate("/login"); 
+  };
 
   return (
     <Box
@@ -51,15 +57,32 @@ const MainPage: React.FC = () => {
           </Typography>
         </Box>
 
-        <IconButton
-          onClick={() => navigate("/admin")}
-          sx={{
-            backgroundColor: "rgba(255, 255, 255, 0.5)",
-            "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.7)" },
-          }}
-        >
-          <MdAdminPanelSettings size={28} color="#004c8c" />
-        </IconButton>
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <IconButton
+            onClick={() => navigate("/admin")}
+            sx={{
+              backgroundColor: "rgba(255, 255, 255, 0.5)",
+              "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.7)" },
+              marginRight: 2, 
+            }}
+          >
+            <MdAdminPanelSettings size={28} color="#004c8c" />
+          </IconButton>
+
+          {/* Log Out IconButton */}
+          <IconButton
+            onClick={handleLogout}
+            sx={{
+              backgroundColor: "rgba(255, 255, 255, 0.5)",
+              color: "#004c8c",
+              "&:hover": { backgroundColor: "#f44336", color: "#ffffff" },
+              borderRadius: "50%",
+              p: 1.5,
+            }}
+          >
+            <FaSignOutAlt size={24} />
+          </IconButton>
+        </Box>
       </Box>
 
       {/* Welcome Section */}

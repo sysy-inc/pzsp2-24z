@@ -4,10 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { Line } from 'react-chartjs-2';
 import { SelectChangeEvent } from '@mui/material/Select';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
-
+import { FaArrowLeft } from 'react-icons/fa'; 
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
-
 
 interface ChartData {
   labels: string[];
@@ -23,7 +22,6 @@ const HistoricalDataPage: React.FC = () => {
   const navigate = useNavigate();
   const [selectedRange, setSelectedRange] = useState<string>('hour');
 
- 
   const [chartData, setChartData] = useState<ChartData>({
     labels: [],
     datasets: [
@@ -49,7 +47,6 @@ const HistoricalDataPage: React.FC = () => {
   };
 
   const fetchDataForRange = (range: string) => {
-    
     let labels: string[] = [];
     let tempData: number[] = [];
     let humidityData: number[] = [];
@@ -82,7 +79,7 @@ const HistoricalDataPage: React.FC = () => {
   };
 
   React.useEffect(() => {
-    fetchDataForRange(selectedRange); 
+    fetchDataForRange(selectedRange);
   }, []);
 
   return (
@@ -98,7 +95,6 @@ const HistoricalDataPage: React.FC = () => {
         position: 'relative',
       }}
     >
-      
       <Box
         sx={{
           position: 'absolute',
@@ -126,27 +122,36 @@ const HistoricalDataPage: React.FC = () => {
           </Typography>
         </Box>
 
-       
+        {/* Return Button with Icon */}
         <Button
           onClick={() => navigate('/main')}
           variant="contained"
           color="primary"
+          startIcon={<FaArrowLeft />}
           sx={{
             backgroundColor: '#6e8efb',
             '&:hover': { backgroundColor: '#5b75d9' },
+            padding: '10px 20px',
+            borderRadius: '8px',
+            fontSize: '16px',
+            textTransform: 'none',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+            transition: 'all 0.3s ease-in-out',
+            ':hover': {
+              transform: 'scale(1.05)',
+              boxShadow: '0 6px 12px rgba(0, 0, 0, 0.2)',
+            },
           }}
         >
-          Return to Main Page
+          Main Page
         </Button>
       </Box>
 
-    
       <Box sx={{ width: '80%', maxWidth: '1200px', textAlign: 'center', mt: 6 }}>
         <Typography variant="h4" fontWeight="bold" sx={{ color: '#004c8c', mb: 4 }}>
           Weather Data Over Time
         </Typography>
 
-        
         <FormControl fullWidth sx={{ mb: 4 }}>
           <InputLabel id="select-time-range-label">Select Time Range</InputLabel>
           <Select
@@ -162,7 +167,6 @@ const HistoricalDataPage: React.FC = () => {
           </Select>
         </FormControl>
 
-      
         <Box sx={{ width: '100%', maxWidth: '900px', margin: '0 auto' }}>
           <Line data={chartData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} />
         </Box>

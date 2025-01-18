@@ -9,13 +9,12 @@ import {
   ListItemText,
   IconButton,
   Paper,
-  Divider,
 } from "@mui/material";
-import { FaTrash, FaUserPlus, FaUserMinus } from "react-icons/fa";
+import { FaTrash, FaUserPlus, FaUserMinus, FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 const AdminPage: React.FC = () => {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const [platforms, setPlatforms] = useState<string[]>(["Platform A", "Platform B", "Platform C"]);
   const [newPlatform, setNewPlatform] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
@@ -26,7 +25,6 @@ const AdminPage: React.FC = () => {
   });
   const [newUser, setNewUser] = useState("");
 
-  
   const handleAddPlatform = () => {
     if (newPlatform.trim() && !platforms.includes(newPlatform)) {
       setPlatforms([...platforms, newPlatform]);
@@ -37,7 +35,6 @@ const AdminPage: React.FC = () => {
     }
   };
 
-  
   const handleDeletePlatform = (platform: string) => {
     const confirmDelete = window.confirm(`Are you sure you want to delete platform "${platform}"?`);
     if (confirmDelete) {
@@ -48,7 +45,6 @@ const AdminPage: React.FC = () => {
     }
   };
 
-  // Add user access
   const handleAddUser = () => {
     if (!newUser.trim()) {
       alert("Please provide a valid user email.");
@@ -69,7 +65,6 @@ const AdminPage: React.FC = () => {
     }
   };
 
-  
   const handleRemoveUser = (user: string) => {
     if (selectedPlatform) {
       const currentUsers = userAccess[selectedPlatform] || [];
@@ -79,7 +74,6 @@ const AdminPage: React.FC = () => {
       });
     }
   };
-
 
   const handleReturnToMain = () => {
     navigate("/main");
@@ -97,21 +91,31 @@ const AdminPage: React.FC = () => {
         p: 4,
       }}
     >
-      {/* Return Button */}
+      {/* Return Button with Icon */}
       <Button
         variant="outlined"
         onClick={handleReturnToMain}
         sx={{
           position: "absolute",
           top: 16,
-          left: 16,
+          right: 16, 
           backgroundColor: "#ffffff",
           color: "#004c8c",
           borderColor: "#004c8c",
-          "&:hover": { backgroundColor: "#004c8c", color: "#ffffff" },
+          "&:hover": {
+            backgroundColor: "#004c8c",
+            color: "#ffffff",
+            transform: "scale(1.05)",
+            transition: "all 0.3s ease",
+          },
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          padding: "8px 16px",
         }}
       >
-        Return to Main Page
+        <FaArrowLeft />
+        Main Page
       </Button>
 
       {/* Header */}
