@@ -161,7 +161,7 @@ const MainPage: React.FC = () => {
         onClick={() => navigate("/platform-choice")}
         sx={{
           position: "absolute",
-          bottom: "100px", // Positioned at the bottom of the page, just below the other buttons
+          bottom: "100px", 
           left: "50%",
           transform: "translateX(-50%)",
           backgroundColor: "#6e8efb",
