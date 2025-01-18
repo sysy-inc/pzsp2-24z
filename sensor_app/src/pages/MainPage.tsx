@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Typography, IconButton } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { FaCloud, FaHistory } from 'react-icons/fa';
@@ -6,6 +6,13 @@ import { MdAdminPanelSettings, MdOutlineCloudQueue } from 'react-icons/md';
 
 const MainPage: React.FC = () => {
   const navigate = useNavigate();
+  const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Retrieve the selected platform from local storage
+    const platform = localStorage.getItem('selectedPlatform');
+    setSelectedPlatform(platform);
+  }, []);
 
   return (
     <Box
@@ -16,12 +23,11 @@ const MainPage: React.FC = () => {
         justifyContent: 'center',
         height: '100vh',
         position: 'relative',
-        background: 'linear-gradient(to bottom, #cce7ff, #e3f2fd)', 
+        background: 'linear-gradient(to bottom, #cce7ff, #e3f2fd)',
         overflow: 'hidden',
-        color: '#004c8c', 
+        color: '#004c8c',
       }}
     >
-     
       <Box
         sx={{
           position: 'absolute',
@@ -32,11 +38,10 @@ const MainPage: React.FC = () => {
           justifyContent: 'space-between',
           alignItems: 'center',
           p: 2,
-          backgroundColor: 'rgba(255, 255, 255, 0.6)', 
+          backgroundColor: 'rgba(255, 255, 255, 0.6)',
           boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
         }}
       >
-    
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <FaCloud size={36} style={{ color: '#004c8c' }} />
           <Typography
@@ -51,7 +56,6 @@ const MainPage: React.FC = () => {
           </Typography>
         </Box>
 
-       
         <IconButton
           onClick={() => navigate('/admin')}
           sx={{
@@ -63,22 +67,20 @@ const MainPage: React.FC = () => {
         </IconButton>
       </Box>
 
-     
       <Typography
         variant="h3"
         sx={{
           fontFamily: 'Poppins, sans-serif',
           textAlign: 'center',
-          mt: 10, 
+          mt: 10,
           color: '#004c8c',
           textShadow: '2px 2px 4px rgba(255, 255, 255, 0.7)',
           fontWeight: 'bold',
         }}
       >
-        Track the Climate, Feel the Changes
+        Welcome to {selectedPlatform || 'CloudPulse'}
       </Typography>
 
-      
       <Box
         sx={{
           display: 'flex',
@@ -90,7 +92,6 @@ const MainPage: React.FC = () => {
           width: '100%',
         }}
       >
-      
         <Box
           sx={{
             display: 'flex',
@@ -115,7 +116,6 @@ const MainPage: React.FC = () => {
           </Typography>
         </Box>
 
-        
         <Box
           sx={{
             display: 'flex',
