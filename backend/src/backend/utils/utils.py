@@ -1,7 +1,8 @@
 import json
-from pydantic import BaseModel, ValidationError
 from functools import wraps
-from typing import Generic, TypeVar, Type
+from typing import Generic, Type, TypeVar
+
+from pydantic import BaseModel, ValidationError
 
 Model = TypeVar("Model", bound=BaseModel)
 

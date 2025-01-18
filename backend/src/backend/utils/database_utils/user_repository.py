@@ -1,6 +1,8 @@
-from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
 from typing import List
+
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+
 from src.backend.utils.database_utils.models import User, UserSchema
 
 

@@ -1,8 +1,10 @@
+import json
+import socket
 from time import sleep
+
 from fastapi.testclient import TestClient
 from psycopg2.extensions import connection
-import socket
-import json
+
 from src.backend.app import app
 from tests.api_tests.conftest import call_no_params, postgres_db_fixture
 

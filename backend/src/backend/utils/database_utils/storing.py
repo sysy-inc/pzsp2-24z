@@ -4,7 +4,7 @@ from typing import cast
 from src.backend.utils.data_models import MeasurementFromPlatform
 from src.backend.utils.database_utils.db_controller import session_factory
 from src.backend.utils.database_utils.models import Measurement
-from src.backend.utils.utils import validate_and_convert_arguments, jsonToModel
+from src.backend.utils.utils import jsonToModel, validate_and_convert_arguments
 
 
 @validate_and_convert_arguments(model=MeasurementFromPlatform)

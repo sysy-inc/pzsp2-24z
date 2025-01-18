@@ -1,8 +1,10 @@
-from typing import List, Optional
 from datetime import datetime
+from typing import List, Optional
+
 from pydantic import BaseModel, Field
-from sqlalchemy import String, ForeignKey, DECIMAL, TIMESTAMP
-from sqlalchemy.orm import relationship, mapped_column, Mapped
+from sqlalchemy import DECIMAL, TIMESTAMP, ForeignKey, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from src.backend.utils.database_utils.db_controller import Base
 
 

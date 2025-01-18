@@ -1,18 +1,13 @@
 from collections import defaultdict
-from sqlalchemy import select, func, between
 from datetime import datetime
 
+from sqlalchemy import between, func, select
+
+from src.backend.utils.data_models import MeasurementData, MeasurementsResponse
 from src.backend.utils.database_utils.db_controller import session_factory
-from src.backend.utils.database_utils.models import (
-    Sensor,
-    Measurement,
-    MeasurementType,
-    UserPlatform,
-)
-from src.backend.utils.data_models import (
-    MeasurementsResponse,
-    MeasurementData,
-)
+from src.backend.utils.database_utils.models import (Measurement,
+                                                     MeasurementType, Sensor,
+                                                     UserPlatform)
 
 
 def fetch_latest_measurements_for_platform(

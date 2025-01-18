@@ -1,14 +1,13 @@
 from typing import Any
-from fastapi.testclient import TestClient
-import pytest
 
-from tests.api_tests.conftest import (
-    call_no_params,
-    postgres_db_fixture,
-    make_user_admin,
-)
-from src.backend.app import app
+import pytest
+from fastapi.testclient import TestClient
 from psycopg2.extensions import connection
+
+from src.backend.app import app
+from tests.api_tests.conftest import (add_user_to_platform, call_no_params,
+                                      get_auth_token, make_user_admin,
+                                      postgres_db_fixture, register_user)
 
 client = TestClient(app)
 
@@ -24,34 +23,6 @@ DB_QUERIES = [
 ]
 
 
-def register_user(email: str, password: str) -> None:
-    response = client.post(
-        "/auth/register",
-        json={"name": "Test", "surname": "User", "email": email, "password": password},
-    )
-    assert response.status_code == 200
-
-
-def add_user_to_platform(email: str, platform_id: int, admin_token: str) -> None:
-    response = client.post(
-        f"/api/platforms/{platform_id}/users/",
-        json={"email": email},
-        headers={"Authorization": f"Bearer {admin_token}"},
-    )
-    assert response.status_code == 200
-
-
-def get_auth_token(username: str, password: str) -> str:
-    """Get an authentication token by simulating a login request."""
-    response = client.post(
-        "/auth/token",
-        data={"username": username, "password": password},
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
-    )
-    assert response.status_code == 200
-    return response.json()["access_token"]
-
-
 @call_no_params
 @postgres_db_fixture(
     db_host=DB_HOST,
@@ -63,17 +34,19 @@ def get_auth_token(username: str, password: str) -> str:
 )
 def test_get_all_platforms(_):
 
-    register_user("test@admin", "admin")
+    register_user("test@admin", "admin", client)
 
     make_user_admin("test@admin", DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT)
 
-    token = get_auth_token("test@admin", "admin")
+    token = get_auth_token("test@admin", "admin", client)
 
-    register_user("test@user", "user")
+    register_user("test@user", "user", client)
 
-    token_user = get_auth_token("test@user", "user")
+    token_user = get_auth_token("test@user", "user", client)
 
-    add_user_to_platform(email="test@user", platform_id=1, admin_token=token)
+    add_user_to_platform(
+        email="test@user", platform_id=1, admin_token=token, client=client
+    )
 
     response = client.get(
         "/api/platforms/",
@@ -118,17 +91,19 @@ def test_get_all_platforms(_):
 )
 def test_get_single_platform(_):
 
-    register_user("test@admin", "admin")
+    register_user("test@admin", "admin", client)
 
     make_user_admin("test@admin", DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT)
 
-    token = get_auth_token("test@admin", "admin")
+    token = get_auth_token("test@admin", "admin", client)
 
-    register_user("test@user", "user")
+    register_user("test@user", "user", client)
 
-    token_user = get_auth_token("test@user", "user")
+    token_user = get_auth_token("test@user", "user", client)
 
-    add_user_to_platform(email="test@user", platform_id=1, admin_token=token)
+    add_user_to_platform(
+        email="test@user", platform_id=1, admin_token=token, client=client
+    )
 
     response = client.get(
         "/api/platforms/1",
@@ -210,15 +185,15 @@ def test_get_platform_measurements(
     )
     def test_wrapper(_):
 
-        register_user("test@admin", "admin")
+        register_user("test@admin", "admin", client)
         make_user_admin("test@admin", DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT)
-        token = get_auth_token("test@admin", "admin")
+        token = get_auth_token("test@admin", "admin", client)
 
-        register_user("test@user", "user")
-        token_user = get_auth_token("test@user", "user")
+        register_user("test@user", "user", client)
+        token_user = get_auth_token("test@user", "user", client)
 
         add_user_to_platform(
-            email="test@user", platform_id=platform_id, admin_token=token
+            email="test@user", platform_id=platform_id, admin_token=token, client=client
         )
 
         response = client.get(
@@ -243,11 +218,11 @@ def test_get_platform_measurements(
 )
 def test_create_platform_ok(connection: connection):
 
-    register_user("test@admin", "admin")
+    register_user("test@admin", "admin", client)
 
     make_user_admin("test@admin", DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT)
 
-    token = get_auth_token("test@admin", "admin")
+    token = get_auth_token("test@admin", "admin", client)
 
     response = client.post(
         "/api/platforms/",
@@ -277,9 +252,9 @@ def test_create_platform_ok(connection: connection):
 )
 def test_create_platform_bad_request(connection: connection):
 
-    register_user("test@admin", "admin")
+    register_user("test@admin", "admin", client)
     make_user_admin("test@admin", DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT)
-    token = get_auth_token("test@admin", "admin")
+    token = get_auth_token("test@admin", "admin", client)
 
     response = client.post(
         "/api/platforms/",
@@ -317,9 +292,9 @@ def test_create_platform_bad_request(connection: connection):
 )
 def test_create_platform_unauthorized(connection: connection):
 
-    register_user("test@user", "user")
+    register_user("test@user", "user", client)
 
-    token = get_auth_token("test@user", "user")
+    token = get_auth_token("test@user", "user", client)
 
     response = client.post(
         "/api/platforms/",
@@ -348,11 +323,11 @@ def test_create_platform_unauthorized(connection: connection):
 )
 def test_add_user_to_platform_ok(connection: connection):
 
-    register_user("test@admin", "admin")
+    register_user("test@admin", "admin", client)
     make_user_admin("test@admin", DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT)
-    token = get_auth_token("test@admin", "admin")
+    token = get_auth_token("test@admin", "admin", client)
 
-    register_user("test@user", "user")
+    register_user("test@user", "user", client)
 
     response = client.post(
         "/api/platforms/2/users/",
@@ -384,9 +359,9 @@ def test_add_user_to_platform_ok(connection: connection):
 )
 def test_add_user_to_platform_bad_request(connection: connection):
 
-    register_user("test@admin", "admin")
+    register_user("test@admin", "admin", client)
     make_user_admin("test@admin", DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT)
-    token = get_auth_token("test@admin", "admin")
+    token = get_auth_token("test@admin", "admin", client)
 
     response = client.post(
         "/api/platforms/2/users/",
@@ -415,9 +390,9 @@ def test_add_user_to_platform_bad_request(connection: connection):
 )
 def test_delete_user_from_platform_ok(connection: connection):
 
-    register_user("test@admin", "admin")
+    register_user("test@admin", "admin", client)
     make_user_admin("test@admin", DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT)
-    token = get_auth_token("test@admin", "admin")
+    token = get_auth_token("test@admin", "admin", client)
 
     response = client.delete(
         "/api/platforms/2/users/2",
@@ -446,9 +421,9 @@ def test_delete_user_from_platform_ok(connection: connection):
 )
 def test_delete_user_from_platform_user_not_on_platform(connection: connection):
 
-    register_user("test@admin", "admin")
+    register_user("test@admin", "admin", client)
     make_user_admin("test@admin", DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT)
-    token = get_auth_token("test@admin", "admin")
+    token = get_auth_token("test@admin", "admin", client)
 
     response = client.delete(
         "/api/platforms/2/users/99",
@@ -476,8 +451,8 @@ def test_delete_user_from_platform_user_not_on_platform(connection: connection):
 )
 def test_delete_user_from_platform_unauthorized(connection: connection):
 
-    register_user("test@user", "user")
-    token = get_auth_token("test@user", "user")
+    register_user("test@user", "user", client)
+    token = get_auth_token("test@user", "user", client)
 
     response = client.delete(
         "/api/platforms/2/users/2",

@@ -1,27 +1,23 @@
 from datetime import datetime
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field
+
 import sqlalchemy
 import sqlalchemy.exc
-from sqlalchemy.orm.session import Session
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
 from sqlalchemy import between, select
-
-from src.backend.utils.database_utils.db_controller import get_session
-from src.backend.utils.database_utils.models import (
-    Measurement,
-    MeasurementType,
-    MeasurementTypeSchema,
-    Platform,
-    PlatformSchema,
-    Sensor,
-    User,
-    UserPlatform,
-    UserPlatformSchema,
-)
 from sqlalchemy.orm import selectinload
-from src.backend.routes.auth import get_current_user
+from sqlalchemy.orm.session import Session
 
+from src.backend.routes.auth import get_current_user
+from src.backend.utils.database_utils.db_controller import get_session
+from src.backend.utils.database_utils.models import (Measurement,
+                                                     MeasurementType,
+                                                     MeasurementTypeSchema,
+                                                     Platform, PlatformSchema,
+                                                     Sensor, User,
+                                                     UserPlatform,
+                                                     UserPlatformSchema)
 
 platforms = APIRouter()
 

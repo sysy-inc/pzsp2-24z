@@ -1,6 +1,8 @@
 from functools import wraps
 from typing import Any, Callable
+
 import psycopg2
+from fastapi.testclient import TestClient
 from psycopg2.extensions import connection
 
 
@@ -63,6 +65,36 @@ def call_no_params(func: Callable[..., Any]):
         func()
 
     return wrapper
+
+
+def register_user(email: str, password: str, client: TestClient) -> None:
+    response = client.post(
+        "/auth/register",
+        json={"name": "Test", "surname": "User", "email": email, "password": password},
+    )
+    assert response.status_code == 200
+
+
+def add_user_to_platform(
+    email: str, platform_id: int, admin_token: str, client: TestClient
+) -> None:
+    response = client.post(
+        f"/api/platforms/{platform_id}/users/",
+        json={"email": email},
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert response.status_code == 200
+
+
+def get_auth_token(username: str, password: str, client: TestClient) -> str:
+    """Get an authentication token by simulating a login request."""
+    response = client.post(
+        "/auth/token",
+        data={"username": username, "password": password},
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    assert response.status_code == 200
+    return response.json()["access_token"]
 
 
 def make_user_admin(

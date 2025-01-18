@@ -1,23 +1,18 @@
 from datetime import datetime, timedelta, timezone
 from typing import Annotated, Any, Literal
-from sqlalchemy.orm import Session
 
 import jwt
-from fastapi import APIRouter, Depends, HTTPException, WebSocket, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jwt.exceptions import InvalidTokenError
 from passlib.context import CryptContext
 from pydantic import BaseModel
-from sqlalchemy.exc import IntegrityError
-
-from src.backend.utils.database_utils.models import UserSchema, User
-from src.backend.utils.database_utils.user_repository import (
-    UserRepository,
-    UserNotFoundError,
-    DuplicateUserError,
-)
+from sqlalchemy.orm import Session
 
 from src.backend.utils.database_utils.db_controller import get_session
+from src.backend.utils.database_utils.models import User
+from src.backend.utils.database_utils.user_repository import (
+    DuplicateUserError, UserNotFoundError, UserRepository)
 
 # TODO Replace with env variable from secrets
 # Generate with:
@@ -158,10 +153,31 @@ def register_new_user(
     )
     try:
         UserRepository.add_user(session, user)
-    except IntegrityError:
+    except DuplicateUserError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="User already exists.",
         )
 
     return {"message": "User registered successfully"}
+
+
+class UserResponse(BaseModel):
+    id: int
+    name: str
+    surname: str
+    email: str
+    is_admin: bool
+
+
+@auth_router.get("/me")
+def read_currently_logged_in_user_id(
+    user: User = Depends(get_current_user),
+) -> UserResponse:
+    return UserResponse(
+        id=user.id,
+        name=user.name,
+        surname=user.surname,
+        email=user.email,
+        is_admin=user.is_admin,
+    )
