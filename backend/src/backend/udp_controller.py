@@ -10,10 +10,10 @@ class UDPServer(asyncio.DatagramProtocol):
         self.save_to_db = save_to_db_callback
         self.init_decrypt_function()
         
-    def connection_made(self, transport):
+    def connection_made(self, transport: asyncio.BaseTransport) -> None:
         self.transport = transport
 
-    def datagram_received(self, data, addr):
+    def datagram_received(self, data: bytes, addr: Any) -> None:
         message = self.decrypt(data, addr)
 
         # Schedule the save task
@@ -22,18 +22,19 @@ class UDPServer(asyncio.DatagramProtocol):
     def connection_lost(self, exc: Optional[Exception]) -> None:
         print("Connection lost")
 
-    def init_decrypt_function(self):
+    def init_decrypt_function(self) -> None:
+        # need to encrypt and decrypt using the same library, combining two different libraries caused problems
         self.ffi = FFI()
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
         self.lib = self.ffi.dlopen(os.path.join(BASE_DIR, "decrypt.so"))
-
         # self.lib = self.ffi.dlopen("./decrypt.so")
+
         # C function interface
         self.ffi.cdef("""
             const unsigned char *decrypt(const unsigned char *ciphertext, size_t length);
         """)
 
-    def decrypt(self, data, addr):
+    def decrypt(self, data: bytes, addr: Any) -> str:
         ciphertext_len = int.from_bytes(data[:4], byteorder="little")
         expected_len = 16 + ciphertext_len
         ciphertext_c = self.ffi.new("unsigned char[]", data)
@@ -47,7 +48,7 @@ class UDPServer(asyncio.DatagramProtocol):
             return ""
 
 
-async def init_udp_server(host_addr="::", port="12345"):
+async def init_udp_server(host_addr: str = "::", port: str = "5000") -> None:
     loop = asyncio.get_event_loop()
     transport, protocol = await loop.create_datagram_endpoint(  # type: ignore
         lambda: UDPServer(save_sample_to_db), local_addr=(host_addr, port)  # type: ignore
