@@ -1,25 +1,23 @@
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field
+from typing import Annotated
+
 import sqlalchemy
 import sqlalchemy.exc
-from sqlalchemy.orm.session import Session
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
 from sqlalchemy import between, select
-
-from src.backend.utils.database_utils.db_controller import get_session
-from src.backend.utils.database_utils.models import (
-    Measurement,
-    MeasurementType,
-    MeasurementTypeSchema,
-    Platform,
-    PlatformSchema,
-    Sensor,
-    User,
-    UserPlatform,
-    UserPlatformSchema,
-)
 from sqlalchemy.orm import selectinload
+from sqlalchemy.orm.session import Session
 
+from src.backend.routes.auth import get_current_user
+from src.backend.utils.database_utils.db_controller import get_session
+from src.backend.utils.database_utils.models import (Measurement,
+                                                     MeasurementType,
+                                                     MeasurementTypeSchema,
+                                                     Platform, PlatformSchema,
+                                                     Sensor, User,
+                                                     UserPlatform,
+                                                     UserPlatformSchema)
 
 platforms = APIRouter()
 
@@ -57,8 +55,10 @@ class PlatformsResponsePlatform(BaseModel):
 
 
 @platforms.get("/", response_model=list[PlatformsResponsePlatform])
-def read_platforms(session: Session = Depends(get_session)):
-    _user_id = 1
+def read_platforms(
+    user: Annotated[User, Depends(get_current_user)],
+    session: Session = Depends(get_session),
+):
 
     results: list[PlatformsResponsePlatform] = []
 
@@ -69,7 +69,7 @@ def read_platforms(session: Session = Depends(get_session)):
         .join(Sensor, Sensor.platform_id == Platform.id)
         .join(MeasurementType, Sensor.measurement_type_id == MeasurementType.id)
         .options(selectinload(Platform.sensors).selectinload(Sensor.measurement_type))
-        .where(User.id == _user_id)
+        .where(User.id == user.id)
         .distinct()
     )
     user_platforms = query.scalars().unique().all()
@@ -81,8 +81,11 @@ def read_platforms(session: Session = Depends(get_session)):
 
 
 @platforms.get("/{platform_id}", response_model=PlatformsResponsePlatform)
-def read_platform(platform_id: int, session: Session = Depends(get_session)):
-    _user_id = 1
+def read_platform(
+    platform_id: int,
+    user: Annotated[User, Depends(get_current_user)],
+    session: Session = Depends(get_session),
+):
 
     res = session.execute(
         select(Platform)
@@ -91,7 +94,7 @@ def read_platform(platform_id: int, session: Session = Depends(get_session)):
         .join(Sensor, Sensor.platform_id == Platform.id)
         .join(MeasurementType, Sensor.measurement_type_id == MeasurementType.id)
         .options(selectinload(Platform.sensors).selectinload(Sensor.measurement_type))
-        .where(User.id == _user_id)
+        .where(User.id == user.id)
         .where(Platform.id == platform_id)
         .distinct()
     )
@@ -118,6 +121,7 @@ class MeasurementsResponseEntry(BaseModel):
 )
 def read_measurements(
     platform_id: int,
+    user: Annotated[User, Depends(get_current_user)],
     session: Session = Depends(get_session),
     measurement_type: str = Query(
         alias="measurementType", description="Measurement type"
@@ -131,7 +135,6 @@ def read_measurements(
         datetime.now(), alias="dateTo", description="End date for the range"
     ),
 ):
-    _user_id = 1
 
     sensor_query = session.execute(
         select(Sensor)
@@ -140,7 +143,7 @@ def read_measurements(
         .join(User, User.id == UserPlatform.user_id)
         .join(MeasurementType, Sensor.measurement_type_id == MeasurementType.id)
         .where(Sensor.platform_id == platform_id)
-        .where(User.id == _user_id)
+        .where(User.id == user.id)
         .where(Sensor.measurement_type.has(physical_parameter=measurement_type))
     )
     sensor = sensor_query.scalars().unique().first()
@@ -167,11 +170,12 @@ class PlatformCreateRequest(BaseModel):
 
 @platforms.post("/", response_model=PlatformSchema)
 def create_platform(
-    platform: PlatformCreateRequest, session: Session = Depends(get_session)
+    platform: PlatformCreateRequest,
+    user: Annotated[User, Depends(get_current_user)],
+    session: Session = Depends(get_session),
 ):
-    is_user_admin = True
 
-    if not is_user_admin:
+    if not user.is_admin:
         raise HTTPException(status_code=403, detail="Forbidden")
 
     new_platform = Platform(name=platform.name)
@@ -190,22 +194,23 @@ class PlatformAddUserRequest(BaseModel):
 def add_user_to_platform(
     platform_id: int,
     user_data: PlatformAddUserRequest,
+    user: Annotated[User, Depends(get_current_user)],
     session: Session = Depends(get_session),
 ):
-    is_user_admin = True
 
-    if not is_user_admin:
+    if not user.is_admin:
         raise HTTPException(status_code=403, detail="Forbidden")
 
-    user = session.query(User).filter(User.email == user_data.email).first()
-    if user is None:
+    new_user = session.query(User).filter(User.email == user_data.email).first()
+
+    if new_user is None:
         raise HTTPException(status_code=404, detail="User not found")
 
     platform = session.query(Platform).filter(Platform.id == platform_id).first()
     if platform is None:
         raise HTTPException(status_code=404, detail="Platform not found")
 
-    user_platform = UserPlatform(user_id=user.id, platform_id=platform.id)
+    user_platform = UserPlatform(user_id=new_user.id, platform_id=platform.id)
     try:
         session.add(user_platform)
         session.commit()
@@ -220,11 +225,11 @@ def add_user_to_platform(
 def delete_user_from_platform(
     platform_id: int,
     user_id: int,
+    user: Annotated[User, Depends(get_current_user)],
     session: Session = Depends(get_session),
 ):
-    is_user_admin = True
 
-    if not is_user_admin:
+    if not user.is_admin:
         raise HTTPException(status_code=403, detail="Forbidden")
 
     user_platform = (
