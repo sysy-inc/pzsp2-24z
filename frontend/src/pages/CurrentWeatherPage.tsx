@@ -24,9 +24,18 @@ const CurrentWeatherPage: React.FC = () => {
     const fetchWeatherData = async () => {
       try {
     
-        const response = await axios.get(
-          `http://0.0.0.0:8000/platforms/${selectedPlatformId}/latest-measurements`
-        );
+        const token = localStorage.getItem("access_token");
+
+        const measurementType = "Temperature"
+
+        const response = await axios.get(`http://0.0.0.0:8000/api/platforms/${selectedPlatformId}/latest_measurements`, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Include the access token for authentication
+          },
+          params: {
+            measurementType: measurementType, // Maps to `measurement_type` query parameter
+          },
+        });
 
     
         const filteredData = response.data.filter((measurement: any) =>

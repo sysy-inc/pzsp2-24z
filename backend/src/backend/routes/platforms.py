@@ -9,15 +9,22 @@ from sqlalchemy import between, select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.orm.session import Session
 
+from src.backend.utils.database_utils.fetching import (
+    fetch_latest_measurements_for_platform,
+)
 from src.backend.routes.auth import get_current_user
 from src.backend.utils.database_utils.db_controller import get_session
-from src.backend.utils.database_utils.models import (Measurement,
-                                                     MeasurementType,
-                                                     MeasurementTypeSchema,
-                                                     Platform, PlatformSchema,
-                                                     Sensor, User,
-                                                     UserPlatform,
-                                                     UserPlatformSchema)
+from src.backend.utils.database_utils.models import (
+    Measurement,
+    MeasurementType,
+    MeasurementTypeSchema,
+    Platform,
+    PlatformSchema,
+    Sensor,
+    User,
+    UserPlatform,
+    UserPlatformSchema,
+)
 
 platforms = APIRouter()
 
@@ -52,6 +59,26 @@ class PlatformsResponsePlatform(BaseModel):
     model_config = {
         "from_attributes": True,
     }
+
+
+@platforms.get("/{platform_id}/latest_measurements")
+def get_latest_measurements(
+    platform_id: int,
+    user: Annotated[User, Depends(get_current_user)],
+    session: Session = Depends(get_session),
+    measurement_type: str = Query(
+        alias="measurementType", description="Measurement type"
+    ),
+):
+    measurements = fetch_latest_measurements_for_platform(platform_id)
+
+    latest_measurement = measurements.measurements[measurement_type][0]
+
+    measurements_respone = MeasurementsResponseEntry(
+        date=latest_measurement.date, value=latest_measurement.value
+    )
+
+    return measurements_respone
 
 
 @platforms.get("/", response_model=list[PlatformsResponsePlatform])
