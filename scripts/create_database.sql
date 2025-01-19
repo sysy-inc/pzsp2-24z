@@ -31,7 +31,7 @@ CREATE TABLE users (
 );
 
 CREATE TABLE users_platforms (
-    id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id int NOT NULL REFERENCES users (id),
-    platform_id int NOT NULL REFERENCES platforms (id)
+    platform_id int NOT NULL REFERENCES platforms (id),
+    PRIMARY KEY (user_id, platform_id)
 );

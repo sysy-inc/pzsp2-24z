@@ -1,5 +1,6 @@
 from typing import List, Optional
 from datetime import datetime
+from pydantic import BaseModel, Field
 from sqlalchemy import String, ForeignKey, DECIMAL, TIMESTAMP
 from sqlalchemy.orm import relationship, mapped_column, Mapped
 from src.backend.utils.database_utils.db_controller import Base
@@ -17,6 +18,17 @@ class User(Base):
     users_platforms: Mapped[List["UserPlatform"]] = relationship(back_populates="user")
 
 
+class UserSchema(BaseModel):
+    name: str = Field(..., title="Name of the user")
+    surname: str = Field(..., title="Surname of the user")
+    email: str = Field(..., title="Email of the user")
+    passwd: str = Field(..., title="Password of the user")
+    id: int = Field(..., title="ID of the user")
+    model_config = {
+        "from_attributes": True,
+    }
+
+
 class Platform(Base):
     __tablename__ = "platforms"
 
@@ -29,15 +41,32 @@ class Platform(Base):
     sensors: Mapped[List["Sensor"]] = relationship(back_populates="platform")
 
 
+class PlatformSchema(BaseModel):
+    name: str = Field(..., title="Name of the platform")
+    id: int = Field(..., title="ID of the platform")
+    model_config = {
+        "from_attributes": True,
+    }
+
+
 class UserPlatform(Base):
     __tablename__ = "users_platforms"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    platform_id: Mapped[int] = mapped_column(ForeignKey("platforms.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    platform_id: Mapped[int] = mapped_column(
+        ForeignKey("platforms.id"), primary_key=True
+    )
 
     user: Mapped["User"] = relationship(back_populates="users_platforms")
     platform: Mapped["Platform"] = relationship(back_populates="users_platforms")
+
+
+class UserPlatformSchema(BaseModel):
+    user_id: int = Field(..., title="ID of the user")
+    platform_id: int = Field(..., title="ID of the platform")
+    model_config = {
+        "from_attributes": True,
+    }
 
 
 class Sensor(Base):
@@ -52,6 +81,15 @@ class Sensor(Base):
     measurements: Mapped[List["Measurement"]] = relationship(back_populates="sensor")
 
 
+class SensorSchema(BaseModel):
+    id: int = Field(..., title="ID of the sensor")
+    measurement_type_id: int = Field(..., title="ID of the measurement type")
+    platform_id: int = Field(..., title="ID of the platform")
+    model_config = {
+        "from_attributes": True,
+    }
+
+
 class MeasurementType(Base):
     __tablename__ = "measurement_types"
 
@@ -60,6 +98,15 @@ class MeasurementType(Base):
     unit: Mapped[str] = mapped_column(String(15))
 
     sensors: Mapped[List["Sensor"]] = relationship(back_populates="measurement_type")
+
+
+class MeasurementTypeSchema(BaseModel):
+    id: int = Field(..., title="ID of the measurement type")
+    physical_parameter: str = Field(..., title="Physical parameter")
+    unit: str = Field(..., title="Unit")
+    model_config = {
+        "from_attributes": True,
+    }
 
 
 class Measurement(Base):
@@ -71,3 +118,13 @@ class Measurement(Base):
     date: Mapped[datetime] = mapped_column(TIMESTAMP)
 
     sensor: Mapped["Sensor"] = relationship(back_populates="measurements")
+
+
+class MeasurementSchema(BaseModel):
+    sensor_id: int = Field(..., title="ID of the sensor")
+    value: float = Field(..., title="Value of the measurement")
+    date: datetime = Field(..., title="Date of the measurement")
+    id: int = Field(..., title="ID of the measurement")
+    model_config = {
+        "from_attributes": True,
+    }

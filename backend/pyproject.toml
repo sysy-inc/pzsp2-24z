@@ -5,7 +5,7 @@ description = "Default template for PDM package"
 authors = [
     {name = "Jedrzej Grabski", email = "grabski.dev@gmail.com"},
 ]
-dependencies = ["fastapi>=0.115.6", "sqlalchemy>=2.0.36", "databases>=0.9.0", "uvicorn>=0.32.1", "asyncpg>=0.30.0", "psycopg2-binary>=2.9.10", "websockets>=14.1"]
+dependencies = ["fastapi>=0.115.6", "sqlalchemy>=2.0.36", "databases>=0.9.0", "uvicorn>=0.32.1", "asyncpg>=0.30.0", "psycopg2-binary>=2.9.10", "websockets>=14.1", "httpx>=0.28.1", "trio>=0.28.0", "coverage>=7.6.10"]
 requires-python = "==3.12.*"
 readme = "README.md"
 license = {text = "MIT"}
@@ -18,9 +18,20 @@ distribution = false
 [tool.pdm.scripts]
 start = {shell = "uvicorn src.backend.app:app --host 0.0.0.0 --port 8000"}
 start-dev = {shell = "uvicorn src.backend.app:app --reload --host 0.0.0.0 --port 8000"}
+coverage = {shell = "coverage run -m pytest && coverage report"}
+lint = {shell = "flake8 src tests && black --check src tests && isort --check-only src tests"}
+format = {shell = "black src tests && isort src tests"}
+test = {shell = "pytest"}
+
+
 [dependency-groups]
-dev = [
-    "pytest>=8.3.4",
+test = [
+    "pytest>=8.3.3",
+    "pytest-cov",
     "pytest-asyncio>=0.25.0",
 ]
-
+lint = [
+    "black>=24.10.0",
+    "isort>=5.13.2",
+    "flake8>=7.1.1",
+]
