@@ -2,10 +2,11 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from src.backend.utils.database_utils.db_controller import close_db, init_db
-from src.backend.routes.api import api_router
+
+from src.backend.routes.auth import auth_router
 from src.backend.routes.platforms import platforms
 from src.backend.udp_controller import init_udp_server
+from src.backend.utils.database_utils.db_controller import close_db, init_db
 
 udp_server = None
 
@@ -20,8 +21,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-app.include_router(api_router, prefix="/api")
 app.include_router(platforms, prefix="/api/platforms")
+app.include_router(auth_router, prefix="/auth")
 
 # Allow requests from the frontend
 app.add_middleware(

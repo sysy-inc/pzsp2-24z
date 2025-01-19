@@ -4,8 +4,8 @@ INSERT INTO measurement_types (physical_parameter, unit) VALUES
     ('Humidity', '%');
 
 -- Add an administrator user
-INSERT INTO users (name, surname, email, passwd) VALUES
-    ('admin', 'admin', 'admin@admin', 'admin');
+INSERT INTO users (name, surname, email, hashed_pwd, is_admin) VALUES
+    ('admin', 'admin', 'admin@admin', 'admin', true);
 
 -- Add an initial platform for measurements
 INSERT INTO platforms (name) VALUES
@@ -31,8 +31,8 @@ INSERT INTO measurements (sensor_id, value, date) VALUES
     (2, 57.8, '2024-12-11 13:00:00'); -- Humidity: 57.8%
 
 -- Add a new user to the system
-INSERT INTO users (name, surname, email, passwd) VALUES
-    ('John', 'Doe', 'john.doe@example.com', 'securepassword123');
+INSERT INTO users (name, surname, email, hashed_pwd, is_admin) VALUES
+    ('John', 'Doe', 'john.doe@example.com', 'securepassword123', false);
 
 -- Add a second platform for additional measurements
 INSERT INTO platforms (name) VALUES

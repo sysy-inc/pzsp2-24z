@@ -1,12 +1,12 @@
 import asyncio
 import os
-from typing import Callable
+from typing import Any, Callable, Coroutine, Optional
 from src.backend.utils.database_utils.storing import save_sample_to_db
 from cffi import FFI
 
 
 class UDPServer(asyncio.DatagramProtocol):
-    def __init__(self, save_to_db_callback: Callable[[str], asyncio.Task]):
+    def __init__(self, save_to_db_callback: Callable[[str], Coroutine[Any, Any, None]]):
         self.save_to_db = save_to_db_callback
         self.init_decrypt_function()
         
@@ -19,7 +19,7 @@ class UDPServer(asyncio.DatagramProtocol):
         # Schedule the save task
         asyncio.create_task(self.save_to_db(message))
 
-    def connection_lost(self, exc):
+    def connection_lost(self, exc: Optional[Exception]) -> None:
         print("Connection lost")
 
     def init_decrypt_function(self):
@@ -49,7 +49,7 @@ class UDPServer(asyncio.DatagramProtocol):
 
 async def init_udp_server(host_addr="::", port="12345"):
     loop = asyncio.get_event_loop()
-    transport, protocol = await loop.create_datagram_endpoint(
-        lambda: UDPServer(save_sample_to_db), local_addr=(host_addr, port)
+    transport, protocol = await loop.create_datagram_endpoint(  # type: ignore
+        lambda: UDPServer(save_sample_to_db), local_addr=(host_addr, port)  # type: ignore
     )
     print(f"UDP server listening on {host_addr}:{port}")
