@@ -2,10 +2,10 @@
 # It is not intended for manual editing.
 
 [metadata]
-groups = ["default", "dev"]
+groups = ["default"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:6878f92687caff1d12c98508ed916449cbd2667b6ea239b44ad6b162a0dfc97f"
+content_hash = "sha256:685424599a3f4867d2e21d47cbf9f61656754518b2e0cd71725296b4220f46de"
 
 [[metadata.targets]]
 requires_python = "==3.12.*"
@@ -90,7 +90,6 @@ version = "1.17.1"
 requires_python = ">=3.8"
 summary = "Foreign Function Interface for Python calling C code."
 groups = ["default"]
-marker = "os_name == \"nt\" and implementation_name != \"pypy\""
 dependencies = [
     "pycparser",
 ]
@@ -129,8 +128,8 @@ name = "colorama"
 version = "0.4.6"
 requires_python = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7"
 summary = "Cross-platform colored terminal text."
-groups = ["default", "dev"]
-marker = "sys_platform == \"win32\" or platform_system == \"Windows\""
+groups = ["default"]
+marker = "platform_system == \"Windows\""
 files = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
@@ -264,17 +263,6 @@ files = [
 ]
 
 [[package]]
-name = "iniconfig"
-version = "2.0.0"
-requires_python = ">=3.7"
-summary = "brain-dead simple config-ini parsing"
-groups = ["dev"]
-files = [
-    {file = "iniconfig-2.0.0-py3-none-any.whl", hash = "sha256:b6a85871a79d2e3b22d2d1b94ac2824226a63c6b741c88f7ae975f18b6778374"},
-    {file = "iniconfig-2.0.0.tar.gz", hash = "sha256:2d91e135bf72d31a410b17c16da610a82cb55f6b0477d1a902134b24a455b8b3"},
-]
-
-[[package]]
 name = "outcome"
 version = "1.3.0.post0"
 requires_python = ">=3.7"
@@ -286,28 +274,6 @@ dependencies = [
 files = [
     {file = "outcome-1.3.0.post0-py2.py3-none-any.whl", hash = "sha256:e771c5ce06d1415e356078d3bdd68523f284b4ce5419828922b6871e65eda82b"},
     {file = "outcome-1.3.0.post0.tar.gz", hash = "sha256:9dcf02e65f2971b80047b377468e72a268e15c0af3cf1238e6ff14f7f91143b8"},
-]
-
-[[package]]
-name = "packaging"
-version = "24.2"
-requires_python = ">=3.8"
-summary = "Core utilities for Python packages"
-groups = ["dev"]
-files = [
-    {file = "packaging-24.2-py3-none-any.whl", hash = "sha256:09abb1bccd265c01f4a3aa3f7a7db064b36514d2cba19a2f694fe6150451a759"},
-    {file = "packaging-24.2.tar.gz", hash = "sha256:c228a6dc5e932d346bc5739379109d49e8853dd8223571c7c5b55260edc0b97f"},
-]
-
-[[package]]
-name = "pluggy"
-version = "1.5.0"
-requires_python = ">=3.8"
-summary = "plugin and hook calling mechanisms for python"
-groups = ["dev"]
-files = [
-    {file = "pluggy-1.5.0-py3-none-any.whl", hash = "sha256:44e1ad92c8ca002de6377e165f3e0f1be63266ab4d554740532335b9d75ea669"},
-    {file = "pluggy-1.5.0.tar.gz", hash = "sha256:2cffa88e94fdc978c4c574f15f9e59b7f4201d439195c3715ca9e2486f1d0cf1"},
 ]
 
 [[package]]
@@ -338,7 +304,6 @@ version = "2.22"
 requires_python = ">=3.8"
 summary = "C parser in Python"
 groups = ["default"]
-marker = "os_name == \"nt\" and implementation_name != \"pypy\""
 files = [
     {file = "pycparser-2.22-py3-none-any.whl", hash = "sha256:c3702b6d3dd8c7abc1afa565d7e63d53a1d0bd86cdc24edd75470f4de499cfcc"},
     {file = "pycparser-2.22.tar.gz", hash = "sha256:491c8be9c040f5390f5bf44a5b07752bd07f56edf992381b05c701439eec10f6"},
@@ -385,39 +350,6 @@ files = [
     {file = "pydantic_core-2.27.1-cp312-none-win_amd64.whl", hash = "sha256:66ff044fd0bb1768688aecbe28b6190f6e799349221fb0de0e6f4048eca14c16"},
     {file = "pydantic_core-2.27.1-cp312-none-win_arm64.whl", hash = "sha256:9a3b0793b1bbfd4146304e23d90045f2a9b5fd5823aa682665fbdaf2a6c28f3e"},
     {file = "pydantic_core-2.27.1.tar.gz", hash = "sha256:62a763352879b84aa31058fc931884055fd75089cccbd9d58bb6afd01141b235"},
-]
-
-[[package]]
-name = "pytest"
-version = "8.3.4"
-requires_python = ">=3.8"
-summary = "pytest: simple powerful testing with Python"
-groups = ["dev"]
-dependencies = [
-    "colorama; sys_platform == \"win32\"",
-    "exceptiongroup>=1.0.0rc8; python_version < \"3.11\"",
-    "iniconfig",
-    "packaging",
-    "pluggy<2,>=1.5",
-    "tomli>=1; python_version < \"3.11\"",
-]
-files = [
-    {file = "pytest-8.3.4-py3-none-any.whl", hash = "sha256:50e16d954148559c9a74109af1eaf0c945ba2d8f30f0a3d3335edde19788b6f6"},
-    {file = "pytest-8.3.4.tar.gz", hash = "sha256:965370d062bce11e73868e0335abac31b4d3de0e82f4007408d242b4f8610761"},
-]
-
-[[package]]
-name = "pytest-asyncio"
-version = "0.25.2"
-requires_python = ">=3.9"
-summary = "Pytest support for asyncio"
-groups = ["dev"]
-dependencies = [
-    "pytest<9,>=8.2",
-]
-files = [
-    {file = "pytest_asyncio-0.25.2-py3-none-any.whl", hash = "sha256:0d0bb693f7b99da304a0634afc0a4b19e49d5e0de2d670f38dc4bfa5727c5075"},
-    {file = "pytest_asyncio-0.25.2.tar.gz", hash = "sha256:3f8ef9a98f45948ea91a0ed3dc4268b5326c0e7bce73892acc654df4262ad45f"},
 ]
 
 [[package]]

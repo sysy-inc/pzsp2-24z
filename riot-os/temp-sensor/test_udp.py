@@ -86,14 +86,14 @@ def test_sending_unencrypted_data_udp_ipv6():
 
     server_thread.join()
 
-    # assert len(received_messages) == 10
+    assert len(received_messages) == 10
 
-    # for message in received_messages:
-    #     MeasurementMessage.model_validate_json(message)
+    for message in received_messages:
+        MeasurementMessage.model_validate_json(message)
 
-    # print(f"Received messages: {received_messages}")
+    print(f"Received messages: {received_messages}")
 
 
 if __name__ == "__main__":
-    # test_sending_unencrypted_data_udp_ipv6()
-    udp_server()
+    test_sending_unencrypted_data_udp_ipv6()
+    # udp_server()
