@@ -26,8 +26,9 @@ CREATE TABLE users (
     id int GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name varchar(20) NOT NULL,
     surname varchar(30) NOT NULL,
-    email varchar(40) NOT NULL,
-    passwd varchar(30) NOT NULL
+    email varchar(40) NOT NULL UNIQUE,
+    hashed_pwd varchar(60) NOT NULL,
+    is_admin boolean NOT NULL
 );
 
 CREATE TABLE users_platforms (
