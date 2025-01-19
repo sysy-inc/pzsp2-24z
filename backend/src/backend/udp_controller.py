@@ -22,6 +22,7 @@ class UDPServer(asyncio.DatagramProtocol):
     def connection_lost(self, exc: Optional[Exception]) -> None:
         print("Connection lost")
 
+
     def init_decrypt_function(self) -> None:
         # need to encrypt and decrypt using the same library, combining two different libraries caused problems
         self.ffi = FFI()
