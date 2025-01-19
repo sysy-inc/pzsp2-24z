@@ -1,22 +1,47 @@
 import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Paper } from '@mui/material';
 import { FaUserPlus } from 'react-icons/fa';
-import { Link, useNavigate } from 'react-router-dom';
-import ParticlesBackground from '../components/common/ParticlesBackground';
+import { useNavigate } from 'react-router-dom';
 
 const SignUpPage: React.FC = () => {
+  const [name, setName] = useState('');
+  const [surname, setSurname] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const navigate = useNavigate(); 
+  const [repeatPassword, setRepeatPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const navigate = useNavigate();
 
-  const handleSignUp = () => {
-    if (password !== confirmPassword) {
-      alert('Passwords do not match!');
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+  
+    if (password !== repeatPassword) {
+      setError('Passwords do not match!');
       return;
     }
-    console.log('Email:', email, 'Password:', password);
-    navigate('/signin'); 
+
+    try {
+      const response = await fetch('http://0.0.0.0:8000/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, surname, email, password }),
+      });
+
+      if (response.ok) {
+        setSuccess('Registration successful! Please log in.');
+        setTimeout(() => navigate('/signin'), 2000);
+      } else {
+        const data = await response.json();
+        setError(data.detail || 'Registration failed');
+      }
+    } catch (error) {
+      console.log(error);
+      setError('Something went wrong. Please try again.');
+    }
   };
 
   return (
@@ -31,22 +56,44 @@ const SignUpPage: React.FC = () => {
         background: 'linear-gradient(to bottom, #f8f9fa, #87CEEB)',
       }}
     >
-      <ParticlesBackground />
-      <Paper elevation={6} sx={{ p: 4, width: 400, borderRadius: 3, zIndex: 1 }}>
+      <Paper elevation={6} sx={{ p: 4, width: 400, borderRadius: 3 }}>
         <Box display="flex" justifyContent="center" mb={2}>
           <FaUserPlus size={32} color="#6e8efb" />
         </Box>
         <Typography variant="h5" textAlign="center" fontWeight="bold" gutterBottom>
           Sign Up
         </Typography>
+        {error && (
+          <Typography color="error" textAlign="center">
+            {error}
+          </Typography>
+        )}
+        {success && (
+          <Typography color="success" textAlign="center">
+            {success}
+          </Typography>
+        )}
         <Box
           component="form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSignUp();
-          }}
+          onSubmit={handleRegister}
           sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
         >
+          <TextField
+            label="Name"
+            variant="outlined"
+            fullWidth
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+          <TextField
+            label="Surname"
+            variant="outlined"
+            fullWidth
+            value={surname}
+            onChange={(e) => setSurname(e.target.value)}
+            required
+          />
           <TextField
             label="Email"
             variant="outlined"
@@ -65,12 +112,12 @@ const SignUpPage: React.FC = () => {
             required
           />
           <TextField
-            label="Confirm Password"
+            label="Repeat Password"
             type="password"
             variant="outlined"
             fullWidth
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            value={repeatPassword}
+            onChange={(e) => setRepeatPassword(e.target.value)}
             required
           />
           <Button
@@ -85,12 +132,6 @@ const SignUpPage: React.FC = () => {
             Sign Up
           </Button>
         </Box>
-        <Typography variant="body2" textAlign="center" mt={2}>
-          Already have an account?{' '}
-          <Link to="/signin" style={{ color: '#6e8efb' }}>
-            Sign In
-          </Link>
-        </Typography>
       </Paper>
     </Box>
   );

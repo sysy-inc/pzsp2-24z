@@ -5,21 +5,16 @@ import SignUpPage from './pages/SignUpPage';
 import MainPage from './pages/MainPage';
 import AdminPage from './pages/AdminPage';
 import CurrentWeatherPage from './pages/CurrentWeatherPage';
-import HistoricalDataPage from './pages/HistoricalDataPage'; 
-import PlatformChoicePage from './pages/PlatformChoicePage'; 
+import HistoricalDataPage from './pages/HistoricalDataPage';
+import PlatformChoicePage from './pages/PlatformChoicePage';
 
 const App: React.FC = () => {
-  const platforms = ["Platform A", "Platform B", "Platform C"]; 
-
   return (
     <Router>
       <Routes>
         <Route path="/signin" element={<SignInPage />} />
         <Route path="/signup" element={<SignUpPage />} />
-        <Route
-          path="/platform-choice"
-          element={<PlatformChoicePage platforms={platforms} />}
-        />
+        <Route path="/platform-choice" element={<PlatformChoicePage />} />
         <Route path="/main" element={<MainPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/current-weather" element={<CurrentWeatherPage />} />

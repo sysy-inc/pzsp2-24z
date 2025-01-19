@@ -1,105 +1,135 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Typography, CircularProgress, Paper, Button } from '@mui/material';
-import { FaCloud, FaArrowLeft } from 'react-icons/fa'; 
-import { useNavigate } from 'react-router-dom';
-import AlertSnackbar from '../components/AlertSnackbar'; 
+import React, { useState, useEffect } from "react";
+import { Box, Typography, CircularProgress, Paper } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { motion } from "framer-motion";
+import ParticlesBackground from "../components/common/ParticlesBackground"; // Optional background component
+
 const CurrentWeatherPage: React.FC = () => {
-  const [loading, setLoading] = useState(true);
-  const [weatherData, setWeatherData] = useState<any>(null);
-  const [previousWeatherData, setPreviousWeatherData] = useState<any>(null);
-  const [alertOpen, setAlertOpen] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
-  const [alertSeverity, setAlertSeverity] = useState<'success' | 'error' | 'info' | 'warning'>('info');
+  const [weatherData, setWeatherData] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  
+  const selectedPlatformId = localStorage.getItem("selectedPlatformId");
+
   useEffect(() => {
-    setTimeout(() => {
-      const newWeatherData = {
-        temperature: 22 + Math.floor(Math.random() * 5),
-        humidity: 65 + Math.floor(Math.random() * 5),
-      };
-
-      if (previousWeatherData) {
-        const tempDifference = Math.abs(newWeatherData.temperature - previousWeatherData.temperature);
-        const humidityDifference = Math.abs(newWeatherData.humidity - previousWeatherData.humidity);
-
-        if (tempDifference > 2 || humidityDifference > 10) {
-          setAlertMessage(
-            `Rapid change detected: Temperature ${tempDifference > 2 ? tempDifference + "°C" : ''} and Humidity ${humidityDifference > 10 ? humidityDifference + "%" : ''}`
-          );
-          setAlertSeverity('warning');
-          setAlertOpen(true);
-        }
-      }
-
-      setPreviousWeatherData(newWeatherData);
-      setWeatherData(newWeatherData);
+    if (!selectedPlatformId) {
+      setError("No platform selected. Please choose a platform.");
       setLoading(false);
-    }, 2000);
-  }, [previousWeatherData]);
+      return;
+    }
 
-  const handleCloseAlert = () => {
-    setAlertOpen(false);
+    const fetchWeatherData = async () => {
+      try {
+    
+        const response = await axios.get(
+          `http://0.0.0.0:8000/platforms/${selectedPlatformId}/latest-measurements`
+        );
+
+    
+        const filteredData = response.data.filter((measurement: any) =>
+          ["temperature", "humidity"].includes(measurement.measurement_type.physical_parameter)
+        );
+
+        setWeatherData(filteredData);
+      } catch (error) {
+        setError("Failed to fetch weather data. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWeatherData();
+  }, [selectedPlatformId]); 
+
+  const handleBack = () => {
+    navigate("/"); 
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100vh', background: 'linear-gradient(to bottom, #cce7ff, #e3f2fd)', color: '#004c8c', paddingTop: 10 }}>
-      {/* Header */}
-      <Box sx={{ position: 'absolute', top: 0, left: 0, width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, backgroundColor: 'rgba(255, 255, 255, 0.6)', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <FaCloud size={36} style={{ color: '#004c8c' }} />
-          <Typography variant="h4" fontWeight="bold" sx={{ fontFamily: 'Poppins, sans-serif', textShadow: '1px 1px 3px rgba(0, 0, 0, 0.3)' }}>
-            CloudPulse
-          </Typography>
-        </Box>
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+        position: "relative",
+        overflow: "hidden",
+        background: "linear-gradient(to bottom, #87CEEB, #f8f9fa)",
+      }}
+    >
+      <ParticlesBackground /> {/* Optional background particles */}
 
-        {/* Back Button with Icon */}
-        <Button
-          onClick={() => navigate('/main')}
-          variant="contained"
-          color="primary"
-          startIcon={<FaArrowLeft />}
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+      >
+        <Paper
+          elevation={6}
           sx={{
-            backgroundColor: '#6e8efb',
-            '&:hover': { backgroundColor: '#5b75d9' },
-            padding: '10px 20px',
-            borderRadius: '8px',
-            fontSize: '16px',
-            textTransform: 'none',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-            transition: 'all 0.3s ease-in-out',
-            ':hover': {
-              transform: 'scale(1.05)',
-              boxShadow: '0 6px 12px rgba(0, 0, 0, 0.2)',
-            },
+            p: 4,
+            width: 400,
+            borderRadius: 3,
+            zIndex: 1,
+            textAlign: "center",
           }}
         >
-          Main Page
-        </Button>
-      </Box>
+          <Typography
+            variant="h4"
+            fontWeight="bold"
+            sx={{
+              mb: 4,
+              color: "#004c8c",
+              fontFamily: "Poppins, sans-serif",
+              textShadow: "1px 1px 3px rgba(0, 0, 0, 0.3)",
+            }}
+          >
+            Current Weather
+          </Typography>
 
-      {/* Loading and Weather Data */}
-      <Box sx={{ width: '80%', maxWidth: '800px', textAlign: 'center', mt: 10 }}>
-        {loading ? (
-          <CircularProgress size={60} sx={{ color: '#004c8c' }} />
-        ) : (
-          <Paper sx={{ padding: 4, borderRadius: 3, boxShadow: 3 }}>
-            <FaCloud size={120} style={{ color: '#6e8efb' }} />
-            <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#004c8c', mt: 3 }}>
-              Current Weather
-            </Typography>
-            <Typography variant="h5" sx={{ color: '#004c8c', mt: 2 }}>
-              Temperature: {weatherData.temperature}°C
-            </Typography>
-            <Typography variant="h5" sx={{ color: '#004c8c', mt: 2 }}>
-              Humidity: {weatherData.humidity}%
-            </Typography>
-          </Paper>
-        )}
-      </Box>
+          {/* Loading state */}
+          {loading && <CircularProgress sx={{ color: "#6e8efb" }} />}
 
-      {/* Custom Snackbar for Alerts */}
-      <AlertSnackbar open={alertOpen} message={alertMessage} onClose={handleCloseAlert} severity={alertSeverity} />
+          {/* Error state */}
+          {error && (
+            <Typography color="error">{error}</Typography>
+          )}
+
+          {/* Weather data display */}
+          {weatherData && !loading && !error && weatherData.length > 0 ? (
+            <Box sx={{ mt: 3 }}>
+              {weatherData.map((m: any) => {
+                if (m.measurement_type.physical_parameter === "temperature") {
+                  return (
+                    <Typography variant="h6" key={m.id} sx={{ fontWeight: "bold" }}>
+                      Temperature: {m.value} °C
+                    </Typography>
+                  );
+                }
+                if (m.measurement_type.physical_parameter === "humidity") {
+                  return (
+                    <Typography variant="body1" key={m.id}>
+                      Humidity: {m.value} %
+                    </Typography>
+                  );
+                }
+                return null;
+              })}
+            </Box>
+          ) : (
+            <Typography variant="body1">No weather data available.</Typography>
+          )}
+
+          <Box sx={{ mt: 4 }}>
+            <button onClick={handleBack} style={{ padding: "10px 20px", backgroundColor: "#6e8efb", color: "white", border: "none", borderRadius: "5px" }}>
+              Back to Platform Choice
+            </button>
+          </Box>
+        </Paper>
+      </motion.div>
     </Box>
   );
 };

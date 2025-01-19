@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -15,37 +15,67 @@ import { useNavigate } from "react-router-dom";
 
 const AdminPage: React.FC = () => {
   const navigate = useNavigate();
-  const [platforms, setPlatforms] = useState<string[]>(["Platform A", "Platform B", "Platform C"]);
+  const [platforms, setPlatforms] = useState<string[]>([]);
   const [newPlatform, setNewPlatform] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
-  const [userAccess, setUserAccess] = useState<{ [key: string]: string[] }>({
-    "Platform A": ["user1@example.com"],
-    "Platform B": [],
-    "Platform C": ["user2@example.com", "user3@example.com"],
-  });
+  const [userAccess, setUserAccess] = useState<{ [key: string]: string[] }>({});
   const [newUser, setNewUser] = useState("");
 
-  const handleAddPlatform = () => {
+  // Fetch platforms and user access from the backend on component mount
+  useEffect(() => {
+    const fetchPlatforms = async () => {
+      try {
+        const response = await fetch("/api/platforms"); // Replace with your actual endpoint
+        if (!response.ok) throw new Error("Failed to fetch platforms.");
+        const data = await response.json();
+        setPlatforms(data.platforms || []);
+        setUserAccess(data.userAccess || {});
+      } catch (error) {
+        console.error("Error fetching platforms:", error);
+      }
+    };
+    fetchPlatforms();
+  }, []);
+
+  const handleAddPlatform = async () => {
     if (newPlatform.trim() && !platforms.includes(newPlatform)) {
-      setPlatforms([...platforms, newPlatform]);
-      setUserAccess({ ...userAccess, [newPlatform]: [] });
-      setNewPlatform("");
+      try {
+        const response = await fetch("/api/platforms", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: newPlatform }),
+        });
+        if (!response.ok) throw new Error("Failed to add platform.");
+        setPlatforms([...platforms, newPlatform]);
+        setUserAccess({ ...userAccess, [newPlatform]: [] });
+        setNewPlatform("");
+      } catch (error) {
+        console.error("Error adding platform:", error);
+      }
     } else {
       alert("Platform name is invalid or already exists.");
     }
   };
 
-  const handleDeletePlatform = (platform: string) => {
+  const handleDeletePlatform = async (platform: string) => {
     const confirmDelete = window.confirm(`Are you sure you want to delete platform "${platform}"?`);
     if (confirmDelete) {
-      setPlatforms(platforms.filter((p) => p !== platform));
-      const updatedAccess = { ...userAccess };
-      delete updatedAccess[platform];
-      setUserAccess(updatedAccess);
+      try {
+        const response = await fetch(`/api/platforms/${platform}`, {
+          method: "DELETE",
+        });
+        if (!response.ok) throw new Error("Failed to delete platform.");
+        setPlatforms(platforms.filter((p) => p !== platform));
+        const updatedAccess = { ...userAccess };
+        delete updatedAccess[platform];
+        setUserAccess(updatedAccess);
+      } catch (error) {
+        console.error("Error deleting platform:", error);
+      }
     }
   };
 
-  const handleAddUser = () => {
+  const handleAddUser = async () => {
     if (!newUser.trim()) {
       alert("Please provide a valid user email.");
       return;
@@ -54,24 +84,42 @@ const AdminPage: React.FC = () => {
     if (selectedPlatform) {
       const currentUsers = userAccess[selectedPlatform] || [];
       if (!currentUsers.includes(newUser)) {
-        setUserAccess({
-          ...userAccess,
-          [selectedPlatform]: [...currentUsers, newUser],
-        });
-        setNewUser("");
+        try {
+          const response = await fetch(`/api/platforms/${selectedPlatform}/users`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: newUser }),
+          });
+          if (!response.ok) throw new Error("Failed to add user.");
+          setUserAccess({
+            ...userAccess,
+            [selectedPlatform]: [...currentUsers, newUser],
+          });
+          setNewUser("");
+        } catch (error) {
+          console.error("Error adding user:", error);
+        }
       } else {
         alert("User already has access.");
       }
     }
   };
 
-  const handleRemoveUser = (user: string) => {
+  const handleRemoveUser = async (user: string) => {
     if (selectedPlatform) {
-      const currentUsers = userAccess[selectedPlatform] || [];
-      setUserAccess({
-        ...userAccess,
-        [selectedPlatform]: currentUsers.filter((u) => u !== user),
-      });
+      try {
+        const response = await fetch(`/api/platforms/${selectedPlatform}/users/${user}`, {
+          method: "DELETE",
+        });
+        if (!response.ok) throw new Error("Failed to remove user.");
+        const currentUsers = userAccess[selectedPlatform] || [];
+        setUserAccess({
+          ...userAccess,
+          [selectedPlatform]: currentUsers.filter((u) => u !== user),
+        });
+      } catch (error) {
+        console.error("Error removing user:", error);
+      }
     }
   };
 
@@ -98,7 +146,7 @@ const AdminPage: React.FC = () => {
         sx={{
           position: "absolute",
           top: 16,
-          right: 16, 
+          right: 16,
           backgroundColor: "#ffffff",
           color: "#004c8c",
           borderColor: "#004c8c",

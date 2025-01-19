@@ -1,21 +1,35 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Typography, Button, Paper } from "@mui/material";
-import ParticlesBackground from "../components/common/ParticlesBackground";
+import { Box, Typography, Button, Paper, CircularProgress } from "@mui/material";
 import { motion } from "framer-motion";
+import ParticlesBackground from "../components/common/ParticlesBackground";
+import axios from "axios";
 
-interface PlatformChoicePageProps {
-  platforms: string[]; 
-}
-
-const PlatformChoicePage: React.FC<PlatformChoicePageProps> = ({ platforms }) => {
+const PlatformChoicePage: React.FC = () => {
   const navigate = useNavigate();
-  const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
+  const [platforms, setPlatforms] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleChoice = (platform: string) => {
-    setSelectedPlatform(platform);
-    localStorage.setItem("selectedPlatform", platform);
-    navigate("/main");
+  useEffect(() => {
+    const fetchPlatforms = async () => {
+      try {
+        const response = await axios.get("http://0.0.0.0:8000/platforms/");
+        setPlatforms(response.data); 
+      } catch (error) {
+        setError("Failed to load platforms.");
+      } finally {
+        setLoading(false); 
+      }
+    };
+
+    fetchPlatforms();
+  }, []); 
+
+  
+  const handleChoice = (platformId: number) => {
+    localStorage.setItem("selectedPlatformId", platformId.toString()); 
+    navigate("/main"); 
   };
 
   return (
@@ -27,10 +41,11 @@ const PlatformChoicePage: React.FC<PlatformChoicePageProps> = ({ platforms }) =>
         height: "100vh",
         position: "relative",
         overflow: "hidden",
-        background: "linear-gradient(to bottom, #87CEEB, #f8f9fa)", 
+        background: "linear-gradient(to bottom, #87CEEB, #f8f9fa)",
       }}
     >
-      <ParticlesBackground />
+      <ParticlesBackground /> {/* Add background particles */}
+
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -58,10 +73,22 @@ const PlatformChoicePage: React.FC<PlatformChoicePageProps> = ({ platforms }) =>
           >
             Choose a Platform
           </Typography>
+
+          {/* Loading state */}
+          {loading && (
+            <CircularProgress sx={{ color: "#6e8efb" }} />
+          )}
+
+          {/* Error state */}
+          {error && (
+            <Typography color="error">{error}</Typography>
+          )}
+
+          {/* Platform list display */}
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {platforms.map((platform, index) => (
               <motion.div
-                key={platform}
+                key={platform.id}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 initial={{ opacity: 0, x: -50 }}
@@ -78,26 +105,13 @@ const PlatformChoicePage: React.FC<PlatformChoicePageProps> = ({ platforms }) =>
                     py: 1.5,
                     "&:hover": { backgroundColor: "#5b75d9" },
                   }}
-                  onClick={() => handleChoice(platform)}
+                  onClick={() => handleChoice(platform.id)} // Store the platform ID, not the name
                 >
-                  {platform}
+                  {platform.name}
                 </Button>
               </motion.div>
             ))}
           </Box>
-          {selectedPlatform && (
-            <Typography
-              variant="body1"
-              sx={{
-                mt: 3,
-                color: "#6e8efb",
-                fontFamily: "Poppins, sans-serif",
-                fontStyle: "italic",
-              }}
-            >
-              Selected: {selectedPlatform}
-            </Typography>
-          )}
         </Paper>
       </motion.div>
     </Box>

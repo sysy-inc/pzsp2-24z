@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Typography, FormControl, InputLabel, Select, MenuItem, Button } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Line } from 'react-chartjs-2';
 import { SelectChangeEvent } from '@mui/material/Select';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
-import { FaArrowLeft } from 'react-icons/fa'; 
+import { FaArrowLeft } from 'react-icons/fa';
+import axios from 'axios';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -20,8 +21,8 @@ interface ChartData {
 
 const HistoricalDataPage: React.FC = () => {
   const navigate = useNavigate();
+  const { platformId } = useParams();
   const [selectedRange, setSelectedRange] = useState<string>('hour');
-
   const [chartData, setChartData] = useState<ChartData>({
     labels: [],
     datasets: [
@@ -40,47 +41,76 @@ const HistoricalDataPage: React.FC = () => {
     ],
   });
 
+  useEffect(() => {
+    if (platformId) {
+      fetchDataForRange(selectedRange, platformId);
+    }
+  }, [selectedRange, platformId]);
+
   const handleRangeChange = (event: SelectChangeEvent<string>) => {
     const range = event.target.value;
     setSelectedRange(range);
-    fetchDataForRange(range);
-  };
-
-  const fetchDataForRange = (range: string) => {
-    let labels: string[] = [];
-    let tempData: number[] = [];
-    let humidityData: number[] = [];
-
-    if (range === 'hour') {
-      labels = ['0:00', '1:00', '2:00', '3:00', '4:00'];
-      tempData = [22, 23, 21, 20, 19];
-      humidityData = [60, 62, 61, 64, 66];
-    } else if (range === 'day') {
-      labels = ['6 AM', '12 PM', '6 PM', '12 AM'];
-      tempData = [22, 25, 21, 19];
-      humidityData = [60, 55, 58, 65];
-    } else if (range === 'week') {
-      labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-      tempData = [20, 22, 24, 23, 21, 22, 19];
-      humidityData = [65, 63, 60, 62, 64, 66, 67];
-    } else if (range === 'month') {
-      labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
-      tempData = [21, 22, 20, 19];
-      humidityData = [62, 64, 61, 60];
+    if (platformId) {
+      fetchDataForRange(range, platformId);
     }
-
-    setChartData({
-      labels: labels,
-      datasets: [
-        { ...chartData.datasets[0], data: tempData },
-        { ...chartData.datasets[1], data: humidityData },
-      ],
-    });
   };
 
-  React.useEffect(() => {
-    fetchDataForRange(selectedRange);
-  }, []);
+  const fetchDataForRange = async (range: string, platformId: string) => {
+    try {
+      const dateFrom = new Date();
+      let startDate = dateFrom; 
+      let endDate = new Date(); 
+
+      
+      if (range === 'hour') {
+        startDate.setHours(startDate.getHours() - 1);
+      } else if (range === 'day') {
+        startDate.setDate(startDate.getDate() - 1);
+      } else if (range === 'week') {
+        startDate.setDate(startDate.getDate() - 7);
+      } else if (range === 'month') {
+        startDate.setMonth(startDate.getMonth() - 1);
+      }
+
+      
+      const response = await axios.get(`/api/platforms/${platformId}/measurements/`, {
+        params: {
+          dateFrom: startDate.toISOString(),
+          dateTo: endDate.toISOString(),
+          measurementType: 'temperature',
+        },
+      });
+
+      const humidityResponse = await axios.get(`/api/platforms/${platformId}/measurements/`, {
+        params: {
+          dateFrom: startDate.toISOString(),
+          dateTo: endDate.toISOString(),
+          measurementType: 'humidity',
+        },
+      });
+
+      const labels = response.data.map((entry: any) => entry.date);
+      const tempData = response.data.map((entry: any) => entry.value);
+      const humidityData = humidityResponse.data.map((entry: any) => entry.value);
+
+      setChartData({
+        labels: labels,
+        datasets: [
+          {
+            ...chartData.datasets[0],
+            data: tempData,
+          },
+          {
+            ...chartData.datasets[1],
+            data: humidityData,
+          },
+        ],
+      });
+
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   return (
     <Box
@@ -122,7 +152,6 @@ const HistoricalDataPage: React.FC = () => {
           </Typography>
         </Box>
 
-        {/* Return Button with Icon */}
         <Button
           onClick={() => navigate('/main')}
           variant="contained"

@@ -2,18 +2,37 @@ import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Paper } from '@mui/material';
 import { FaLock } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
-import ParticlesBackground from '../components/common/ParticlesBackground';
 
 const SignInPage: React.FC = () => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const handleSignIn = () => {
-    console.log('Email:', email, 'Password:', password);
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
 
-  
-    navigate('/platform-choice');
+    try {
+      const response = await fetch('http://0.0.0.0:8000/auth/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          username: username, 
+          password: password,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem('access_token', data.access_token);
+        navigate('/platform-choice');
+      } else {
+        setError('Invalid username or password');
+      }
+    } catch (error) {
+      setError('Something went wrong. Please try again.');
+    }
   };
 
   return (
@@ -28,30 +47,33 @@ const SignInPage: React.FC = () => {
         background: 'linear-gradient(to bottom, #87CEEB, #f8f9fa)',
       }}
     >
-      <ParticlesBackground />
-      <Paper elevation={6} sx={{ p: 4, width: 400, borderRadius: 3, zIndex: 1 }}>
+      <Paper elevation={6} sx={{ p: 4, width: 400, borderRadius: 3 }}>
         <Box display="flex" justifyContent="center" mb={2}>
           <FaLock size={32} color="#6e8efb" />
         </Box>
         <Typography variant="h5" textAlign="center" fontWeight="bold" gutterBottom>
           Sign In
         </Typography>
+        {error && (
+          <Typography color="error" textAlign="center">
+            {error}
+          </Typography>
+        )}
         <Box
           component="form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSignIn();
-          }}
+          onSubmit={handleLogin}
           sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
         >
+          {/* Username Input Field */}
           <TextField
-            label="Email"
+            label="Username"
             variant="outlined"
             fullWidth
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             required
           />
+          {/* Password Input Field */}
           <TextField
             label="Password"
             type="password"
@@ -61,6 +83,7 @@ const SignInPage: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          {/* Submit Button */}
           <Button
             type="submit"
             variant="contained"
@@ -74,7 +97,7 @@ const SignInPage: React.FC = () => {
           </Button>
         </Box>
         <Typography variant="body2" textAlign="center" mt={2}>
-          Don’t have an account?{' '}
+          Don't have an account?{' '}
           <Link to="/signup" style={{ color: '#6e8efb' }}>
             Sign Up
           </Link>
