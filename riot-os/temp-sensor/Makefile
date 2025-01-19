@@ -5,7 +5,7 @@ APPLICATION = tmep-test
 BOARD ?= native
 
 # This has to be the absolute path to the RIOT base directory:
-RIOTBASE ?= /home/mkrajew/RIOT/
+RIOTBASE ?= /home/adrwal/RIOT/
 
 USEMODULE += ztimer_msec
 USEMODULE += gnrc_icmpv6_error

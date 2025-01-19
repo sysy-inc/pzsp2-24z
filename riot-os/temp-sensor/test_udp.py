@@ -19,9 +19,12 @@ ffi = FFI()
 lib = ffi.dlopen("./server_py/decrypt.so")
 
 # C function interface
-ffi.cdef("""
+ffi.cdef(
+    """
     const unsigned char *decrypt(const unsigned char *ciphertext, size_t length);
-""")
+"""
+)
+
 
 def udp_server(
     host: str = "::", port: int = 12345, duration: int = 10, timeout: int = 2
@@ -38,7 +41,7 @@ def udp_server(
             try:
                 print("recvfrom.")
                 message, addr = server_socket.recvfrom(512)
-                
+
                 ciphertext_len = int.from_bytes(message[:4], byteorder="little")
                 print(f"Ciphertext length extracted: {ciphertext_len}")
 
@@ -59,6 +62,7 @@ def udp_server(
 def test_sending_unencrypted_data_udp_ipv6():
     """Encapsulate the entire E2E test."""
     print("Compiling RIOT OS app...")
+    # Might be problematic when missing sudo privileges
     subprocess.run(
         [
             "make",
