@@ -69,7 +69,7 @@ const CurrentWeatherPage: React.FC = () => {
   }, [selectedPlatformId]);
 
   const handleBack = () => {
-    navigate("/");
+    navigate("/main");
   };
 
   return (
