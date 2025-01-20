@@ -21,6 +21,42 @@ kernel_pid_t thread_handle = -1;
 char port[6] = HOST_PORT; // Default port as a string
 unsigned measurement_interval = MEASUREMENT_INTERVAL_MSEC;
 
+
+// Default sensor IDs
+int sensor_id_temp = SENSOR_ID_TEMP;
+int sensor_id_humidity = SENSOR_ID_HUM;
+
+/*
+  `set_sensor_id <temp|humidity> <id>` command handler to set the sensor ID.
+*/
+int set_sensor_id(int argc, char **argv) {
+    if (argc != 3) {
+        printf("Usage: %s <temp|humidity> <id>\n", argv[0]);
+        return 1;
+    }
+
+    const char *sensor_type = argv[1];
+    int id = atoi(argv[2]);
+
+    if (id <= 0) {
+        printf("Error: Sensor ID must be a positive integer.\n");
+        return 1;
+    }
+
+    if (strcmp(sensor_type, "temp") == 0) {
+        sensor_id_temp = id;
+        printf("Temperature sensor ID set to: %d\n", sensor_id_temp);
+    } else if (strcmp(sensor_type, "humidity") == 0) {
+        sensor_id_humidity = id;
+        printf("Humidity sensor ID set to: %d\n", sensor_id_humidity);
+    } else {
+        printf("Error: Unknown sensor type '%s'. Use 'temp' or 'humidity'.\n", sensor_type);
+        return 1;
+    }
+
+    return 0;
+}
+
 /*
   `set_ipv6_address <ipv6 addr>` command handler to set the destination IPv6 address and port.
   Can be used while the data is being read and sent.
@@ -118,11 +154,11 @@ void *data_sender_thread(void *arg) {
         size_t json_temp_len = 0;
         size_t json_humidity_len = 0;
 
-        sprintf(json_temp, "{\"sensor_id\": 1, \"value\": %d.%d}", temp_integral, temp_decimal);
+        sprintf(json_temp, "{\"sensor_id\": %d, \"value\": %d.%d}", sensor_id_temp, temp_integral, temp_decimal);
         json_temp_len = encrypt(json_temp);
         printf("%s\n", json_temp);
 
-        sprintf(json_humidity, "{\"sensor_id\": 2, \"value\": %d.%d}", humidity_integral, humidity_decimal);
+        sprintf(json_humidity, "{\"sensor_id\": %d, \"value\": %d.%d}", sensor_id_humidity, humidity_integral, humidity_decimal);
         json_humidity_len = encrypt(json_humidity);
 
         gnrc_udp_send(ipv6_address, port, json_temp, json_temp_len, 1, 1000);
@@ -174,6 +210,7 @@ static const shell_command_t shell_commands[] = {
     { "stop_sending", "Stop data sending", stop_sending },
     { "start_sending", "Start data sending", start_sending },
     { "set_measure_interval", "Set the measurement interval in miliseconds", set_measure_interval },
+    { "set_sensor_id", "Set the sensor ID", set_sensor_id },
     { NULL, NULL, NULL }
 };
 
