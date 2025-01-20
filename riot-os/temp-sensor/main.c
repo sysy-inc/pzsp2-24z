@@ -19,9 +19,10 @@ char thread_stack[THREAD_STACKSIZE];
 volatile int running = 1;  // Start sending by default
 kernel_pid_t thread_handle = -1;
 char port[6] = HOST_PORT; // Default port as a string
+unsigned measurement_interval = MEASUREMENT_INTERVAL_MSEC;
 
 /*
-  `set_ipv6_address` command handler to set the destination IPv6 address and port.
+  `set_ipv6_address <ipv6 addr>` command handler to set the destination IPv6 address and port.
   Can be used while the data is being read and sent.
 */
 int set_ipv6_address(int argc, char **argv) {
@@ -41,7 +42,7 @@ int set_ipv6_address(int argc, char **argv) {
 }
 
 /*
-  `set_port` command handler to set the destination port.
+  `set_port <port num>` command handler to set the destination port.
 */
 int set_port(int argc, char **argv) {
     if (argc != 2) {
@@ -60,6 +61,30 @@ int set_port(int argc, char **argv) {
     return 0;
 }
 
+/*
+  `set_measure_interval <interval>` command handler to set the measurement interval.
+*/
+int set_measure_interval(int argc, char **argv) {
+    if (argc != 2) {
+        printf("Usage: %s <interval>\n", argv[0]);
+        return 1;
+    }
+
+    int interval = atoi(argv[1]);
+    if (interval <= 0) {
+        printf("Error: Invalid interval. Must be greater than 0.\n");
+        return 1;
+    }
+
+    measurement_interval = interval;
+    printf("New measurement interval set to: %d\n", measurement_interval);
+    return 0;
+}
+
+
+/*
+  `stop_sending` command handler to stop the data sending thread.
+*/
 int stop_sending(int argc, char **argv) {
     (void)argc;
     (void)argv;
@@ -106,7 +131,7 @@ void *data_sender_thread(void *arg) {
         printf("Humidity: %d.%d %%\n", humidity_integral, humidity_decimal);
         printf("Temperature: %d.%d \u00b0C\n", temp_integral, temp_decimal);
 
-        ztimer_sleep(ZTIMER_MSEC, 4000);
+        ztimer_sleep(ZTIMER_MSEC, measurement_interval);
     }
 
     printf("Data sender thread exiting.\n");
@@ -148,6 +173,7 @@ static const shell_command_t shell_commands[] = {
     { "set_port", "Set the destination port", set_port },
     { "stop_sending", "Stop data sending", stop_sending },
     { "start_sending", "Start data sending", start_sending },
+    { "set_measure_interval", "Set the measurement interval in miliseconds", set_measure_interval },
     { NULL, NULL, NULL }
 };
 
@@ -166,7 +192,6 @@ int main(void) {
         return 1;
     }
 
-    puts("Use 'set_ipv6' to change the IPv6 address, 'start_sending' to start data sending, or 'stop_sending' to stop it.");
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
 
