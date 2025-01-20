@@ -5,24 +5,18 @@
 
 #define MAX_LENGTH 240
 
-unsigned char iv[16] = {
-    0x00, 0x01, 0x02, 0x03,
-    0x04, 0x05, 0x06, 0x07,
-    0x08, 0x09, 0x0a, 0x0b,
-    0x0c, 0x0d, 0x0e, 0x0f};
-
-// void generate_random_iv(unsigned char *iv, size_t iv_len)
-// {
-//     for (size_t i = 0; i < iv_len; i++)
-//     {
-//         iv[i] = rand() % 255 + 1; // Random value between 1-255
-//     }
-// }
+void generate_random_iv(unsigned char *iv, size_t iv_len)
+{
+    for (size_t i = 0; i < iv_len; i++)
+    {
+        iv[i] = rand() % 255 + 1; // Random value between 1-255
+    }
+}
 
 int encrypt(cipher_t *cipher, char *plaintext)
 {
-    // unsigned char iv[16];
-    // generate_random_iv(iv, sizeof(iv)); // Generate a new random IV
+    unsigned char iv[16];
+    generate_random_iv(iv, sizeof(iv)); // Generate a new random IV
 
     size_t plaintext_len = strlen(plaintext);
 
