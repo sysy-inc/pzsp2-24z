@@ -13,22 +13,56 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import { FaArrowLeft } from 'react-icons/fa';
 import axios from 'axios';
-
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 // Import required types and components
 import { SelectChangeEvent } from '@mui/material/Select'; // Correct import for SelectChangeEvent
 import { Line } from 'react-chartjs-2'; // Correct import for Line chart component
+
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+
+interface ChartData {
+  labels: string[];
+  datasets: {
+    label: string;
+    data: number[];
+    borderColor: string;
+    fill: boolean;
+  }[];
+}
+
 
 const HistoricalDataPage: React.FC = () => {
   const navigate = useNavigate();
   // const { platformId } = useParams();
   const [selectedRange, setSelectedRange] = useState<string>('hour');
-  const [selectedMeasurement, setSelectedMeasurement] = useState<string>('temperature');
-  const [chartData, setChartData] = useState<any>({
+  const [selectedMeasurement, setSelectedMeasurement] = useState<string>('Temperature');
+  const [chartData, setChartData] = useState<ChartData>({
     labels: [],
     datasets: [],
   });
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  const updateChartData = (responseData: { date: string; value: number }[]) => {
+    // Extract labels and data from the response
+    const labels = responseData.map((entry) => new Date(entry.date).toLocaleString());
+    const data = responseData.map((entry) => entry.value);
+
+    // Set the chart data
+    setChartData({
+      labels,
+      datasets: [
+        {
+          label: `${selectedMeasurement.charAt(0).toUpperCase() + selectedMeasurement.slice(1)} Over Time`,
+          data,
+          borderColor: 'rgb(75, 192, 192)',
+          fill: false,
+        },
+      ],
+    });
+  };
+
 
   const fetchWeatherData = async () => {
     const platformId = localStorage.getItem("selectedPlatformId");
@@ -62,8 +96,8 @@ const HistoricalDataPage: React.FC = () => {
       }
 
       // Make the API request to fetch historical data for the selected measurement type
-      const api_response = await axios.get(
-        `/api/platforms/${platformId}/measurements/`,
+      const response = await axios.get(
+        `http://0.0.0.0:8000/api/platforms/${platformId}/measurements/`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -75,24 +109,10 @@ const HistoricalDataPage: React.FC = () => {
           },
         }
       );
-      console.log('Response Data:', api_response.data);
 
-      return;
+      console.log(response.data);
+      updateChartData(response.data);
 
-      const labels = response.data.map((entry: any) => entry.date);
-      const data = response.data.map((entry: any) => entry.value);
-
-      setChartData({
-        labels,
-        datasets: [
-          {
-            label: `${selectedMeasurement.charAt(0).toUpperCase() + selectedMeasurement.slice(1)}`,
-            data,
-            borderColor: 'rgb(75, 192, 192)',
-            fill: false,
-          },
-        ],
-      });
     } catch (err) {
       setError('Failed to fetch weather data. Please try again later.');
       console.error('Error fetching weather data', err);
@@ -183,8 +203,8 @@ const HistoricalDataPage: React.FC = () => {
               value={selectedMeasurement}
               onChange={(e: SelectChangeEvent<string>) => setSelectedMeasurement(e.target.value)}
             >
-              <MenuItem value="temperature">Temperature</MenuItem>
-              <MenuItem value="humidity">Humidity</MenuItem>
+              <MenuItem value="Temperature">Temperature</MenuItem>
+              <MenuItem value="Humidity">Humidity</MenuItem>
             </Select>
           </FormControl>
 
@@ -203,6 +223,7 @@ const HistoricalDataPage: React.FC = () => {
 
         </Box>
 
+
         {/* Chart or Loading/Error State */}
         {loading ? (
           <CircularProgress />
@@ -210,15 +231,7 @@ const HistoricalDataPage: React.FC = () => {
           <Alert severity="error">{error}</Alert>
         ) : (
           <Box sx={{ width: '100%', maxWidth: '900px', margin: '0 auto' }}>
-            <Line
-              data={chartData}
-              options={{
-                responsive: true,
-                plugins: {
-                  legend: { position: 'top' },
-                },
-              }}
-            />
+            <Line data={chartData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} />
           </Box>
         )}
       </Box>
