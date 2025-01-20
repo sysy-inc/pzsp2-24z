@@ -5,6 +5,8 @@ __pycache__/
 
 # C extensions
 *.so
+# Allow decrypt.so
+!decrypt.so
 
 # Distribution / packaging
 .Python

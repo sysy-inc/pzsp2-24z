@@ -12,3 +12,18 @@ make \
     BOARD=nucleo-f207zg \
     term
 ```
+
+---
+
+To compile `decrypt.c` run in `server_py`:
+```bash
+gcc -shared -o decrypt.so -fPIC decrypt.c aes.c
+```
+after compiling only the file `descrypt.so` is needed, the other can be deleted.
+
+To test setup correct tap interface, also used for tests:
+```bash
+sudo ip tuntap add tap0 mode tap user $USER
+sudo ip link set tap0 up
+sudo ip addr add fe80::fcc1:23ff:fee8:2472/64 dev tap0
+```
