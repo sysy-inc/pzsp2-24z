@@ -1,14 +1,9 @@
 #include <string.h>
 #include <stdlib.h>
-#include "aes.h"
+#include "crypto/ciphers.h"
+#include "crypto/modes/cbc.h"
 
-#define MAX_LENGTH 512
-
-unsigned char key[32] = {
-    0x60, 0x3d, 0xeb, 0x10, 0x15, 0xca, 0x71, 0xbe,
-    0x2b, 0x73, 0xae, 0xf0, 0x85, 0x7d, 0x77, 0x81,
-    0x1f, 0x35, 0x2c, 0x07, 0x3b, 0x61, 0x08, 0xd7,
-    0x2d, 0x98, 0x10, 0xa3, 0x09, 0x14, 0xdf, 0xf4};
+#define MAX_LENGTH 240
 
 void generate_random_iv(unsigned char *iv, size_t iv_len)
 {
@@ -18,7 +13,7 @@ void generate_random_iv(unsigned char *iv, size_t iv_len)
     }
 }
 
-size_t encrypt(char *plaintext)
+int encrypt(cipher_t *cipher, char *plaintext)
 {
     unsigned char iv[16];
     generate_random_iv(iv, sizeof(iv)); // Generate a new random IV
@@ -27,23 +22,24 @@ size_t encrypt(char *plaintext)
 
     // Pad the plaintext to a multiple of 16 bytes (128 bits)
     size_t padded_len = ((plaintext_len + 15) / 16) * 16;
-    unsigned char padded_plaintext[padded_len];
+    uint8_t padded_plaintext[MAX_LENGTH];
     memset(padded_plaintext, 0, padded_len);
     memcpy(padded_plaintext, plaintext, plaintext_len);
 
-    struct AES_ctx ctx;
-    AES_init_ctx_iv(&ctx, key, iv);
+    uint8_t encrypted_temp[MAX_LENGTH] = {0};
 
-    // Encrypt in-place
-    AES_CBC_encrypt_buffer(&ctx, padded_plaintext, padded_len);
+    if (cipher_encrypt_cbc(cipher, iv, padded_plaintext, padded_len, encrypted_temp) < 0)
+    {
+        return -1;
+    }
 
     size_t total_len = sizeof(size_t) + sizeof(iv) + padded_len; // IV + length of ciphertext (4 bytes) + ciphertext
 
     // Create a new buffer to hold the IV, length, and ciphertext
-    unsigned char encrypted_message[MAX_LENGTH];
-    memcpy(encrypted_message, &padded_len, sizeof(size_t));                                // Copy the length of ciphertext after IV
-    memcpy(encrypted_message + sizeof(size_t), iv, sizeof(iv));                            // Copy the IV to the beginning
-    memcpy(encrypted_message + sizeof(size_t) + sizeof(iv), padded_plaintext, padded_len); // Copy the ciphertext
+    unsigned char encrypted_message[MAX_LENGTH + sizeof(size_t) + sizeof(iv)];           // 256
+    memcpy(encrypted_message, &padded_len, sizeof(size_t));                              // Copy the length of ciphertext after IV
+    memcpy(encrypted_message + sizeof(size_t), iv, sizeof(iv));                          // Copy the IV to the beginning
+    memcpy(encrypted_message + sizeof(size_t) + sizeof(iv), encrypted_temp, padded_len); // Copy the ciphertext
 
     // Copy the final encrypted message (IV + length + ciphertext) back to plaintext buffer
     memcpy(plaintext, encrypted_message, total_len);

@@ -5,7 +5,10 @@ APPLICATION = tmep-test
 BOARD ?= native
 
 # This has to be the absolute path to the RIOT base directory:
-RIOTBASE ?= /home/adrwal/RIOT/
+RIOTBASE ?= /home/mkrajew/RIOT/
+
+USEMODULE += cipher_modes
+USEMODULE += crypto_aes_256
 
 USEMODULE += ztimer_msec
 USEMODULE += gnrc_icmpv6_error
@@ -23,6 +26,9 @@ USEMODULE += sock_udp
 USEMODULE += posix_sockets
 USEMODULE += posix_sleep
 USEMODULE += posix_inet
+
+
+
 
 # Comment this out to disable code in RIOT that does safety checking
 # which is not needed in a production environment but helps in the

@@ -2,4 +2,4 @@
 
 void generate_random_iv(unsigned char *iv, size_t iv_len);
 
-size_t encrypt(char *plaintext);
+int encrypt(cipher_t *cipher, char *plaintext);

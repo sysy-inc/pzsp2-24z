@@ -1,3 +1,5 @@
+#include "crypto/ciphers.h"
+#include "crypto/modes/cbc.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h> // exit()
@@ -7,6 +9,7 @@
 #include "dht11_module.h"
 #include "gnrc_udp.h"
 #include "ztimer.h"
+#include <string.h>
 #include "encrypt.h"
 #include "shell.h"
 #include "thread.h"
@@ -21,6 +24,15 @@ kernel_pid_t thread_handle = -1;
 char port[6] = HOST_PORT; // Default port as a string
 unsigned measurement_interval = MEASUREMENT_INTERVAL_MSEC;
 
+#define MAX_LEN 256
+#define AES_KEY_SIZE 32   // AES-256 bit key size
+#define AES_BLOCK_SIZE 16 // AES block size
+
+const uint8_t key[AES_KEY_SIZE] = {
+    0x60, 0x3d, 0xeb, 0x10, 0x15, 0xca, 0x71, 0xbe,
+    0x2b, 0x73, 0xae, 0xf0, 0x85, 0x7d, 0x77, 0x81,
+    0x1f, 0x35, 0x2c, 0x07, 0x3b, 0x61, 0x08, 0xd7,
+    0x2d, 0x98, 0x10, 0xa3, 0x09, 0x14, 0xdf, 0xf4};
 
 // Default sensor IDs
 int sensor_id_temp = SENSOR_ID_TEMP;
@@ -149,20 +161,21 @@ void *data_sender_thread(void *arg) {
     while (running) {
         read_dht(&pin, &humidity_integral, &humidity_decimal, &temp_integral, &temp_decimal);
 
-        char json_temp[128];
-        char json_humidity[128];
-        size_t json_temp_len = 0;
-        size_t json_humidity_len = 0;
+        char json_temp[MAX_LEN];
+        char json_humidity[MAX_LEN];
+        int encrypted_temp_len;
+        int encrypted_humidity_len;
 
         sprintf(json_temp, "{\"sensor_id\": %d, \"value\": %d.%d}", sensor_id_temp, temp_integral, temp_decimal);
-        json_temp_len = encrypt(json_temp);
-        printf("%s\n", json_temp);
+        sprintf(json_humidity, "{\"sensor_id\": %d, \"value\": %d.%d}", sensor_id_hum, humidity_integral, humidity_decimal);
 
-        sprintf(json_humidity, "{\"sensor_id\": %d, \"value\": %d.%d}", sensor_id_humidity, humidity_integral, humidity_decimal);
-        json_humidity_len = encrypt(json_humidity);
+        if ((encrypted_temp_len = encrypt(&cipher, json_temp)) < 0)
+                printf("Temp encryption failed!\n");
+        if ((encrypted_humidity_len = encrypt(&cipher, json_humidity)) < 0)
+                printf("Humidity encryption failed!\n");
 
-        gnrc_udp_send(ipv6_address, port, json_temp, json_temp_len, 1, 1000);
-        gnrc_udp_send(ipv6_address, port, json_humidity, json_humidity_len, 1, 1000);
+        gnrc_udp_send(ipv6_address, port, json_temp, encrypted_temp_len, 1, 1000);
+        gnrc_udp_send(ipv6_address, port, json_humidity, encrypted_humidity_len, 1, 1000);
 
         printf("Humidity: %d.%d %%\n", humidity_integral, humidity_decimal);
         printf("Temperature: %d.%d \u00b0C\n", temp_integral, temp_decimal);
@@ -218,6 +231,10 @@ static const shell_command_t shell_commands[] = {
 int main(void) {
     uint32_t seed = ztimer_now(ZTIMER_MSEC);
     srand(seed);
+
+    cipher_t cipher;
+    if (cipher_init(&cipher, CIPHER_AES, key, AES_KEY_SIZE) < 0)
+        printf("Cipher init failed!\n");
 
     // Start the data sender thread by default
     puts("Starting data sender thread by default...");
