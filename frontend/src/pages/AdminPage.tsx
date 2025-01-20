@@ -7,22 +7,18 @@ import {
   List,
   ListItem,
   ListItemText,
-  IconButton,
   Paper,
 } from "@mui/material";
-import { FaTrash, FaUserPlus, FaUserMinus, FaArrowLeft } from "react-icons/fa";
+import { FaUserPlus, FaUserMinus, FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { AxiosError } from "axios"; 
+import { IconButton } from "@mui/material";
 
 interface Platform {
   id: number;
   name: string;
   sensors: Array<any>;
-}
-
-interface UserAccess {
-  [platformName: string]: string[];
+  users: string[]; // Added users to the platform
 }
 
 const AdminPage: React.FC = () => {
@@ -30,12 +26,10 @@ const AdminPage: React.FC = () => {
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [newPlatform, setNewPlatform] = useState<string>("");
   const [selectedPlatform, setSelectedPlatform] = useState<Platform | null>(null);
-  const [userAccess, setUserAccess] = useState<UserAccess>({});
   const [newUser, setNewUser] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch platforms from the backend
   useEffect(() => {
     const fetchPlatforms = async () => {
       try {
@@ -59,14 +53,14 @@ const AdminPage: React.FC = () => {
       alert("Platform name cannot be empty.");
       return;
     }
-  
+
     try {
       const token = localStorage.getItem("access_token");
       if (!token) {
         alert("Authentication token is missing. Please log in again.");
         return;
       }
-  
+
       const response = await axios.post(
         "http://0.0.0.0:8000/api/platforms/",
         { name: newPlatform },
@@ -81,73 +75,91 @@ const AdminPage: React.FC = () => {
       setPlatforms((prev) => [...prev, response.data]);
       setNewPlatform("");
     } catch (err) {
-      if (axios.isAxiosError(err)) {
-        console.error("Error response:", err.response?.data);
-        alert(
-          err.response?.data?.detail || "You do not have permission to perform this action."
-        );
-      } else {
-        console.error("Unexpected error:", err);
-        alert("An unexpected error occurred.");
-      }
-    }
-  };
-  
-  
-
-  const handleDeletePlatform = async (platformId: number) => {
-    if (!window.confirm("Are you sure you want to delete this platform?")) return;
-
-    try {
-      const token = localStorage.getItem("access_token");
-      await axios.delete(`http://0.0.0.0:8000/api/platforms/${platformId}/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setPlatforms((prev) => prev.filter((platform) => platform.id !== platformId));
-    } catch (err) {
-      console.error("Error deleting platform:", err);
+      console.error("Error adding platform:", err);
     }
   };
 
   const handleAddUser = async () => {
     if (!newUser.trim()) {
       alert("Please provide a valid user email.");
+      console.error("No user email provided.");
       return;
     }
-    if (!selectedPlatform) return;
-
+  
+    if (!selectedPlatform) {
+      alert("No platform selected.");
+      console.error("No platform selected for adding the user.");
+      return;
+    }
+  
     try {
       const token = localStorage.getItem("access_token");
-      await axios.post(
-        `http://0.0.0.0:8000/api/platforms/${selectedPlatform.id}/users/`,
+      if (!token) {
+        alert("Authentication token is missing. Please log in again.");
+        console.error("No authentication token found in localStorage.");
+        return;
+      }
+  
+      console.log("Adding user to platform:", {
+        platformId: selectedPlatform.id,
+        userEmail: newUser,
+      });
+  
+      const response = await axios.post(
+        `http://0.0.0.0:8000/api/platforms/${selectedPlatform.id}/users/`, 
         { email: newUser },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setUserAccess((prev) => ({
-        ...prev,
-        [selectedPlatform.name]: [...(prev[selectedPlatform.name] || []), newUser],
+  
+      console.log("User added successfully:", response.data);
+  
+      // Update the state with the newly added user
+      setSelectedPlatform((prev) => ({
+        ...prev!,
+        users: [...prev!.users, newUser],
       }));
       setNewUser("");
-    } catch (err) {
+  
+      alert("User added successfully!");
+    } catch (err: any) {
       console.error("Error adding user:", err);
+  
+      if (err.response) {
+        console.error("Error Response:", err.response);
+        alert(`Failed to add user. Server responded with: ${err.response.data.detail || err.response.statusText}`);
+      } else if (err.request) {
+        console.error("Error Request:", err.request);
+        alert("Failed to add user. No response received from the server.");
+      } else {
+        console.error("Unexpected Error:", err.message);
+        alert(`An unexpected error occurred: ${err.message}`);
+      }
     }
   };
 
-  const handleRemoveUser = async (user: string) => {
+  const handleRemoveUser = async (userEmail: string) => {
     if (!selectedPlatform) return;
 
     try {
       const token = localStorage.getItem("access_token");
-      await axios.delete(
-        `http://0.0.0.0:8000/api/platforms/${selectedPlatform.id}/users/${user}/`,
-        { headers: { Authorization: `Bearer ${token}` } }
+
+      const response = await axios.delete(
+        `http://0.0.0.0:8000/api/platforms/${selectedPlatform.id}/users/${userEmail}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
-      setUserAccess((prev) => ({
-        ...prev,
-        [selectedPlatform.name]: (prev[selectedPlatform.name] || []).filter((u) => u !== user),
+      console.log("User removed successfully:", response.data);
+      // Remove the user from the state
+      setSelectedPlatform((prev) => ({
+        ...prev!,
+        users: prev!.users.filter((user) => user !== userEmail),
       }));
+
+      alert("User removed successfully!");
     } catch (err) {
       console.error("Error removing user:", err);
+      alert("Failed to remove user. Please try again.");
     }
   };
 
@@ -200,17 +212,16 @@ const AdminPage: React.FC = () => {
           <Paper sx={{ p: 3, borderRadius: 3 }}>
             <Typography variant="h5">Add Platform</Typography>
             <TextField
-          label="Platform Name"
-          variant="outlined"
-          fullWidth
-          value={newPlatform}
-          onChange={(e) => setNewPlatform(e.target.value)} // Update newPlatform state
-          sx={{ mt: 2, mb: 2 }}
-        />
-        <Button variant="contained" onClick={handleAddPlatform}>
-          Add Platform
-        </Button>
-
+              label="Platform Name"
+              variant="outlined"
+              fullWidth
+              value={newPlatform}
+              onChange={(e) => setNewPlatform(e.target.value)}
+              sx={{ mt: 2, mb: 2 }}
+            />
+            <Button variant="contained" onClick={handleAddPlatform}>
+              Add Platform
+            </Button>
           </Paper>
 
           <Paper sx={{ p: 3, borderRadius: 3 }}>
@@ -228,18 +239,13 @@ const AdminPage: React.FC = () => {
                   }}
                 >
                   <ListItemText primary={platform.name} />
-                  <Box>
-                    <Button
-                      variant="outlined"
-                      onClick={() => setSelectedPlatform(platform)}
-                      sx={{ mr: 1 }}
-                    >
-                      Manage
-                    </Button>
-                    <IconButton onClick={() => handleDeletePlatform(platform.id)}>
-                      <FaTrash />
-                    </IconButton>
-                  </Box>
+                  <Button
+                    variant="outlined"
+                    onClick={() => setSelectedPlatform(platform)}
+                    sx={{ mr: 1 }}
+                  >
+                    Manage
+                  </Button>
                 </ListItem>
               ))}
             </List>
@@ -261,7 +267,7 @@ const AdminPage: React.FC = () => {
                 </Button>
               </Box>
               <List sx={{ mt: 2 }}>
-                {(userAccess[selectedPlatform.name] || []).map((user) => (
+                {(selectedPlatform.users || []).map((user) => (
                   <ListItem
                     key={user}
                     sx={{
@@ -273,7 +279,14 @@ const AdminPage: React.FC = () => {
                     }}
                   >
                     <ListItemText primary={user} />
-                    <IconButton onClick={() => handleRemoveUser(user)}>
+                    <IconButton
+                      onClick={() => handleRemoveUser(user)}
+                      sx={{
+                        color: "#f44336",
+                        "&:hover": { backgroundColor: "#fdecea" },
+                      }}
+                      title="Remove User"
+                    >
                       <FaUserMinus />
                     </IconButton>
                   </ListItem>
