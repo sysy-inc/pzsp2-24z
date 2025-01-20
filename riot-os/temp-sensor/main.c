@@ -23,8 +23,9 @@ volatile int running = 1;  // Start sending by default
 kernel_pid_t thread_handle = -1;
 char port[6] = HOST_PORT; // Default port as a string
 unsigned measurement_interval = MEASUREMENT_INTERVAL_MSEC;
+cipher_t cipher;
 
-#define MAX_LEN 256
+#define MAX_LEN 128
 #define AES_KEY_SIZE 32   // AES-256 bit key size
 #define AES_BLOCK_SIZE 16 // AES block size
 
@@ -167,7 +168,7 @@ void *data_sender_thread(void *arg) {
         int encrypted_humidity_len;
 
         sprintf(json_temp, "{\"sensor_id\": %d, \"value\": %d.%d}", sensor_id_temp, temp_integral, temp_decimal);
-        sprintf(json_humidity, "{\"sensor_id\": %d, \"value\": %d.%d}", sensor_id_hum, humidity_integral, humidity_decimal);
+        sprintf(json_humidity, "{\"sensor_id\": %d, \"value\": %d.%d}", sensor_id_humidity, humidity_integral, humidity_decimal);
 
         if ((encrypted_temp_len = encrypt(&cipher, json_temp)) < 0)
                 printf("Temp encryption failed!\n");
@@ -232,7 +233,6 @@ int main(void) {
     uint32_t seed = ztimer_now(ZTIMER_MSEC);
     srand(seed);
 
-    cipher_t cipher;
     if (cipher_init(&cipher, CIPHER_AES, key, AES_KEY_SIZE) < 0)
         printf("Cipher init failed!\n");
 

@@ -5,7 +5,7 @@ APPLICATION = tmep-test
 BOARD ?= native
 
 # This has to be the absolute path to the RIOT base directory:
-RIOTBASE ?= /home/mkrajew/RIOT/
+RIOTBASE ?= /home/adrwal/RIOT/
 
 USEMODULE += cipher_modes
 USEMODULE += crypto_aes_256
