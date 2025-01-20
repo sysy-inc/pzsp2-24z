@@ -8,6 +8,9 @@ import CurrentWeatherPage from './pages/CurrentWeatherPage';
 import HistoricalDataPage from './pages/HistoricalDataPage';
 import PlatformChoicePage from './pages/PlatformChoicePage';
 
+const backendUrl = process.env.VITE_BACKEND_URL || 'http://localhost:8000';
+
+
 const App: React.FC = () => {
   return (
     <Router>

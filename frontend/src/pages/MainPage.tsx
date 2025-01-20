@@ -5,6 +5,8 @@ import { FaHistory } from "react-icons/fa";
 import { MdOutlineCloudQueue } from "react-icons/md";
 
 import Header from "../components/Header";
+import  backendUrl  from '../App';
+
 
 const MainPage: React.FC = () => {
   const navigate = useNavigate();

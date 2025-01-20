@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import ParticlesBackground from "../components/common/ParticlesBackground";
 
 import Header from "../components/Header";
-
+import  backendUrl  from '../App';
 const CurrentWeatherPage: React.FC = () => {
   const [weatherData, setWeatherData] = useState<{
     temperature: number | null;

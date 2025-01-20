@@ -3,6 +3,8 @@ import { TextField, Button, Box, Typography, Paper } from '@mui/material';
 import { FaLock } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 
+import  backendUrl  from '../App';
+
 const SignInPage: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -14,7 +16,7 @@ const SignInPage: React.FC = () => {
     setError(null);
 
     try {
-      const response = await fetch('http://0.0.0.0:8000/auth/token', {
+      const response = await fetch(`${backendUrl}/auth/token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({

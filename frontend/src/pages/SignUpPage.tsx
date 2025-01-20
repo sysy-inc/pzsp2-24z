@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Paper } from '@mui/material';
 import { FaUserPlus } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import  backendUrl  from '../App';
+
 
 const SignUpPage: React.FC = () => {
   const [name, setName] = useState('');
@@ -25,7 +27,7 @@ const SignUpPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch('http://0.0.0.0:8000/auth/register', {
+      const response = await fetch(`${backendUrl}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, surname, email, password }),

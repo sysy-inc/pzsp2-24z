@@ -6,7 +6,7 @@ import ParticlesBackground from "../components/common/ParticlesBackground";
 import axios from "axios";
 
 import Header from "../components/Header";
-
+import  backendUrl  from '../App';
 const PlatformChoicePage: React.FC = () => {
   const navigate = useNavigate();
   const [platforms, setPlatforms] = useState<any[]>([]);
@@ -19,7 +19,7 @@ const PlatformChoicePage: React.FC = () => {
       try {
         const token = localStorage.getItem("access_token");
 
-        const response = await axios.get("http://0.0.0.0:8000/api/platforms/", {
+        const response = await axios.get(`${backendUrl}/api/platforms/`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

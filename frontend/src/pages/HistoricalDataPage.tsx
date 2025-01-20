@@ -26,6 +26,8 @@ import {
 import { SelectChangeEvent } from '@mui/material/Select';
 import { Line } from 'react-chartjs-2';
 
+import Header from "../components/Header";
+import  backendUrl  from '../App';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 interface ChartData {
@@ -104,7 +106,7 @@ const HistoricalDataPage: React.FC = () => {
       }
 
       const response = await axios.get(
-        `http://0.0.0.0:8000/api/platforms/${platformId}/measurements/`,
+        `${backendUrl}/api/platforms/${platformId}/measurements/`,
         {
           headers: { Authorization: `Bearer ${token}` },
           params: {

@@ -13,8 +13,9 @@ import {
 import { FaUserPlus, FaUserMinus, FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
+import backendUrl from "../App"
 import Header from "../components/Header";
+
 
 
 interface Platform {
@@ -37,7 +38,7 @@ const AdminPage: React.FC = () => {
       try {
         const token = localStorage.getItem("access_token");
 
-        const response = await axios.get("http://0.0.0.0:8000/api/platforms/", {
+        const response = await axios.get(`${backendUrl}/api/platforms/`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setPlatforms(response.data);
@@ -52,7 +53,7 @@ const AdminPage: React.FC = () => {
     const fetchUserData = async () => {
       try {
         const token = localStorage.getItem("access_token");
-        const response = await axios.get("http://0.0.0.0:8000/auth/me", {
+        const response = await axios.get(`${backendUrl}/auth/me`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -84,7 +85,7 @@ const AdminPage: React.FC = () => {
       }
 
       const response = await axios.get(
-        `http://0.0.0.0:8000/api/platforms/${platformId}/users/`,
+        `${backendUrl}/api/platforms/${platformId}/users/`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -129,7 +130,7 @@ const AdminPage: React.FC = () => {
       });
 
       const response = await axios.post(
-        `http://0.0.0.0:8000/api/platforms/${selectedPlatform.id}/users/`,
+        `${backendUrl}/api/platforms/${selectedPlatform.id}/users/`,
         { email: newUser },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -184,7 +185,7 @@ const AdminPage: React.FC = () => {
       const token = localStorage.getItem("access_token");
 
       const response = await axios.delete(
-        `http://0.0.0.0:8000/api/platforms/${selectedPlatform.id}/users/${userEmail}`,
+        `${backendUrl}/api/platforms/${selectedPlatform.id}/users/${userEmail}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
