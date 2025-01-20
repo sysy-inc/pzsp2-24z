@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { TextField, Button, Box, Typography, Paper } from '@mui/material';
 import { FaUserPlus } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import  backendUrl  from '../App';
+
+const backendUrl = 'http://localhost:8000';
 
 
 const SignUpPage: React.FC = () => {
@@ -20,7 +21,7 @@ const SignUpPage: React.FC = () => {
     setError(null);
     setSuccess(null);
 
-  
+
     if (password !== repeatPassword) {
       setError('Passwords do not match!');
       return;

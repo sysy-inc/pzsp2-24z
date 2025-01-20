@@ -26,8 +26,8 @@ import {
 import { SelectChangeEvent } from '@mui/material/Select';
 import { Line } from 'react-chartjs-2';
 
-import Header from "../components/Header";
-import  backendUrl  from '../App';
+const backendUrl = 'http://localhost:8000';
+
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 interface ChartData {

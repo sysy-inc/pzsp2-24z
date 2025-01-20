@@ -3,7 +3,7 @@ import { TextField, Button, Box, Typography, Paper } from '@mui/material';
 import { FaLock } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 
-import  backendUrl  from '../App';
+const backendUrl = 'http://localhost:8000';
 
 const SignInPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -15,12 +15,14 @@ const SignInPage: React.FC = () => {
     e.preventDefault();
     setError(null);
 
+    console.log(backendUrl);
+
     try {
       const response = await fetch(`${backendUrl}/auth/token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
-          username: username, 
+          username: username,
           password: password,
         }),
       });

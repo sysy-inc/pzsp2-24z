@@ -13,10 +13,10 @@ import {
 import { FaUserPlus, FaUserMinus, FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import backendUrl from "../App"
+
 import Header from "../components/Header";
 
-
+const backendUrl = 'http://localhost:8000';
 
 interface Platform {
   id: number;

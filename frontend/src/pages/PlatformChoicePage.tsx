@@ -6,7 +6,10 @@ import ParticlesBackground from "../components/common/ParticlesBackground";
 import axios from "axios";
 
 import Header from "../components/Header";
-import  backendUrl  from '../App';
+
+const backendUrl = 'http://localhost:8000';
+
+
 const PlatformChoicePage: React.FC = () => {
   const navigate = useNavigate();
   const [platforms, setPlatforms] = useState<any[]>([]);
