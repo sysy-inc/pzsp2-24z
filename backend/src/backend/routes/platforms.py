@@ -89,6 +89,22 @@ def read_platforms(
 
     results: list[PlatformsResponsePlatform] = []
 
+    if user.is_admin:
+        query = session.execute(
+            select(Platform)
+            .join(Sensor, Sensor.platform_id == Platform.id)
+            .join(MeasurementType, Sensor.measurement_type_id == MeasurementType.id)
+            .options(
+                selectinload(Platform.sensors).selectinload(Sensor.measurement_type)
+            )
+            .distinct()
+        )
+        platforms = query.scalars().unique().all()
+
+        for platform in platforms:
+            results.append(PlatformsResponsePlatform.model_validate(platform))
+        return results
+
     query = session.execute(
         select(Platform)
         .join(UserPlatform, Platform.id == UserPlatform.platform_id)
