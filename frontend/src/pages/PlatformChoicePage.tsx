@@ -14,22 +14,26 @@ const PlatformChoicePage: React.FC = () => {
   useEffect(() => {
     const fetchPlatforms = async () => {
       try {
-        const response = await axios.get("http://0.0.0.0:8000/platforms/");
-        setPlatforms(response.data); 
+        const token = localStorage.getItem("access_token");
+        const response = await axios.get("http://0.0.0.0:8000/api/platforms/", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setPlatforms(response.data);
       } catch (error) {
         setError("Failed to load platforms.");
       } finally {
-        setLoading(false); 
+        setLoading(false);
       }
     };
 
     fetchPlatforms();
-  }, []); 
+  }, []);
 
-  
   const handleChoice = (platformId: number) => {
-    localStorage.setItem("selectedPlatformId", platformId.toString()); 
-    navigate("/main"); 
+    localStorage.setItem("selectedPlatformId", platformId.toString());
+    navigate("/main");
   };
 
   return (
@@ -44,7 +48,7 @@ const PlatformChoicePage: React.FC = () => {
         background: "linear-gradient(to bottom, #87CEEB, #f8f9fa)",
       }}
     >
-      <ParticlesBackground /> {/* Add background particles */}
+      <ParticlesBackground />
 
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
@@ -74,17 +78,10 @@ const PlatformChoicePage: React.FC = () => {
             Choose a Platform
           </Typography>
 
-          {/* Loading state */}
-          {loading && (
-            <CircularProgress sx={{ color: "#6e8efb" }} />
-          )}
+          {loading && <CircularProgress sx={{ color: "#6e8efb" }} />}
 
-          {/* Error state */}
-          {error && (
-            <Typography color="error">{error}</Typography>
-          )}
+          {error && <Typography color="error">{error}</Typography>}
 
-          {/* Platform list display */}
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {platforms.map((platform, index) => (
               <motion.div
@@ -105,7 +102,7 @@ const PlatformChoicePage: React.FC = () => {
                     py: 1.5,
                     "&:hover": { backgroundColor: "#5b75d9" },
                   }}
-                  onClick={() => handleChoice(platform.id)} // Store the platform ID, not the name
+                  onClick={() => handleChoice(platform.id)}
                 >
                   {platform.name}
                 </Button>

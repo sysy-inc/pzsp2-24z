@@ -3,16 +3,20 @@ import { Box, Typography, CircularProgress, Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { motion } from "framer-motion";
-import ParticlesBackground from "../components/common/ParticlesBackground"; // Optional background component
+import ParticlesBackground from "../components/common/ParticlesBackground";
 
 const CurrentWeatherPage: React.FC = () => {
-  const [weatherData, setWeatherData] = useState<any[]>([]);
+  const [weatherData, setWeatherData] = useState<{
+    temperature: number | null;
+    humidity: number | null;
+  }>({ temperature: null, humidity: null });
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  
   const selectedPlatformId = localStorage.getItem("selectedPlatformId");
+  const dateFrom = new Date().toISOString();
+  const dateTo = new Date().toISOString();
 
   useEffect(() => {
     if (!selectedPlatformId) {
@@ -23,38 +27,49 @@ const CurrentWeatherPage: React.FC = () => {
 
     const fetchWeatherData = async () => {
       try {
-    
         const token = localStorage.getItem("access_token");
 
-        const measurementType = "Temperature"
-
-        const response = await axios.get(`http://0.0.0.0:8000/api/platforms/${selectedPlatformId}/latest_measurements`, {
-          headers: {
-            Authorization: `Bearer ${token}`, // Include the access token for authentication
-          },
-          params: {
-            measurementType: measurementType, // Maps to `measurement_type` query parameter
-          },
-        });
-
-    
-        const filteredData = response.data.filter((measurement: any) =>
-          ["temperature", "humidity"].includes(measurement.measurement_type.physical_parameter)
+        const temperatureResponse = await axios.get(
+          `http://0.0.0.0:8000/api/platforms/${selectedPlatformId}/latest_measurements`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            params: {
+              measurementType: "Temperature",
+            },
+          }
         );
 
-        setWeatherData(filteredData);
-      } catch (error) {
+        const humidityResponse = await axios.get(
+          `http://0.0.0.0:8000/api/platforms/${selectedPlatformId}/latest_measurements`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            params: {
+              measurementType: "Humidity",
+            },
+          }
+        );
+
+        const temperature = temperatureResponse.data.value || null;
+        const humidity = humidityResponse.data.value || null;
+
+        setWeatherData({ temperature, humidity });
+      } catch (err) {
         setError("Failed to fetch weather data. Please try again later.");
+        console.error("Error fetching weather data", err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchWeatherData();
-  }, [selectedPlatformId]); 
+  }, [selectedPlatformId]);
 
   const handleBack = () => {
-    navigate("/"); 
+    navigate("/");
   };
 
   return (
@@ -69,7 +84,7 @@ const CurrentWeatherPage: React.FC = () => {
         background: "linear-gradient(to bottom, #87CEEB, #f8f9fa)",
       }}
     >
-      <ParticlesBackground /> {/* Optional background particles */}
+      <ParticlesBackground />
 
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
@@ -99,41 +114,40 @@ const CurrentWeatherPage: React.FC = () => {
             Current Weather
           </Typography>
 
-          {/* Loading state */}
           {loading && <CircularProgress sx={{ color: "#6e8efb" }} />}
 
-          {/* Error state */}
-          {error && (
-            <Typography color="error">{error}</Typography>
-          )}
+          {error && <Typography color="error">{error}</Typography>}
 
-          {/* Weather data display */}
-          {weatherData && !loading && !error && weatherData.length > 0 ? (
+          {!loading && !error && (
             <Box sx={{ mt: 3 }}>
-              {weatherData.map((m: any) => {
-                if (m.measurement_type.physical_parameter === "temperature") {
-                  return (
-                    <Typography variant="h6" key={m.id} sx={{ fontWeight: "bold" }}>
-                      Temperature: {m.value} °C
-                    </Typography>
-                  );
-                }
-                if (m.measurement_type.physical_parameter === "humidity") {
-                  return (
-                    <Typography variant="body1" key={m.id}>
-                      Humidity: {m.value} %
-                    </Typography>
-                  );
-                }
-                return null;
-              })}
+              {weatherData.temperature !== null ? (
+                <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                  Temperature: {weatherData.temperature} °C
+                </Typography>
+              ) : (
+                <Typography variant="body1">Temperature data unavailable.</Typography>
+              )}
+              {weatherData.humidity !== null ? (
+                <Typography variant="h6" sx={{ mt: 1 }}>
+                  Humidity: {weatherData.humidity} %
+                </Typography>
+              ) : (
+                <Typography variant="body1">Humidity data unavailable.</Typography>
+              )}
             </Box>
-          ) : (
-            <Typography variant="body1">No weather data available.</Typography>
           )}
 
           <Box sx={{ mt: 4 }}>
-            <button onClick={handleBack} style={{ padding: "10px 20px", backgroundColor: "#6e8efb", color: "white", border: "none", borderRadius: "5px" }}>
+            <button
+              onClick={handleBack}
+              style={{
+                padding: "10px 20px",
+                backgroundColor: "#6e8efb",
+                color: "white",
+                border: "none",
+                borderRadius: "5px",
+              }}
+            >
               Back to Platform Choice
             </button>
           </Box>
