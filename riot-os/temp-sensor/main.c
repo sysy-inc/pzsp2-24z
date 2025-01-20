@@ -18,6 +18,7 @@ char ipv6_address[IPV6_ADDR_LEN] = HOST_IPV6;
 char thread_stack[THREAD_STACKSIZE];
 volatile int running = 1;  // Start sending by default
 kernel_pid_t thread_handle = -1;
+char port[6] = HOST_PORT; // Default port as a string
 
 /*
   `set_ipv6_address` command handler to set the destination IPv6 address and port.
@@ -36,6 +37,26 @@ int set_ipv6_address(int argc, char **argv) {
 
     strncpy(ipv6_address, argv[1], IPV6_ADDR_LEN);
     printf("New IPv6 address set to: %s\n", ipv6_address);
+    return 0;
+}
+
+/*
+  `set_port` command handler to set the destination port.
+*/
+int set_port(int argc, char **argv) {
+    if (argc != 2) {
+        printf("Usage: %s <port>\n", argv[0]);
+        return 1;
+    }
+
+    int port_value = atoi(argv[1]);
+    if (port_value <= 0 || port_value > 65535) {
+        printf("Error: Invalid port number. Must be between 1 and 65535.\n");
+        return 1;
+    }
+
+    strncpy(port, argv[1], sizeof(port));
+    printf("New port set to: %s\n", port);
     return 0;
 }
 
@@ -79,8 +100,8 @@ void *data_sender_thread(void *arg) {
         sprintf(json_humidity, "{\"sensor_id\": 2, \"value\": %d.%d}", humidity_integral, humidity_decimal);
         json_humidity_len = encrypt(json_humidity);
 
-        gnrc_udp_send(ipv6_address, HOST_PORT, json_temp, json_temp_len, 1, 1000);
-        gnrc_udp_send(ipv6_address, HOST_PORT, json_humidity, json_humidity_len, 1, 1000);
+        gnrc_udp_send(ipv6_address, port, json_temp, json_temp_len, 1, 1000);
+        gnrc_udp_send(ipv6_address, port, json_humidity, json_humidity_len, 1, 1000);
 
         printf("Humidity: %d.%d %%\n", humidity_integral, humidity_decimal);
         printf("Temperature: %d.%d \u00b0C\n", temp_integral, temp_decimal);
@@ -124,6 +145,7 @@ int start_sending(int argc, char **argv) {
 
 static const shell_command_t shell_commands[] = {
     { "set_ipv6", "Set the destination IPv6 address", set_ipv6_address },
+    { "set_port", "Set the destination port", set_port },
     { "stop_sending", "Stop data sending", stop_sending },
     { "start_sending", "Start data sending", start_sending },
     { NULL, NULL, NULL }
