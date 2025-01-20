@@ -1,18 +1,22 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Box, Typography, IconButton, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { FaCloud, FaHistory, FaSignOutAlt } from "react-icons/fa";
 import { MdAdminPanelSettings, MdOutlineCloudQueue } from "react-icons/md";
 
+import Header from "../components/Header";
+
 const MainPage: React.FC = () => {
   const navigate = useNavigate();
-  const platform = localStorage.getItem("selectedPlatform") || "Default Platform";
+  const platform = localStorage.getItem("selectedPlatform");
 
-  const handleLogout = () => {
-    
-    localStorage.clear();
-    navigate("/login"); 
-  };
+
+  // Add use effect to display navigate to platform choice if no platform is selected
+  useEffect(() => {
+    if (!platform) {
+      navigate("/platform-choice");
+    }
+  });
 
   return (
     <Box
@@ -23,67 +27,13 @@ const MainPage: React.FC = () => {
         justifyContent: "center",
         height: "100vh",
         position: "relative",
-        background: "linear-gradient(to bottom, #cce7ff, #e3f2fd)", 
+        background: "linear-gradient(to bottom, #cce7ff, #e3f2fd)",
         overflow: "hidden",
-        color: "#004c8c", 
+        color: "#004c8c",
       }}
     >
       {/* Header */}
-      <Box
-        sx={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          p: 2,
-          backgroundColor: "rgba(255, 255, 255, 0.6)",
-          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-        }}
-      >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <FaCloud size={36} style={{ color: "#004c8c" }} />
-          <Typography
-            variant="h4"
-            fontWeight="bold"
-            sx={{
-              fontFamily: "Poppins, sans-serif",
-              textShadow: "1px 1px 3px rgba(0, 0, 0, 0.3)",
-            }}
-          >
-            CloudPulse
-          </Typography>
-        </Box>
-
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <IconButton
-            onClick={() => navigate("/admin")}
-            sx={{
-              backgroundColor: "rgba(255, 255, 255, 0.5)",
-              "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.7)" },
-              marginRight: 2, 
-            }}
-          >
-            <MdAdminPanelSettings size={28} color="#004c8c" />
-          </IconButton>
-
-          {/* Log Out IconButton */}
-          <IconButton
-            onClick={handleLogout}
-            sx={{
-              backgroundColor: "rgba(255, 255, 255, 0.5)",
-              color: "#004c8c",
-              "&:hover": { backgroundColor: "#f44336", color: "#ffffff" },
-              borderRadius: "50%",
-              p: 1.5,
-            }}
-          >
-            <FaSignOutAlt size={24} />
-          </IconButton>
-        </Box>
-      </Box>
+      <Header />
 
       {/* Welcome Section */}
       <Typography
@@ -184,7 +134,7 @@ const MainPage: React.FC = () => {
         onClick={() => navigate("/platform-choice")}
         sx={{
           position: "absolute",
-          bottom: "50px", 
+          bottom: "50px",
           left: "50%",
           transform: "translateX(-50%)",
           backgroundColor: "#6e8efb",

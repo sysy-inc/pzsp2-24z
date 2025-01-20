@@ -12,7 +12,10 @@ import {
 import { FaUserPlus, FaUserMinus, FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { IconButton } from "@mui/material";
+import { AxiosError } from "axios";
+
+import Header from "../components/Header";
+
 
 interface Platform {
   id: number;
@@ -26,6 +29,8 @@ const AdminPage: React.FC = () => {
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [newPlatform, setNewPlatform] = useState<string>("");
   const [selectedPlatform, setSelectedPlatform] = useState<Platform | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [userAccess, setUserAccess] = useState<UserAccess>({});
   const [newUser, setNewUser] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +50,31 @@ const AdminPage: React.FC = () => {
         setLoading(false);
       }
     };
+
+    const fetchUserData = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        const response = await axios.get("http://0.0.0.0:8000/auth/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        setIsAdmin(response.data.is_admin);
+      } catch (error) {
+        setError("Failed to load user data.");
+      }
+    };
+
+    fetchUserData();
     fetchPlatforms();
+
+    if (!isAdmin) {
+      alert("You do not have permission to access this page.");
+      navigate("/platform-choice");
+    }
+
+
   }, []);
 
   const handleAddPlatform = async () => {
@@ -54,12 +83,14 @@ const AdminPage: React.FC = () => {
       return;
     }
 
+
     try {
       const token = localStorage.getItem("access_token");
       if (!token) {
         alert("Authentication token is missing. Please log in again.");
         return;
       }
+
 
       const response = await axios.post(
         "http://0.0.0.0:8000/api/platforms/",
@@ -163,8 +194,8 @@ const AdminPage: React.FC = () => {
     }
   };
 
-  const handleReturnToMain = () => {
-    navigate("/main");
+  const handleReturnToChoice = () => {
+    navigate("/platform-choice");
   };
 
   return (
@@ -179,12 +210,14 @@ const AdminPage: React.FC = () => {
         background: "linear-gradient(to bottom, #f0f4ff, #e3f2fd)",
       }}
     >
+      <Header />
+
       <Button
         variant="outlined"
-        onClick={handleReturnToMain}
+        onClick={handleReturnToChoice}
         sx={{
           position: "absolute",
-          top: 16,
+          top: 100,
           right: 16,
           backgroundColor: "#ffffff",
           color: "#004c8c",
@@ -196,34 +229,67 @@ const AdminPage: React.FC = () => {
         }}
       >
         <FaArrowLeft />
-        Main Page
+        Platform Choice
       </Button>
 
       <Typography variant="h4" sx={{ mb: 4, fontWeight: "bold", color: "#004c8c" }}>
         Admin Dashboard
       </Typography>
 
-      {loading ? (
-        <Typography>Loading platforms...</Typography>
-      ) : error ? (
-        <Typography color="error">{error}</Typography>
-      ) : (
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 4, width: "100%", maxWidth: "800px" }}>
-          <Paper sx={{ p: 3, borderRadius: 3 }}>
-            <Typography variant="h5">Add Platform</Typography>
-            <TextField
-              label="Platform Name"
-              variant="outlined"
-              fullWidth
-              value={newPlatform}
-              onChange={(e) => setNewPlatform(e.target.value)}
-              sx={{ mt: 2, mb: 2 }}
-            />
-            <Button variant="contained" onClick={handleAddPlatform}>
-              Add Platform
-            </Button>
-          </Paper>
+      {
+        loading ? (
+          <Typography>Loading platforms...</Typography>
+        ) : error ? (
+          <Typography color="error">{error}</Typography>
+        ) : (
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 4, width: "100%", maxWidth: "800px" }}>
+            <Paper sx={{ p: 3, borderRadius: 3 }}>
+              <Typography variant="h5">Add Platform</Typography>
+              <TextField
+                label="Platform Name"
+                variant="outlined"
+                fullWidth
+                value={newPlatform}
+                onChange={(e) => setNewPlatform(e.target.value)} // Update newPlatform state
+                sx={{ mt: 2, mb: 2 }}
+              />
+              <Button variant="contained" onClick={handleAddPlatform}>
+                Add Platform
+              </Button>
 
+            </Paper>
+
+            <Paper sx={{ p: 3, borderRadius: 3 }}>
+              <Typography variant="h5">Platforms</Typography>
+              <List>
+                {platforms.map((platform) => (
+                  <ListItem
+                    key={platform.id}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      backgroundColor: "rgba(110, 142, 251, 0.1)",
+                      borderRadius: 2,
+                      mb: 1,
+                    }}
+                  >
+                    <ListItemText primary={platform.name} />
+                    <Box>
+                      <Button
+                        variant="outlined"
+                        onClick={() => setSelectedPlatform(platform)}
+                        sx={{ mr: 1 }}
+                      >
+                        Manage
+                      </Button>
+                      <IconButton onClick={() => handleDeletePlatform(platform.id)}>
+                        <FaTrash />
+                      </IconButton>
+                    </Box>
+                  </ListItem>
+                ))}
+              </List>
+            </Paper>
           <Paper sx={{ p: 3, borderRadius: 3 }}>
             <Typography variant="h5">Platforms</Typography>
             <List>

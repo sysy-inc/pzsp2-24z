@@ -5,6 +5,8 @@ import axios from "axios";
 import { motion } from "framer-motion";
 import ParticlesBackground from "../components/common/ParticlesBackground";
 
+import Header from "../components/Header";
+
 const CurrentWeatherPage: React.FC = () => {
   const [weatherData, setWeatherData] = useState<{
     temperature: number | null;
@@ -85,6 +87,8 @@ const CurrentWeatherPage: React.FC = () => {
       }}
     >
       <ParticlesBackground />
+
+      <Header />
 
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
