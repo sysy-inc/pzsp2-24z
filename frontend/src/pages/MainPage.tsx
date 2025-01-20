@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
-import { Box, Typography, IconButton, Button } from "@mui/material";
+import { Box, Typography, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { FaCloud, FaHistory, FaSignOutAlt } from "react-icons/fa";
-import { MdAdminPanelSettings, MdOutlineCloudQueue } from "react-icons/md";
+import { FaHistory } from "react-icons/fa";
+import { MdOutlineCloudQueue } from "react-icons/md";
 
 import Header from "../components/Header";
 

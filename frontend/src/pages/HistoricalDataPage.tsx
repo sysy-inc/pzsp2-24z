@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -25,8 +25,6 @@ import {
 } from 'chart.js';
 import { SelectChangeEvent } from '@mui/material/Select';
 import { Line } from 'react-chartjs-2';
-
-import Header from "../components/Header";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 

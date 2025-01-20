@@ -17,8 +17,6 @@ const CurrentWeatherPage: React.FC = () => {
   const navigate = useNavigate();
 
   const selectedPlatformId = localStorage.getItem("selectedPlatformId");
-  const dateFrom = new Date().toISOString();
-  const dateTo = new Date().toISOString();
 
   useEffect(() => {
     if (!selectedPlatformId) {

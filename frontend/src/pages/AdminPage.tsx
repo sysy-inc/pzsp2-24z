@@ -10,17 +10,13 @@ import {
   Paper,
   IconButton
 } from "@mui/material";
-import { FaTrash, FaUserPlus, FaUserMinus, FaArrowLeft } from "react-icons/fa";
+import { FaUserPlus, FaUserMinus, FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { AxiosError } from "axios";
 
 import Header from "../components/Header";
 
 
-interface UserAccess {
-  [platformName: string]: string[];
-}
 interface Platform {
   id: number;
   name: string;
@@ -31,10 +27,7 @@ interface Platform {
 const AdminPage: React.FC = () => {
   const navigate = useNavigate();
   const [platforms, setPlatforms] = useState<Platform[]>([]);
-  const [newPlatform, setNewPlatform] = useState<string>("");
   const [selectedPlatform, setSelectedPlatform] = useState<Platform | null>(null);
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const [userAccess, setUserAccess] = useState<UserAccess>({});
   const [newUser, setNewUser] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -64,8 +57,6 @@ const AdminPage: React.FC = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-
-        setIsAdmin(response.data.is_admin);
 
         if (!response.data.is_admin) {
           console.log("no admin");
@@ -108,39 +99,6 @@ const AdminPage: React.FC = () => {
     } catch (err) {
       console.error("Error fetching platform users:", err);
       alert("Failed to load users for the selected platform.");
-    }
-  };
-
-  const handleAddPlatform = async () => {
-    if (!newPlatform.trim()) {
-      alert("Platform name cannot be empty.");
-      return;
-    }
-
-
-    try {
-      const token = localStorage.getItem("access_token");
-      if (!token) {
-        alert("Authentication token is missing. Please log in again.");
-        return;
-      }
-
-
-      const response = await axios.post(
-        "http://0.0.0.0:8000/api/platforms/",
-        { name: newPlatform },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      console.log("Platform created:", response.data);
-      setPlatforms((prev) => [...prev, response.data]);
-      setNewPlatform("");
-    } catch (err) {
-      console.error("Error adding platform:", err);
     }
   };
 
