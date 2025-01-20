@@ -20,7 +20,7 @@ volatile int running = 1;  // Start sending by default
 kernel_pid_t thread_handle = -1;
 
 /*
-  Command handler to set the destination IPv6 address.
+  `set_ipv6_address` command handler to set the destination IPv6 address and port.
   Can be used while the data is being read and sent.
 */
 int set_ipv6_address(int argc, char **argv) {
@@ -47,6 +47,14 @@ int stop_sending(int argc, char **argv) {
     return 0;
 }
 
+/*
+  Callback function to run in a thread used for reading and sending data.
+  Sent data format:
+  {
+    "sensor_id": int,
+    "value": float
+  }
+*/
 void *data_sender_thread(void *arg) {
     (void)arg;
 
@@ -85,6 +93,9 @@ void *data_sender_thread(void *arg) {
     return NULL;
 }
 
+/*
+  `start_sending` command handler to start the data sending thread.
+*/
 int start_sending(int argc, char **argv) {
     (void)argc;
     (void)argv;
