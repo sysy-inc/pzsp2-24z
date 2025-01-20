@@ -13,6 +13,7 @@ import {
 import { FaTrash, FaUserPlus, FaUserMinus, FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { AxiosError } from "axios"; 
 
 interface Platform {
   id: number;
@@ -58,20 +59,41 @@ const AdminPage: React.FC = () => {
       alert("Platform name cannot be empty.");
       return;
     }
-
+  
     try {
       const token = localStorage.getItem("access_token");
+      if (!token) {
+        alert("Authentication token is missing. Please log in again.");
+        return;
+      }
+  
       const response = await axios.post(
         "http://0.0.0.0:8000/api/platforms/",
         { name: newPlatform },
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
+      console.log("Platform created:", response.data);
       setPlatforms((prev) => [...prev, response.data]);
       setNewPlatform("");
     } catch (err) {
-      console.error("Error adding platform:", err);
+      if (axios.isAxiosError(err)) {
+        console.error("Error response:", err.response?.data);
+        alert(
+          err.response?.data?.detail || "You do not have permission to perform this action."
+        );
+      } else {
+        console.error("Unexpected error:", err);
+        alert("An unexpected error occurred.");
+      }
     }
   };
+  
+  
 
   const handleDeletePlatform = async (platformId: number) => {
     if (!window.confirm("Are you sure you want to delete this platform?")) return;
@@ -178,16 +200,17 @@ const AdminPage: React.FC = () => {
           <Paper sx={{ p: 3, borderRadius: 3 }}>
             <Typography variant="h5">Add Platform</Typography>
             <TextField
-              label="Platform Name"
-              variant="outlined"
-              fullWidth
-              value={newPlatform}
-              onChange={(e) => setNewPlatform(e.target.value)}
-              sx={{ mt: 2, mb: 2 }}
-            />
-            <Button variant="contained" onClick={handleAddPlatform}>
-              Add Platform
-            </Button>
+          label="Platform Name"
+          variant="outlined"
+          fullWidth
+          value={newPlatform}
+          onChange={(e) => setNewPlatform(e.target.value)} // Update newPlatform state
+          sx={{ mt: 2, mb: 2 }}
+        />
+        <Button variant="contained" onClick={handleAddPlatform}>
+          Add Platform
+        </Button>
+
           </Paper>
 
           <Paper sx={{ p: 3, borderRadius: 3 }}>
