@@ -1,14 +1,20 @@
 used riot ver: 2023.10
 
-To compile and run program on the board:
+Compile for the board:
 ```bash
-make \
+sudo make \
     BOARD=nucleo-f207zg \
-    PROGRAMMER=cpy2remed \
     HOST_IPV6=fe80::2ef0:5dff:fe9e:fbdb \
     HOST_PORT=5000 \
-    flash \
-&& sudo make \
+    MEASUREMENT_INTERVAL_MSEC=4000 \
+    SENSOR_ID_TEMP=1 \
+    SENSOR_ID_HUM=2 \
+flash
+```
+
+Connect to the board:
+```bash
+sudo make \
     BOARD=nucleo-f207zg \
     term
 ```

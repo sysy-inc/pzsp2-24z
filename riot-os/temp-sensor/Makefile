@@ -7,6 +7,9 @@ BOARD ?= native
 # This has to be the absolute path to the RIOT base directory:
 RIOTBASE ?= /home/adrwal/RIOT/
 
+USEMODULE += cipher_modes
+USEMODULE += crypto_aes_256
+
 USEMODULE += ztimer_msec
 USEMODULE += gnrc_icmpv6_error
 USEMODULE += gnrc_ipv6_router_default
@@ -23,6 +26,9 @@ USEMODULE += sock_udp
 USEMODULE += posix_sockets
 USEMODULE += posix_sleep
 USEMODULE += posix_inet
+
+
+
 
 # Comment this out to disable code in RIOT that does safety checking
 # which is not needed in a production environment but helps in the
@@ -47,6 +53,8 @@ endif
 
 CFLAGS += -DHOST_IPV6=\"$(HOST_IPV6)\"
 CFLAGS += -DHOST_PORT=\"$(HOST_PORT)\"
-
+CFLAGS += -DMEASUREMENT_INTERVAL_MSEC=$(MEASUREMENT_INTERVAL_MSEC)
+CFLAGS += -DSENSOR_ID_TEMP=$(SENSOR_ID_TEMP)
+CFLAGS += -DSENSOR_ID_HUM=$(SENSOR_ID_HUM)
 
 include $(RIOTBASE)/Makefile.include
