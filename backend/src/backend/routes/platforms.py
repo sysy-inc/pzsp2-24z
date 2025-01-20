@@ -9,15 +9,22 @@ from sqlalchemy import between, select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.orm.session import Session
 
+from src.backend.utils.database_utils.fetching import (
+    fetch_latest_measurements_for_platform,
+)
 from src.backend.routes.auth import get_current_user
 from src.backend.utils.database_utils.db_controller import get_session
-from src.backend.utils.database_utils.models import (Measurement,
-                                                     MeasurementType,
-                                                     MeasurementTypeSchema,
-                                                     Platform, PlatformSchema,
-                                                     Sensor, User,
-                                                     UserPlatform,
-                                                     UserPlatformSchema)
+from src.backend.utils.database_utils.models import (
+    Measurement,
+    MeasurementType,
+    MeasurementTypeSchema,
+    Platform,
+    PlatformSchema,
+    Sensor,
+    User,
+    UserPlatform,
+    UserPlatformSchema,
+)
 
 platforms = APIRouter()
 
@@ -54,6 +61,26 @@ class PlatformsResponsePlatform(BaseModel):
     }
 
 
+@platforms.get("/{platform_id}/latest_measurements")
+def get_latest_measurements(
+    platform_id: int,
+    user: Annotated[User, Depends(get_current_user)],
+    session: Session = Depends(get_session),
+    measurement_type: str = Query(
+        alias="measurementType", description="Measurement type"
+    ),
+):
+    measurements = fetch_latest_measurements_for_platform(platform_id)
+
+    latest_measurement = measurements.measurements[measurement_type][0]
+
+    measurements_respone = MeasurementsResponseEntry(
+        date=latest_measurement.date, value=latest_measurement.value
+    )
+
+    return measurements_respone
+
+
 @platforms.get("/", response_model=list[PlatformsResponsePlatform])
 def read_platforms(
     user: Annotated[User, Depends(get_current_user)],
@@ -61,6 +88,22 @@ def read_platforms(
 ):
 
     results: list[PlatformsResponsePlatform] = []
+
+    if user.is_admin:
+        query = session.execute(
+            select(Platform)
+            .join(Sensor, Sensor.platform_id == Platform.id)
+            .join(MeasurementType, Sensor.measurement_type_id == MeasurementType.id)
+            .options(
+                selectinload(Platform.sensors).selectinload(Sensor.measurement_type)
+            )
+            .distinct()
+        )
+        platforms = query.scalars().unique().all()
+
+        for platform in platforms:
+            results.append(PlatformsResponsePlatform.model_validate(platform))
+        return results
 
     query = session.execute(
         select(Platform)
@@ -190,6 +233,37 @@ class PlatformAddUserRequest(BaseModel):
     email: str = Field(..., title="Email of the user")
 
 
+class PlatformUserResponse(BaseModel):
+    id: int = Field(..., title="ID of the user")
+    email: str = Field(..., title="Email of the user")
+    model_config = {
+        "from_attributes": True,
+    }
+
+
+@platforms.get("/{platform_id}/users/", response_model=list[PlatformUserResponse])
+def read_users_on_platform(
+    platform_id: int,
+    user: Annotated[User, Depends(get_current_user)],
+    session: Session = Depends(get_session),
+):
+
+    if not user.is_admin:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    user_platforms = (
+        session.query(UserPlatform)
+        .join(User, User.id == UserPlatform.user_id)
+        .filter(UserPlatform.platform_id == platform_id)
+        .all()
+    )
+
+    return [
+        PlatformUserResponse(id=user_platform.user.id, email=user_platform.user.email)
+        for user_platform in user_platforms
+    ]
+
+
 @platforms.post("/{platform_id}/users/")
 def add_user_to_platform(
     platform_id: int,
@@ -221,10 +295,10 @@ def add_user_to_platform(
     return UserPlatformSchema.model_validate(user_platform)
 
 
-@platforms.delete("/{platform_id}/users/{user_id}")
+@platforms.delete("/{platform_id}/users/{user_email}")
 def delete_user_from_platform(
     platform_id: int,
-    user_id: int,
+    user_email: str,
     user: Annotated[User, Depends(get_current_user)],
     session: Session = Depends(get_session),
 ):
@@ -232,9 +306,13 @@ def delete_user_from_platform(
     if not user.is_admin:
         raise HTTPException(status_code=403, detail="Forbidden")
 
+    user_to_delete = session.query(User).filter(User.email == user_email).first()
+    if user_to_delete is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
     user_platform = (
         session.query(UserPlatform)
-        .filter(UserPlatform.user_id == user_id)
+        .filter(UserPlatform.user_id == user_to_delete.id)
         .filter(UserPlatform.platform_id == platform_id)
         .first()
     )
