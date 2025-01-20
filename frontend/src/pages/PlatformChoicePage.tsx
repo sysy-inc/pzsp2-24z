@@ -5,11 +5,14 @@ import { motion } from "framer-motion";
 import ParticlesBackground from "../components/common/ParticlesBackground";
 import axios from "axios";
 
+import Header from "../components/Header";
+
 const PlatformChoicePage: React.FC = () => {
   const navigate = useNavigate();
   const [platforms, setPlatforms] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchPlatforms = async () => {
@@ -21,6 +24,7 @@ const PlatformChoicePage: React.FC = () => {
           },
         });
         setPlatforms(response.data);
+        console.log(response.data);
       } catch (error) {
         setError("Failed to load platforms.");
       } finally {
@@ -28,12 +32,35 @@ const PlatformChoicePage: React.FC = () => {
       }
     };
 
+
+    const fetchUserData = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        const response = await axios.get("http://0.0.0.0:8000/auth/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        setIsAdmin(response.data.is_admin);
+      } catch (error) {
+        setError("Failed to load user data.");
+      }
+    };
+
+    fetchUserData()
     fetchPlatforms();
   }, []);
 
-  const handleChoice = (platformId: number) => {
+  const handleChoice = (platformId: number, platformName: string) => {
     localStorage.setItem("selectedPlatformId", platformId.toString());
+    localStorage.setItem("selectedPlatform", platformName);
+
     navigate("/main");
+  };
+
+  const navigateToAdmin = () => {
+    navigate("/admin");
   };
 
   return (
@@ -48,7 +75,9 @@ const PlatformChoicePage: React.FC = () => {
         background: "linear-gradient(to bottom, #87CEEB, #f8f9fa)",
       }}
     >
+
       <ParticlesBackground />
+      <Header />
 
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
@@ -102,12 +131,30 @@ const PlatformChoicePage: React.FC = () => {
                     py: 1.5,
                     "&:hover": { backgroundColor: "#5b75d9" },
                   }}
-                  onClick={() => handleChoice(platform.id)}
+                  onClick={() => handleChoice(platform.id, platform.name)}
                 >
                   {platform.name}
                 </Button>
               </motion.div>
             ))}
+
+            {/* Conditional Admin Button */}
+            {isAdmin && (
+              <Button
+                variant="outlined"
+                sx={{
+                  mt: 4,
+                  backgroundColor: "#fff",
+                  fontWeight: "bold",
+                  border: "2px solid #6e8efb",
+                  "&:hover": { backgroundColor: "#6e8efb", color: "#fff" },
+                }}
+                onClick={navigateToAdmin}
+              >
+                Go to Admin Page
+              </Button>
+            )}
+
           </Box>
         </Paper>
       </motion.div>
