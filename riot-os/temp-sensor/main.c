@@ -11,15 +11,18 @@
 #include "shell.h"
 #include "thread.h"
 
-// Buffer for storing the new IPv6 address
 #define IPV6_ADDR_LEN 40
 #define THREAD_STACKSIZE (THREAD_STACKSIZE_MAIN + 256)
 
 char ipv6_address[IPV6_ADDR_LEN] = HOST_IPV6;
 char thread_stack[THREAD_STACKSIZE];
-volatile int running = 1;
+volatile int running = 1;  // Start sending by default
+kernel_pid_t thread_handle = -1;
 
-// Command handler to set IPv6 address
+/*
+  Command handler to set the destination IPv6 address.
+  Can be used while the data is being read and sent.
+*/
 int set_ipv6_address(int argc, char **argv) {
     if (argc != 2) {
         printf("Usage: %s <ipv6-address>\n", argv[0]);
@@ -39,19 +42,11 @@ int set_ipv6_address(int argc, char **argv) {
 int stop_sending(int argc, char **argv) {
     (void)argc;
     (void)argv;
-
     running = 0;
     printf("Data sending stopped.\n");
     return 0;
 }
 
-static const shell_command_t shell_commands[] = {
-    { "set_ipv6", "Set the destination IPv6 address", set_ipv6_address },
-    { "stop_sending", "Stop data sending", stop_sending },
-    { NULL, NULL, NULL }
-};
-
-// Thread for sending data
 void *data_sender_thread(void *arg) {
     (void)arg;
 
@@ -85,19 +80,60 @@ void *data_sender_thread(void *arg) {
         ztimer_sleep(ZTIMER_MSEC, 4000);
     }
 
+    printf("Data sender thread exiting.\n");
+    thread_handle = 0;
     return NULL;
 }
 
+int start_sending(int argc, char **argv) {
+    (void)argc;
+    (void)argv;
+    if (running) {
+        printf("Data sending is already running.\n");
+        return 0;
+    }
+
+    if ( thread_handle > 0) {
+        printf("Data sending thread is still running. Wait for it to exit before starting a new one.\n");
+        return 0;
+    }
+
+    printf("Starting data sending...\n");
+    running = 1;
+    thread_handle = thread_create(thread_stack, sizeof(thread_stack), THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,
+                                  data_sender_thread, NULL, "data_sender_thread");
+    printf("Thread handle kernel_pid_t: %d\n", thread_handle);
+    if (thread_handle < 0) {
+        printf("Could not create data sending thread. Got Error: %d\n", thread_handle);
+        running = 0;
+        return 1;
+    }
+    return 0;
+}
+
+static const shell_command_t shell_commands[] = {
+    { "set_ipv6", "Set the destination IPv6 address", set_ipv6_address },
+    { "stop_sending", "Stop data sending", stop_sending },
+    { "start_sending", "Start data sending", start_sending },
+    { NULL, NULL, NULL }
+};
+
+
 int main(void) {
-    puts("Welcome to RIOT!\n");
     uint32_t seed = ztimer_now(ZTIMER_MSEC);
     srand(seed);
 
-    puts("Starting data sender thread.");
-    thread_create(thread_stack, sizeof(thread_stack), THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,
-                  data_sender_thread, NULL, "data_sender_thread");
+    // Start the data sender thread by default
+    puts("Starting data sender thread by default...");
+    thread_handle = thread_create(thread_stack, sizeof(thread_stack), THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,
+                                  data_sender_thread, NULL, "data_sender_thread");
+    printf("Thread handle kernel_pid_t: %d\n", thread_handle);
+    if (thread_handle < 0) {
+        printf("Could not create data sending thread. Got Error: %d\n", thread_handle);
+        return 1;
+    }
 
-    puts("Starting shell. Use 'set_ipv6' to change the IPv6 address or 'stop_sending' to stop data sending.");
+    puts("Use 'set_ipv6' to change the IPv6 address, 'start_sending' to start data sending, or 'stop_sending' to stop it.");
     char line_buf[SHELL_DEFAULT_BUFSIZE];
     shell_run(shell_commands, line_buf, SHELL_DEFAULT_BUFSIZE);
 
