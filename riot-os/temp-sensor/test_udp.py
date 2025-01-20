@@ -3,7 +3,8 @@ import subprocess
 import time
 import threading
 from pydantic import BaseModel
-from cffi import FFI
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.backends import default_backend
 
 
 class MeasurementMessage(BaseModel):
@@ -12,18 +13,27 @@ class MeasurementMessage(BaseModel):
     sensor_id: int
     value: float
 
+key = bytes([
+    0x60, 0x3d, 0xeb, 0x10, 0x15, 0xca, 0x71, 0xbe,
+    0x2b, 0x73, 0xae, 0xf0, 0x85, 0x7d, 0x77, 0x81,
+    0x1f, 0x35, 0x2c, 0x07, 0x3b, 0x61, 0x08, 0xd7,
+    0x2d, 0x98, 0x10, 0xa3, 0x09, 0x14, 0xdf, 0xf4
+])
+
 
 received_messages: list[str] = []
 
-ffi = FFI()
-lib = ffi.dlopen("./server_py/decrypt.so")
+def decrypt(data):
+    ciphertext_length = int.from_bytes(data[:4], byteorder="little")
+    iv = data[4:20]  # Next 16 bytes for IV
+    ciphertext = data[20:20 + ciphertext_length]  # Remaining bytes for ciphertext
 
-# C function interface
-ffi.cdef(
-    """
-    const unsigned char *decrypt(const unsigned char *ciphertext, size_t length);
-"""
-)
+    # Decrypt the ciphertext
+    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
+    decryptor = cipher.decryptor()
+    decrypted_padded = decryptor.update(ciphertext) + decryptor.finalize()
+    decrypted = decrypted_padded.rstrip(b'\x00')    # unpad data
+    return decrypted.decode('utf-8')
 
 
 def udp_server(
@@ -42,18 +52,9 @@ def udp_server(
                 print("recvfrom.")
                 message, addr = server_socket.recvfrom(512)
 
-                ciphertext_len = int.from_bytes(message[:4], byteorder="little")
-                print(f"Ciphertext length extracted: {ciphertext_len}")
-
-                expected_len = 16 + ciphertext_len
-                ciphertext_c = ffi.new("unsigned char[]", message)
-                ptr = lib.decrypt(ciphertext_c, expected_len)
-                if ptr:
-                    decrypted_text = ffi.string(ptr).decode("utf-8", errors="ignore")
-                    received_messages.append(decrypted_text)
-                    print(f"Received message from {addr}: {decrypted_text}")
-                else:
-                    print("Decryption error.")
+                decrypted = decrypt(message)
+                print(decrypted)
+                received_messages.append(decrypted)
             except socket.timeout:
                 continue
         print("UDP server stopped.")

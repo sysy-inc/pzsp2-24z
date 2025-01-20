@@ -21,19 +21,6 @@ const uint8_t key[AES_KEY_SIZE] = {
     0x1f, 0x35, 0x2c, 0x07, 0x3b, 0x61, 0x08, 0xd7,
     0x2d, 0x98, 0x10, 0xa3, 0x09, 0x14, 0xdf, 0xf4};
 
-void print_bytes(const uint8_t *data, size_t len)
-{
-        for (size_t i = 0; i < len; i++)
-        {
-                printf("%02x ", data[i]);
-                if ((i + 1) % 16 == 0)
-                { // Add a newline after 16 bytes for readability
-                        printf("\n");
-                }
-        }
-        printf("\n");
-}
-
 int main(void)
 {
         puts("Welcome to RIOT!\n");
@@ -73,22 +60,6 @@ int main(void)
                         printf("Temp encryption failed!\n");
                 if ((encrypted_humidity_len = encrypt(&cipher, json_humidity)) < 0)
                         printf("Humidity encryption failed!\n");
-
-                FILE *file = fopen("temp.bin", "wb");
-                if (file == NULL)
-                {
-                        printf("Failed to open file for writing encrypted temp!\n");
-                }
-                else
-                {
-                        size_t written = fwrite(json_temp, 1, encrypted_temp_len, file);
-                        if (written != MAX_LEN)
-                        {
-                                printf("Warning: Not all data was written to file!\n");
-                        }
-                        fclose(file);
-                        printf("Encrypted temperature data successfully saved to file.\n");
-                }
 
                 /* json format:
                  * {
