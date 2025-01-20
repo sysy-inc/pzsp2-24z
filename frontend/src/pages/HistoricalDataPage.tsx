@@ -10,14 +10,21 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft } from 'react-icons/fa';
 import axios from 'axios';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
-// Import required types and components
-import { SelectChangeEvent } from '@mui/material/Select'; // Correct import for SelectChangeEvent
-import { Line } from 'react-chartjs-2'; // Correct import for Line chart component
-
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { SelectChangeEvent } from '@mui/material/Select';
+import { Line } from 'react-chartjs-2';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -31,10 +38,8 @@ interface ChartData {
   }[];
 }
 
-
 const HistoricalDataPage: React.FC = () => {
   const navigate = useNavigate();
-  // const { platformId } = useParams();
   const [selectedRange, setSelectedRange] = useState<string>('hour');
   const [selectedMeasurement, setSelectedMeasurement] = useState<string>('Temperature');
   const [chartData, setChartData] = useState<ChartData>({
@@ -43,13 +48,22 @@ const HistoricalDataPage: React.FC = () => {
   });
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [noData, setNoData] = useState<boolean>(false);
 
   const updateChartData = (responseData: { date: string; value: number }[]) => {
-    // Extract labels and data from the response
-    const labels = responseData.map((entry) => new Date(entry.date).toLocaleString());
-    const data = responseData.map((entry) => entry.value);
+    if (responseData.length === 0) {
+      setNoData(true);
+      return;
+    }
+    setNoData(false);
 
-    // Set the chart data
+    const sortedData = responseData.sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+
+    const labels = sortedData.map((entry) => new Date(entry.date).toLocaleString());
+    const data = sortedData.map((entry) => entry.value);
+
     setChartData({
       labels,
       datasets: [
@@ -63,13 +77,9 @@ const HistoricalDataPage: React.FC = () => {
     });
   };
 
-
   const fetchWeatherData = async () => {
-    const platformId = localStorage.getItem("selectedPlatformId");
-
-    console.log("here");
-    console.log(platformId);
-    if (!platformId) return; // Ensure platformId is available
+    const platformId = localStorage.getItem('selectedPlatformId');
+    if (!platformId) return;
 
     setLoading(true);
     setError(null);
@@ -81,10 +91,8 @@ const HistoricalDataPage: React.FC = () => {
         return;
       }
 
-      // Determine the date range based on selected range (hour, day, week, month)
       const dateTo = new Date();
       const dateFrom = new Date();
-
       if (selectedRange === 'hour') {
         dateFrom.setHours(dateFrom.getHours() - 1);
       } else if (selectedRange === 'day') {
@@ -95,13 +103,10 @@ const HistoricalDataPage: React.FC = () => {
         dateFrom.setMonth(dateFrom.getMonth() - 1);
       }
 
-      // Make the API request to fetch historical data for the selected measurement type
       const response = await axios.get(
         `http://0.0.0.0:8000/api/platforms/${platformId}/measurements/`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
           params: {
             measurementType: selectedMeasurement,
             dateFrom: dateFrom.toISOString(),
@@ -110,9 +115,7 @@ const HistoricalDataPage: React.FC = () => {
         }
       );
 
-      console.log(response.data);
       updateChartData(response.data);
-
     } catch (err) {
       setError('Failed to fetch weather data. Please try again later.');
       console.error('Error fetching weather data', err);
@@ -121,13 +124,7 @@ const HistoricalDataPage: React.FC = () => {
     }
   };
 
-  // useEffect(() => {
-  //   fetchWeatherData();
-  // }, [selectedRange, selectedMeasurement, platformId]);
-
-  const handleBack = () => {
-    navigate('/main');
-  };
+  const handleBack = () => navigate('/main');
 
   return (
     <Box
@@ -141,7 +138,6 @@ const HistoricalDataPage: React.FC = () => {
         padding: 4,
       }}
     >
-      {/* Header */}
       <Box
         sx={{
           width: '100%',
@@ -176,13 +172,11 @@ const HistoricalDataPage: React.FC = () => {
         </Button>
       </Box>
 
-      {/* Content */}
       <Box sx={{ width: '80%', mt: 4 }}>
         <Typography variant="h6" gutterBottom>
           View Platform Data Over Time
         </Typography>
 
-        {/* Form Controls */}
         <Box sx={{ display: 'flex', gap: 2, marginBottom: 4 }}>
           <FormControl fullWidth>
             <InputLabel>Time Range</InputLabel>
@@ -208,7 +202,6 @@ const HistoricalDataPage: React.FC = () => {
             </Select>
           </FormControl>
 
-          {/* Fetch Data Button */}
           <Button
             variant="contained"
             onClick={fetchWeatherData}
@@ -220,15 +213,14 @@ const HistoricalDataPage: React.FC = () => {
           >
             Fetch Data
           </Button>
-
         </Box>
 
-
-        {/* Chart or Loading/Error State */}
         {loading ? (
           <CircularProgress />
         ) : error ? (
           <Alert severity="error">{error}</Alert>
+        ) : noData ? (
+          <Alert severity="info">No data available for the selected range and measurement.</Alert>
         ) : (
           <Box sx={{ width: '100%', maxWidth: '900px', margin: '0 auto' }}>
             <Line data={chartData} options={{ responsive: true, plugins: { legend: { position: 'top' } } }} />
