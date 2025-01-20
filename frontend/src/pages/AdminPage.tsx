@@ -8,8 +8,9 @@ import {
   ListItem,
   ListItemText,
   Paper,
+  IconButton
 } from "@mui/material";
-import { FaUserPlus, FaUserMinus, FaArrowLeft } from "react-icons/fa";
+import { FaTrash, FaUserPlus, FaUserMinus, FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { AxiosError } from "axios";
@@ -17,6 +18,9 @@ import { AxiosError } from "axios";
 import Header from "../components/Header";
 
 
+interface UserAccess {
+  [platformName: string]: string[];
+}
 interface Platform {
   id: number;
   name: string;
@@ -70,7 +74,6 @@ const AdminPage: React.FC = () => {
     fetchPlatforms();
 
     if (!isAdmin) {
-      alert("You do not have permission to access this page.");
       navigate("/platform-choice");
     }
 
@@ -167,6 +170,21 @@ const AdminPage: React.FC = () => {
       }
     }
   };
+
+  const handleDeletePlatform = async (platformId: number) => {
+    if (!window.confirm("Are you sure you want to delete this platform?")) return;
+
+    try {
+      const token = localStorage.getItem("access_token");
+      await axios.delete(`http://0.0.0.0:8000/api/platforms/${platformId}/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPlatforms((prev) => prev.filter((platform) => platform.id !== platformId));
+    } catch (err) {
+      console.error("Error deleting platform:", err);
+    }
+  };
+
 
   const handleRemoveUser = async (userEmail: string) => {
     if (!selectedPlatform) return;
