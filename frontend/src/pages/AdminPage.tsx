@@ -12,66 +12,78 @@ import {
 } from "@mui/material";
 import { FaTrash, FaUserPlus, FaUserMinus, FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+interface Platform {
+  id: number;
+  name: string;
+  sensors: Array<any>;
+}
+
+interface UserAccess {
+  [platformName: string]: string[];
+}
 
 const AdminPage: React.FC = () => {
   const navigate = useNavigate();
-  const [platforms, setPlatforms] = useState<string[]>([]);
-  const [newPlatform, setNewPlatform] = useState("");
-  const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
-  const [userAccess, setUserAccess] = useState<{ [key: string]: string[] }>({});
-  const [newUser, setNewUser] = useState("");
+  const [platforms, setPlatforms] = useState<Platform[]>([]);
+  const [newPlatform, setNewPlatform] = useState<string>("");
+  const [selectedPlatform, setSelectedPlatform] = useState<Platform | null>(null);
+  const [userAccess, setUserAccess] = useState<UserAccess>({});
+  const [newUser, setNewUser] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Fetch platforms and user access from the backend on component mount
+  // Fetch platforms from the backend
   useEffect(() => {
     const fetchPlatforms = async () => {
       try {
-        const response = await fetch("/api/platforms"); // Replace with your actual endpoint
-        if (!response.ok) throw new Error("Failed to fetch platforms.");
-        const data = await response.json();
-        setPlatforms(data.platforms || []);
-        setUserAccess(data.userAccess || {});
-      } catch (error) {
-        console.error("Error fetching platforms:", error);
+        const token = localStorage.getItem("access_token");
+        const response = await axios.get("http://0.0.0.0:8000/api/platforms/", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setPlatforms(response.data);
+      } catch (err) {
+        setError("Failed to load platforms.");
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchPlatforms();
   }, []);
 
   const handleAddPlatform = async () => {
-    if (newPlatform.trim() && !platforms.includes(newPlatform)) {
-      try {
-        const response = await fetch("/api/platforms", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: newPlatform }),
-        });
-        if (!response.ok) throw new Error("Failed to add platform.");
-        setPlatforms([...platforms, newPlatform]);
-        setUserAccess({ ...userAccess, [newPlatform]: [] });
-        setNewPlatform("");
-      } catch (error) {
-        console.error("Error adding platform:", error);
-      }
-    } else {
-      alert("Platform name is invalid or already exists.");
+    if (!newPlatform.trim()) {
+      alert("Platform name cannot be empty.");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("access_token");
+      const response = await axios.post(
+        "http://0.0.0.0:8000/api/platforms/",
+        { name: newPlatform },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setPlatforms((prev) => [...prev, response.data]);
+      setNewPlatform("");
+    } catch (err) {
+      console.error("Error adding platform:", err);
     }
   };
 
-  const handleDeletePlatform = async (platform: string) => {
-    const confirmDelete = window.confirm(`Are you sure you want to delete platform "${platform}"?`);
-    if (confirmDelete) {
-      try {
-        const response = await fetch(`/api/platforms/${platform}`, {
-          method: "DELETE",
-        });
-        if (!response.ok) throw new Error("Failed to delete platform.");
-        setPlatforms(platforms.filter((p) => p !== platform));
-        const updatedAccess = { ...userAccess };
-        delete updatedAccess[platform];
-        setUserAccess(updatedAccess);
-      } catch (error) {
-        console.error("Error deleting platform:", error);
-      }
+  const handleDeletePlatform = async (platformId: number) => {
+    if (!window.confirm("Are you sure you want to delete this platform?")) return;
+
+    try {
+      const token = localStorage.getItem("access_token");
+      await axios.delete(`http://0.0.0.0:8000/api/platforms/${platformId}/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPlatforms((prev) => prev.filter((platform) => platform.id !== platformId));
+    } catch (err) {
+      console.error("Error deleting platform:", err);
     }
   };
 
@@ -80,46 +92,40 @@ const AdminPage: React.FC = () => {
       alert("Please provide a valid user email.");
       return;
     }
+    if (!selectedPlatform) return;
 
-    if (selectedPlatform) {
-      const currentUsers = userAccess[selectedPlatform] || [];
-      if (!currentUsers.includes(newUser)) {
-        try {
-          const response = await fetch(`/api/platforms/${selectedPlatform}/users`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: newUser }),
-          });
-          if (!response.ok) throw new Error("Failed to add user.");
-          setUserAccess({
-            ...userAccess,
-            [selectedPlatform]: [...currentUsers, newUser],
-          });
-          setNewUser("");
-        } catch (error) {
-          console.error("Error adding user:", error);
-        }
-      } else {
-        alert("User already has access.");
-      }
+    try {
+      const token = localStorage.getItem("access_token");
+      await axios.post(
+        `http://0.0.0.0:8000/api/platforms/${selectedPlatform.id}/users/`,
+        { email: newUser },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setUserAccess((prev) => ({
+        ...prev,
+        [selectedPlatform.name]: [...(prev[selectedPlatform.name] || []), newUser],
+      }));
+      setNewUser("");
+    } catch (err) {
+      console.error("Error adding user:", err);
     }
   };
 
   const handleRemoveUser = async (user: string) => {
-    if (selectedPlatform) {
-      try {
-        const response = await fetch(`/api/platforms/${selectedPlatform}/users/${user}`, {
-          method: "DELETE",
-        });
-        if (!response.ok) throw new Error("Failed to remove user.");
-        const currentUsers = userAccess[selectedPlatform] || [];
-        setUserAccess({
-          ...userAccess,
-          [selectedPlatform]: currentUsers.filter((u) => u !== user),
-        });
-      } catch (error) {
-        console.error("Error removing user:", error);
-      }
+    if (!selectedPlatform) return;
+
+    try {
+      const token = localStorage.getItem("access_token");
+      await axios.delete(
+        `http://0.0.0.0:8000/api/platforms/${selectedPlatform.id}/users/${user}/`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setUserAccess((prev) => ({
+        ...prev,
+        [selectedPlatform.name]: (prev[selectedPlatform.name] || []).filter((u) => u !== user),
+      }));
+    } catch (err) {
+      console.error("Error removing user:", err);
     }
   };
 
@@ -134,12 +140,11 @@ const AdminPage: React.FC = () => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        height: "100vh",
-        background: "linear-gradient(to bottom, #f0f4ff, #e3f2fd)",
+        minHeight: "100vh",
         p: 4,
+        background: "linear-gradient(to bottom, #f0f4ff, #e3f2fd)",
       }}
     >
-      {/* Return Button with Icon */}
       <Button
         variant="outlined"
         onClick={handleReturnToMain}
@@ -150,193 +155,110 @@ const AdminPage: React.FC = () => {
           backgroundColor: "#ffffff",
           color: "#004c8c",
           borderColor: "#004c8c",
-          "&:hover": {
-            backgroundColor: "#004c8c",
-            color: "#ffffff",
-            transform: "scale(1.05)",
-            transition: "all 0.3s ease",
-          },
+          "&:hover": { backgroundColor: "#004c8c", color: "#ffffff" },
           display: "flex",
           alignItems: "center",
           gap: 1,
-          padding: "8px 16px",
         }}
       >
         <FaArrowLeft />
         Main Page
       </Button>
 
-      {/* Header */}
-      <Typography
-        variant="h4"
-        fontWeight="bold"
-        sx={{
-          mb: 4,
-          color: "#004c8c",
-          fontFamily: "Poppins, sans-serif",
-          textShadow: "2px 2px 4px rgba(255, 255, 255, 0.7)",
-        }}
-      >
+      <Typography variant="h4" sx={{ mb: 4, fontWeight: "bold", color: "#004c8c" }}>
         Admin Dashboard
       </Typography>
 
-      {/* Platforms and User Management */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          width: "100%",
-          maxWidth: "800px",
-          mb: 4,
-          gap: 2,
-          flexWrap: "wrap",
-        }}
-      >
-        {/* Add Platform */}
-        <Paper
-          elevation={4}
-          sx={{
-            p: 3,
-            flex: "1 1 300px",
-            backgroundColor: "#ffffff",
-            borderRadius: 3,
-            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-          }}
-        >
-          <Typography variant="h5" sx={{ mb: 2, fontFamily: "Poppins, sans-serif", fontWeight: "bold" }}>
-            Add Platform
-          </Typography>
-          <TextField
-            label="Platform Name"
-            variant="outlined"
-            fullWidth
-            value={newPlatform}
-            onChange={(e) => setNewPlatform(e.target.value)}
-            sx={{ mb: 2 }}
-          />
-          <Button
-            variant="contained"
-            fullWidth
-            sx={{
-              backgroundColor: "#6e8efb",
-              "&:hover": { backgroundColor: "#5b75d9" },
-            }}
-            onClick={handleAddPlatform}
-          >
-            Add Platform
-          </Button>
-        </Paper>
-
-        {/* Platform List */}
-        <Paper
-          elevation={4}
-          sx={{
-            p: 3,
-            flex: "1 1 300px",
-            backgroundColor: "#ffffff",
-            borderRadius: 3,
-            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-          }}
-        >
-          <Typography variant="h5" sx={{ mb: 2, fontFamily: "Poppins, sans-serif", fontWeight: "bold" }}>
-            Platforms
-          </Typography>
-          <List>
-            {platforms.map((platform) => (
-              <ListItem
-                key={platform}
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  backgroundColor: "rgba(110, 142, 251, 0.1)",
-                  borderRadius: 2,
-                  mb: 1,
-                }}
-              >
-                <ListItemText
-                  primary={platform}
-                  primaryTypographyProps={{
-                    fontWeight: "bold",
-                    fontFamily: "Poppins, sans-serif",
-                  }}
-                />
-                <Box>
-                  <Button
-                    variant="outlined"
-                    onClick={() => setSelectedPlatform(platform)}
-                    sx={{ mr: 1, color: "#6e8efb", borderColor: "#6e8efb" }}
-                  >
-                    Manage
-                  </Button>
-                  <IconButton
-                    onClick={() => handleDeletePlatform(platform)}
-                    sx={{ color: "#e57373" }}
-                  >
-                    <FaTrash />
-                  </IconButton>
-                </Box>
-              </ListItem>
-            ))}
-          </List>
-        </Paper>
-      </Box>
-
-      {/* User Management */}
-      {selectedPlatform && (
-        <Paper
-          elevation={4}
-          sx={{
-            p: 3,
-            width: "100%",
-            maxWidth: "800px",
-            backgroundColor: "#ffffff",
-            borderRadius: 3,
-            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-          }}
-        >
-          <Typography variant="h5" sx={{ mb: 2, fontFamily: "Poppins, sans-serif", fontWeight: "bold" }}>
-            Manage Users for: {selectedPlatform}
-          </Typography>
-          <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
+      {loading ? (
+        <Typography>Loading platforms...</Typography>
+      ) : error ? (
+        <Typography color="error">{error}</Typography>
+      ) : (
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 4, width: "100%", maxWidth: "800px" }}>
+          <Paper sx={{ p: 3, borderRadius: 3 }}>
+            <Typography variant="h5">Add Platform</Typography>
             <TextField
-              label="User Email"
+              label="Platform Name"
               variant="outlined"
               fullWidth
-              value={newUser}
-              onChange={(e) => setNewUser(e.target.value)}
+              value={newPlatform}
+              onChange={(e) => setNewPlatform(e.target.value)}
+              sx={{ mt: 2, mb: 2 }}
             />
-            <Button
-              variant="contained"
-              sx={{ backgroundColor: "#6e8efb", "&:hover": { backgroundColor: "#5b75d9" } }}
-              onClick={handleAddUser}
-            >
-              <FaUserPlus />
+            <Button variant="contained" onClick={handleAddPlatform}>
+              Add Platform
             </Button>
-          </Box>
-          <List>
-            {(userAccess[selectedPlatform] || []).map((user) => (
-              <ListItem
-                key={user}
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  backgroundColor: "rgba(110, 142, 251, 0.1)",
-                  borderRadius: 2,
-                  mb: 1,
-                }}
-              >
-                <ListItemText primary={user} />
-                <IconButton
-                  onClick={() => handleRemoveUser(user)}
-                  sx={{ color: "#e57373" }}
+          </Paper>
+
+          <Paper sx={{ p: 3, borderRadius: 3 }}>
+            <Typography variant="h5">Platforms</Typography>
+            <List>
+              {platforms.map((platform) => (
+                <ListItem
+                  key={platform.id}
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    backgroundColor: "rgba(110, 142, 251, 0.1)",
+                    borderRadius: 2,
+                    mb: 1,
+                  }}
                 >
-                  <FaUserMinus />
-                </IconButton>
-              </ListItem>
-            ))}
-          </List>
-        </Paper>
+                  <ListItemText primary={platform.name} />
+                  <Box>
+                    <Button
+                      variant="outlined"
+                      onClick={() => setSelectedPlatform(platform)}
+                      sx={{ mr: 1 }}
+                    >
+                      Manage
+                    </Button>
+                    <IconButton onClick={() => handleDeletePlatform(platform.id)}>
+                      <FaTrash />
+                    </IconButton>
+                  </Box>
+                </ListItem>
+              ))}
+            </List>
+          </Paper>
+
+          {selectedPlatform && (
+            <Paper sx={{ p: 3, borderRadius: 3 }}>
+              <Typography variant="h5">Manage Users for: {selectedPlatform.name}</Typography>
+              <Box sx={{ mt: 2, display: "flex", gap: 2 }}>
+                <TextField
+                  label="User Email"
+                  variant="outlined"
+                  fullWidth
+                  value={newUser}
+                  onChange={(e) => setNewUser(e.target.value)}
+                />
+                <Button variant="contained" onClick={handleAddUser}>
+                  <FaUserPlus />
+                </Button>
+              </Box>
+              <List sx={{ mt: 2 }}>
+                {(userAccess[selectedPlatform.name] || []).map((user) => (
+                  <ListItem
+                    key={user}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      backgroundColor: "rgba(110, 142, 251, 0.1)",
+                      borderRadius: 2,
+                      mb: 1,
+                    }}
+                  >
+                    <ListItemText primary={user} />
+                    <IconButton onClick={() => handleRemoveUser(user)}>
+                      <FaUserMinus />
+                    </IconButton>
+                  </ListItem>
+                ))}
+              </List>
+            </Paper>
+          )}
+        </Box>
       )}
     </Box>
   );
