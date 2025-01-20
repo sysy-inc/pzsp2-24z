@@ -217,6 +217,37 @@ class PlatformAddUserRequest(BaseModel):
     email: str = Field(..., title="Email of the user")
 
 
+class PlatformUserResponse(BaseModel):
+    id: int = Field(..., title="ID of the user")
+    email: str = Field(..., title="Email of the user")
+    model_config = {
+        "from_attributes": True,
+    }
+
+
+@platforms.get("/{platform_id}/users/", response_model=list[PlatformUserResponse])
+def read_users_on_platform(
+    platform_id: int,
+    user: Annotated[User, Depends(get_current_user)],
+    session: Session = Depends(get_session),
+):
+
+    if not user.is_admin:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    user_platforms = (
+        session.query(UserPlatform)
+        .join(User, User.id == UserPlatform.user_id)
+        .filter(UserPlatform.platform_id == platform_id)
+        .all()
+    )
+
+    return [
+        PlatformUserResponse(id=user_platform.user.id, email=user_platform.user.email)
+        for user_platform in user_platforms
+    ]
+
+
 @platforms.post("/{platform_id}/users/")
 def add_user_to_platform(
     platform_id: int,
@@ -248,10 +279,10 @@ def add_user_to_platform(
     return UserPlatformSchema.model_validate(user_platform)
 
 
-@platforms.delete("/{platform_id}/users/{user_id}")
+@platforms.delete("/{platform_id}/users/{user_email}")
 def delete_user_from_platform(
     platform_id: int,
-    user_id: int,
+    user_email: str,
     user: Annotated[User, Depends(get_current_user)],
     session: Session = Depends(get_session),
 ):
@@ -259,9 +290,13 @@ def delete_user_from_platform(
     if not user.is_admin:
         raise HTTPException(status_code=403, detail="Forbidden")
 
+    user_to_delete = session.query(User).filter(User.email == user_email).first()
+    if user_to_delete is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
     user_platform = (
         session.query(UserPlatform)
-        .filter(UserPlatform.user_id == user_id)
+        .filter(UserPlatform.user_id == user_to_delete.id)
         .filter(UserPlatform.platform_id == platform_id)
         .first()
     )

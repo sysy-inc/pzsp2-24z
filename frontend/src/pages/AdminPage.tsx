@@ -43,6 +43,7 @@ const AdminPage: React.FC = () => {
     const fetchPlatforms = async () => {
       try {
         const token = localStorage.getItem("access_token");
+
         const response = await axios.get("http://0.0.0.0:8000/api/platforms/", {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -65,6 +66,11 @@ const AdminPage: React.FC = () => {
         });
 
         setIsAdmin(response.data.is_admin);
+
+        if (!response.data.is_admin) {
+          console.log("no admin");
+          navigate("/platform-choice");
+        }
       } catch (error) {
         setError("Failed to load user data.");
       }
@@ -73,12 +79,37 @@ const AdminPage: React.FC = () => {
     fetchUserData();
     fetchPlatforms();
 
-    if (!isAdmin) {
-      navigate("/platform-choice");
-    }
 
 
   }, []);
+
+
+  const fetchPlatformUsers = async (platformId: number) => {
+    try {
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        alert("Authentication token is missing. Please log in again.");
+        return;
+      }
+
+      const response = await axios.get(
+        `http://0.0.0.0:8000/api/platforms/${platformId}/users/`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const users = response.data.map((user: any) => user.email); // Extract user emails
+      setSelectedPlatform((prev) =>
+        prev ? { ...prev, users } : { id: platformId, name: "", sensors: [], users }
+      );
+    } catch (err) {
+      console.error("Error fetching platform users:", err);
+      alert("Failed to load users for the selected platform.");
+    }
+  };
 
   const handleAddPlatform = async () => {
     if (!newPlatform.trim()) {
@@ -119,13 +150,13 @@ const AdminPage: React.FC = () => {
       console.error("No user email provided.");
       return;
     }
-  
+
     if (!selectedPlatform) {
       alert("No platform selected.");
       console.error("No platform selected for adding the user.");
       return;
     }
-  
+
     try {
       const token = localStorage.getItem("access_token");
       if (!token) {
@@ -133,31 +164,33 @@ const AdminPage: React.FC = () => {
         console.error("No authentication token found in localStorage.");
         return;
       }
-  
+
       console.log("Adding user to platform:", {
         platformId: selectedPlatform.id,
         userEmail: newUser,
       });
-  
+
       const response = await axios.post(
-        `http://0.0.0.0:8000/api/platforms/${selectedPlatform.id}/users/`, 
+        `http://0.0.0.0:8000/api/platforms/${selectedPlatform.id}/users/`,
         { email: newUser },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-  
+
       console.log("User added successfully:", response.data);
-  
+
       // Update the state with the newly added user
       setSelectedPlatform((prev) => ({
         ...prev!,
         users: [...prev!.users, newUser],
       }));
       setNewUser("");
-  
+
+      console.log(selectedPlatform);
+
       alert("User added successfully!");
     } catch (err: any) {
       console.error("Error adding user:", err);
-  
+
       if (err.response) {
         console.error("Error Response:", err.response);
         alert(`Failed to add user. Server responded with: ${err.response.data.detail || err.response.statusText}`);
@@ -171,19 +204,19 @@ const AdminPage: React.FC = () => {
     }
   };
 
-  const handleDeletePlatform = async (platformId: number) => {
-    if (!window.confirm("Are you sure you want to delete this platform?")) return;
+  // const handleDeletePlatform = async (platformId: number) => {
+  //   if (!window.confirm("Are you sure you want to delete this platform?")) return;
 
-    try {
-      const token = localStorage.getItem("access_token");
-      await axios.delete(`http://0.0.0.0:8000/api/platforms/${platformId}/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setPlatforms((prev) => prev.filter((platform) => platform.id !== platformId));
-    } catch (err) {
-      console.error("Error deleting platform:", err);
-    }
-  };
+  //   try {
+  //     const token = localStorage.getItem("access_token");
+  //     await axios.delete(`http://0.0.0.0:8000/api/platforms/${platformId}/`, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
+  //     setPlatforms((prev) => prev.filter((platform) => platform.id !== platformId));
+  //   } catch (err) {
+  //     console.error("Error deleting platform:", err);
+  //   }
+  // };
 
 
   const handleRemoveUser = async (userEmail: string) => {
@@ -250,7 +283,7 @@ const AdminPage: React.FC = () => {
         Platform Choice
       </Button>
 
-      <Typography variant="h4" sx={{ mb: 4, fontWeight: "bold", color: "#004c8c" }}>
+      <Typography variant="h4" sx={{ mb: 4, mt: 10, fontWeight: "bold", color: "#004c8c" }}>
         Admin Dashboard
       </Typography>
 
@@ -261,7 +294,7 @@ const AdminPage: React.FC = () => {
           <Typography color="error">{error}</Typography>
         ) : (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 4, width: "100%", maxWidth: "800px" }}>
-            <Paper sx={{ p: 3, borderRadius: 3 }}>
+            {/* <Paper sx={{ p: 3, borderRadius: 3 }}>
               <Typography variant="h5">Add Platform</Typography>
               <TextField
                 label="Platform Name"
@@ -275,7 +308,7 @@ const AdminPage: React.FC = () => {
                 Add Platform
               </Button>
 
-            </Paper>
+            </Paper> */}
 
             <Paper sx={{ p: 3, borderRadius: 3 }}>
               <Typography variant="h5">Platforms</Typography>
@@ -292,94 +325,59 @@ const AdminPage: React.FC = () => {
                     }}
                   >
                     <ListItemText primary={platform.name} />
-                    <Box>
-                      <Button
-                        variant="outlined"
-                        onClick={() => setSelectedPlatform(platform)}
-                        sx={{ mr: 1 }}
-                      >
-                        Manage
-                      </Button>
-                      <IconButton onClick={() => handleDeletePlatform(platform.id)}>
-                        <FaTrash />
-                      </IconButton>
-                    </Box>
-                  </ListItem>
-                ))}
-              </List>
-            </Paper>
-          <Paper sx={{ p: 3, borderRadius: 3 }}>
-            <Typography variant="h5">Platforms</Typography>
-            <List>
-              {platforms.map((platform) => (
-                <ListItem
-                  key={platform.id}
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    backgroundColor: "rgba(110, 142, 251, 0.1)",
-                    borderRadius: 2,
-                    mb: 1,
-                  }}
-                >
-                  <ListItemText primary={platform.name} />
-                  <Button
-                    variant="outlined"
-                    onClick={() => setSelectedPlatform(platform)}
-                    sx={{ mr: 1 }}
-                  >
-                    Manage
-                  </Button>
-                </ListItem>
-              ))}
-            </List>
-          </Paper>
-
-          {selectedPlatform && (
-            <Paper sx={{ p: 3, borderRadius: 3 }}>
-              <Typography variant="h5">Manage Users for: {selectedPlatform.name}</Typography>
-              <Box sx={{ mt: 2, display: "flex", gap: 2 }}>
-                <TextField
-                  label="User Email"
-                  variant="outlined"
-                  fullWidth
-                  value={newUser}
-                  onChange={(e) => setNewUser(e.target.value)}
-                />
-                <Button variant="contained" onClick={handleAddUser}>
-                  <FaUserPlus />
-                </Button>
-              </Box>
-              <List sx={{ mt: 2 }}>
-                {(selectedPlatform.users || []).map((user) => (
-                  <ListItem
-                    key={user}
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      backgroundColor: "rgba(110, 142, 251, 0.1)",
-                      borderRadius: 2,
-                      mb: 1,
-                    }}
-                  >
-                    <ListItemText primary={user} />
-                    <IconButton
-                      onClick={() => handleRemoveUser(user)}
-                      sx={{
-                        color: "#f44336",
-                        "&:hover": { backgroundColor: "#fdecea" },
+                    <Button
+                      variant="outlined"
+                      onClick={() => {
+                        setSelectedPlatform(platform);
+                        fetchPlatformUsers(platform.id);
                       }}
-                      title="Remove User"
+                      sx={{ mr: 1 }}
                     >
-                      <FaUserMinus />
-                    </IconButton>
+                      Manage
+                    </Button>
                   </ListItem>
                 ))}
               </List>
             </Paper>
-          )}
-        </Box>
-      )}
+
+            {selectedPlatform && (
+              <Paper sx={{ p: 3, borderRadius: 3 }}>
+                <Typography variant="h5">Manage Users for: {selectedPlatform.name}</Typography>
+                <Box sx={{ mt: 2, display: "flex", gap: 2 }}>
+                  <TextField
+                    label="User Email"
+                    variant="outlined"
+                    fullWidth
+                    value={newUser}
+                    onChange={(e) => setNewUser(e.target.value)}
+                  />
+                  <Button variant="contained" onClick={handleAddUser}>
+                    <FaUserPlus />
+                  </Button>
+                </Box>
+                <List sx={{ mt: 2 }}>
+                  {(selectedPlatform.users || []).map((user) => (
+                    <ListItem
+                      key={user}
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        backgroundColor: "rgba(110, 142, 251, 0.1)",
+                        borderRadius: 2,
+                        mb: 1,
+                      }}
+                    >
+                      <ListItemText primary={user} />
+                      <IconButton onClick={() => handleRemoveUser(user)}>
+                        <FaUserMinus />
+                      </IconButton>
+                    </ListItem>
+                  ))}
+                </List>
+              </Paper>
+            )}
+          </Box>
+        )}
     </Box>
   );
 };
