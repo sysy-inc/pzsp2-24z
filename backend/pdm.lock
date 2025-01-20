@@ -2,10 +2,10 @@
 # It is not intended for manual editing.
 
 [metadata]
-groups = ["default", "dev"]
+groups = ["default"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:3d0654874eb64a48ffcc52b8aab0c017b8623aed40d83734e3c74233976b3acd"
+content_hash = "sha256:2494a7dc7cb4f0a3d097af9a2213bcfb765b15f1e73b2cb5a2d95140d50d05c5"
 
 [[metadata.targets]]
 requires_python = "==3.12.*"
@@ -122,7 +122,6 @@ version = "1.17.1"
 requires_python = ">=3.8"
 summary = "Foreign Function Interface for Python calling C code."
 groups = ["default"]
-marker = "os_name == \"nt\" and implementation_name != \"pypy\""
 dependencies = [
     "pycparser",
 ]
@@ -362,7 +361,6 @@ version = "2.22"
 requires_python = ">=3.8"
 summary = "C parser in Python"
 groups = ["default"]
-marker = "os_name == \"nt\" and implementation_name != \"pypy\""
 files = [
     {file = "pycparser-2.22-py3-none-any.whl", hash = "sha256:c3702b6d3dd8c7abc1afa565d7e63d53a1d0bd86cdc24edd75470f4de499cfcc"},
     {file = "pycparser-2.22.tar.gz", hash = "sha256:491c8be9c040f5390f5bf44a5b07752bd07f56edf992381b05c701439eec10f6"},

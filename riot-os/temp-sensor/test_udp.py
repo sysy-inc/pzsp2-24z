@@ -3,6 +3,7 @@ import subprocess
 import time
 import threading
 from pydantic import BaseModel
+from cffi import FFI
 
 
 class MeasurementMessage(BaseModel):
@@ -13,6 +14,16 @@ class MeasurementMessage(BaseModel):
 
 
 received_messages: list[str] = []
+
+ffi = FFI()
+lib = ffi.dlopen("./server_py/decrypt.so")
+
+# C function interface
+ffi.cdef(
+    """
+    const unsigned char *decrypt(const unsigned char *ciphertext, size_t length);
+"""
+)
 
 
 def udp_server(
@@ -29,9 +40,20 @@ def udp_server(
         while time.time() - start_time < duration:
             try:
                 print("recvfrom.")
-                message, addr = server_socket.recvfrom(1024)
-                received_messages.append(message.decode())
-                print(f"Received message from {addr}: {message.decode()}")
+                message, addr = server_socket.recvfrom(512)
+
+                ciphertext_len = int.from_bytes(message[:4], byteorder="little")
+                print(f"Ciphertext length extracted: {ciphertext_len}")
+
+                expected_len = 16 + ciphertext_len
+                ciphertext_c = ffi.new("unsigned char[]", message)
+                ptr = lib.decrypt(ciphertext_c, expected_len)
+                if ptr:
+                    decrypted_text = ffi.string(ptr).decode("utf-8", errors="ignore")
+                    received_messages.append(decrypted_text)
+                    print(f"Received message from {addr}: {decrypted_text}")
+                else:
+                    print("Decryption error.")
             except socket.timeout:
                 continue
         print("UDP server stopped.")
@@ -40,10 +62,11 @@ def udp_server(
 def test_sending_unencrypted_data_udp_ipv6():
     """Encapsulate the entire E2E test."""
     print("Compiling RIOT OS app...")
+    # Might be problematic when missing sudo privileges
     subprocess.run(
         [
             "make",
-            "HOST_IPV6=fe80::c8a:e3ff:fea4:87b9",
+            "HOST_IPV6=fe80::fcc1:23ff:fee8:2472",
             "HOST_PORT=12345",
             "TEST_UDP_IPV6=yes",
             "TEST=yes",
@@ -73,3 +96,8 @@ def test_sending_unencrypted_data_udp_ipv6():
         MeasurementMessage.model_validate_json(message)
 
     print(f"Received messages: {received_messages}")
+
+
+if __name__ == "__main__":
+    test_sending_unencrypted_data_udp_ipv6()
+    # udp_server()
