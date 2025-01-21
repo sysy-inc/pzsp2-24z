@@ -178,17 +178,25 @@ def read_measurements(
         datetime.now(), alias="dateTo", description="End date for the range"
     ),
 ):
-
-    sensor_query = session.execute(
-        select(Sensor)
-        .join(Platform, Sensor.platform_id == Platform.id)
-        .join(UserPlatform, Platform.id == UserPlatform.platform_id)
-        .join(User, User.id == UserPlatform.user_id)
-        .join(MeasurementType, Sensor.measurement_type_id == MeasurementType.id)
-        .where(Sensor.platform_id == platform_id)
-        .where(User.id == user.id)
-        .where(Sensor.measurement_type.has(physical_parameter=measurement_type))
-    )
+    if user.is_admin:
+        sensor_query = session.execute(
+            select(Sensor)
+            .join(Platform, Sensor.platform_id == Platform.id)
+            .join(MeasurementType, Sensor.measurement_type_id == MeasurementType.id)
+            .where(Sensor.platform_id == platform_id)
+            .where(Sensor.measurement_type.has(physical_parameter=measurement_type))
+        )
+    else:
+        sensor_query = session.execute(
+            select(Sensor)
+            .join(Platform, Sensor.platform_id == Platform.id)
+            .join(UserPlatform, Platform.id == UserPlatform.platform_id)
+            .join(User, User.id == UserPlatform.user_id)
+            .join(MeasurementType, Sensor.measurement_type_id == MeasurementType.id)
+            .where(Sensor.platform_id == platform_id)
+            .where(User.id == user.id)
+            .where(Sensor.measurement_type.has(physical_parameter=measurement_type))
+        )
     sensor = sensor_query.scalars().unique().first()
     if sensor is None:
         raise HTTPException(status_code=404, detail="Sensor not found")
