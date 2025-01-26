@@ -7,6 +7,7 @@ import AdminPage from './pages/AdminPage';
 import CurrentWeatherPage from './pages/CurrentWeatherPage';
 import HistoricalDataPage from './pages/HistoricalDataPage';
 import PlatformChoicePage from './pages/PlatformChoicePage';
+import './App.css';
 
 const App: React.FC = () => {
   return (

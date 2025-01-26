@@ -15,7 +15,8 @@ services:
       - DB_NAME=testdatabase
       - DB_PORT=5432
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   db:
     image: postgres:15
@@ -23,15 +24,19 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: testdatabase
-
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d testdatabase -U user"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./scripts/create_database.sql:/docker-entrypoint-initdb.d/create_database.sql
-      - ./scripts/init_database.sql:/docker-entrypoint-initdb.d/init_database.sql
-      - ./scripts/add_admin.sql:/docker-entrypoint-initdb.d/add_admin.sql
-      - ./scripts/populate_db.sql:/docker-entrypoint-initdb.d/populate_db.sql
+      - ./scripts/create_database.sql:/docker-entrypoint-initdb.d/1_create_database.sql
+      - ./scripts/init_database.sql:/docker-entrypoint-initdb.d/2_init_database.sql
+      - ./scripts/add_admin.sql:/docker-entrypoint-initdb.d/3_add_admin.sql
+      - ./scripts/populate_db.sql:/docker-entrypoint-initdb.d/4_populate_db.sql
 
   frontend:
         build:

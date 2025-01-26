@@ -32,6 +32,7 @@ const Header: React.FC<HeaderProps> = ({ onLogout }) => {
                 backgroundColor: "rgba(255, 255, 255, 0.6)",
                 boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
                 zIndex: 10,
+                boxSizing: "border-box",
             }}
         >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
