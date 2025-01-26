@@ -43,6 +43,11 @@ key = bytes(
 
 
 class UDPServer(asyncio.DatagramProtocol):
+    """
+    Receives encrypted UDP measurements over IPv6 and decrypts them.
+    Handles measurement validation and saves it to the database.
+    """
+
     def __init__(
         self,
         save_to_db_callback: Callable[[str], Coroutine[Any, Any, None]],
@@ -87,6 +92,9 @@ class UDPServer(asyncio.DatagramProtocol):
 
 
 async def init_udp_server(host_addr: str = "::", port: str = "5000") -> None:
+    """
+    Initializer function for the UDP server.
+    """
     loop = asyncio.get_event_loop()
     transport, protocol = await loop.create_datagram_endpoint(  # type: ignore
         lambda: UDPServer(save_sample_to_db, key), local_addr=(host_addr, port)  # type: ignore

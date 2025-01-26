@@ -9,6 +9,10 @@ from src.backend.utils.database_utils.db_controller import Base
 
 
 class User(Base):
+    """
+    Represents a user in the database.
+    """
+
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -22,6 +26,11 @@ class User(Base):
 
 
 class UserSchema(BaseModel):
+    """
+    Pydantic schema representing user
+    for API validation as per database model.
+    """
+
     name: str = Field(..., title="Name of the user")
     surname: str = Field(..., title="Surname of the user")
     email: str = Field(..., title="Email of the user")
@@ -34,6 +43,10 @@ class UserSchema(BaseModel):
 
 
 class Platform(Base):
+    """
+    Represents a platform in the database.
+    """
+
     __tablename__ = "platforms"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -46,6 +59,11 @@ class Platform(Base):
 
 
 class PlatformSchema(BaseModel):
+    """
+    Pydantic schema representing platform
+    for API validation as per database model.
+    """
+
     name: str = Field(..., title="Name of the platform")
     id: int = Field(..., title="ID of the platform")
     model_config = {
@@ -54,6 +72,10 @@ class PlatformSchema(BaseModel):
 
 
 class UserPlatform(Base):
+    """
+    Represents a many-to-many relationship between users and platforms.
+    """
+
     __tablename__ = "users_platforms"
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
@@ -66,6 +88,11 @@ class UserPlatform(Base):
 
 
 class UserPlatformSchema(BaseModel):
+    """
+    Pydantic schema representing user-platform relationship
+    for API validation as per database model.
+    """
+
     user_id: int = Field(..., title="ID of the user")
     platform_id: int = Field(..., title="ID of the platform")
     model_config = {
@@ -74,6 +101,10 @@ class UserPlatformSchema(BaseModel):
 
 
 class Sensor(Base):
+    """
+    Represents a sensor in the database.
+    """
+
     __tablename__ = "sensors"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -86,6 +117,11 @@ class Sensor(Base):
 
 
 class SensorSchema(BaseModel):
+    """
+    Pydantic schema representing sensor
+    for API validation as per database model.
+    """
+
     id: int = Field(..., title="ID of the sensor")
     measurement_type_id: int = Field(..., title="ID of the measurement type")
     platform_id: int = Field(..., title="ID of the platform")
@@ -95,6 +131,10 @@ class SensorSchema(BaseModel):
 
 
 class MeasurementType(Base):
+    """
+    Represents a measurement type in the database.
+    """
+
     __tablename__ = "measurement_types"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -105,6 +145,11 @@ class MeasurementType(Base):
 
 
 class MeasurementTypeSchema(BaseModel):
+    """
+    Pydantic schema representing measurement type
+    for API validation as per database model.
+    """
+
     id: int = Field(..., title="ID of the measurement type")
     physical_parameter: str = Field(..., title="Physical parameter")
     unit: str = Field(..., title="Unit")
@@ -114,6 +159,10 @@ class MeasurementTypeSchema(BaseModel):
 
 
 class Measurement(Base):
+    """
+    Represents a measurement in the database.
+    """
+
     __tablename__ = "measurements"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -125,6 +174,11 @@ class Measurement(Base):
 
 
 class MeasurementSchema(BaseModel):
+    """
+    Pydantic schema representing measurement
+    for API validation as per database model.
+    """
+
     sensor_id: int = Field(..., title="ID of the sensor")
     value: float = Field(..., title="Value of the measurement")
     date: datetime = Field(..., title="Date of the measurement")

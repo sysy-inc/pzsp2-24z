@@ -14,6 +14,9 @@ def run_pg_query_file(
     db_port: int,
     query_file: str,
 ):
+    """
+    Execute a query from a file on a PostgreSQL database.
+    """
     connection = psycopg2.connect(
         user=db_user,
         password=db_password,
@@ -39,6 +42,9 @@ def run_pg_query_string(
     db_port: int,
     query: str,
 ):
+    """
+    Execute a query from a string on a PostgreSQL database.
+    """
     connection = psycopg2.connect(
         user=db_user,
         password=db_password,
@@ -68,6 +74,9 @@ def call_no_params(func: Callable[..., Any]):
 
 
 def register_user(email: str, password: str, client: TestClient) -> None:
+    """
+    Helper function to register a user.
+    """
     response = client.post(
         "/auth/register",
         json={"name": "Test", "surname": "User", "email": email, "password": password},
@@ -78,6 +87,9 @@ def register_user(email: str, password: str, client: TestClient) -> None:
 def add_user_to_platform(
     email: str, platform_id: int, admin_token: str, client: TestClient
 ) -> None:
+    """
+    Helper function to add a user to a platform.
+    """
     response = client.post(
         f"/api/platforms/{platform_id}/users/",
         json={"email": email},
@@ -100,6 +112,9 @@ def get_auth_token(username: str, password: str, client: TestClient) -> str:
 def make_user_admin(
     email: str, db_name: str, db_user: str, db_password: str, db_host: str, db_port: int
 ):
+    """
+    helper to make a user an admin in the database.
+    """
     query = f"UPDATE users SET is_admin = TRUE WHERE email = '{email}'"
     run_pg_query_string(
         db_name=db_name,
@@ -119,6 +134,10 @@ def postgres_db_fixture(
     db_port: int,
     queries: list[str],
 ):
+    """
+    Fixture decorator for setting up a PostgreSQL database for each test.
+    """
+
     def decorator(func: Callable[[connection], Any]):
         @wraps(func)
         def wrapper():

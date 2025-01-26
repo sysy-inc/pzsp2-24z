@@ -30,6 +30,11 @@ platforms = APIRouter()
 
 
 class PlatformsResponseSingle(BaseModel):
+    """
+    Pydantic schema representing data required
+    in the response for a single platform.
+    """
+
     name: str = Field(..., title="Name of the platform")
     id: int = Field(..., title="ID of the platform")
     measurement_types: list[MeasurementTypeSchema] = Field(
@@ -41,6 +46,11 @@ class PlatformsResponseSingle(BaseModel):
 
 
 class PlatformsResponseSensor(BaseModel):
+    """
+    Pydantic schema representing data required
+    in the response for a single sensor.
+    """
+
     id: int = Field(..., title="ID of the sensor")
     measurement_type: MeasurementTypeSchema = Field(
         ..., title="Measurement type of the sensor"
@@ -51,6 +61,11 @@ class PlatformsResponseSensor(BaseModel):
 
 
 class PlatformsResponsePlatform(BaseModel):
+    """
+    Pydantic schema representing data required
+    in the response for a single platform.
+    """
+
     name: str = Field(..., title="Name of the platform")
     id: int = Field(..., title="ID of the platform")
     sensors: list[PlatformsResponseSensor] = Field(
@@ -70,6 +85,9 @@ def get_latest_measurements(
         alias="measurementType", description="Measurement type"
     ),
 ):
+    """
+    GET request to get the latest measurement for a platform.
+    """
     measurements = fetch_latest_measurements_for_platform(platform_id)
 
     latest_measurement = measurements.measurements[measurement_type][0]
@@ -86,7 +104,9 @@ def read_platforms(
     user: Annotated[User, Depends(get_current_user)],
     session: Session = Depends(get_session),
 ):
-
+    """
+    GET request to get all platforms accessible by a user.
+    """
     results: list[PlatformsResponsePlatform] = []
 
     if user.is_admin:
@@ -129,6 +149,9 @@ def read_platform(
     user: Annotated[User, Depends(get_current_user)],
     session: Session = Depends(get_session),
 ):
+    """
+    GET request to get a single platform accessible by a user.
+    """
 
     res = session.execute(
         select(Platform)
@@ -151,6 +174,11 @@ def read_platform(
 
 
 class MeasurementsResponseEntry(BaseModel):
+    """
+    Pydantic schema representing data required
+    in the response for a single measurement.
+    """
+
     date: datetime = Field(..., title="Timestamp of the measurement")
     value: float = Field(..., title="Value of the measurement")
     model_config = {
@@ -178,6 +206,11 @@ def read_measurements(
         datetime.now(), alias="dateTo", description="End date for the range"
     ),
 ):
+    """
+    GET request to get all measurements for a platform.
+    Filtered by measurement type and date range.
+    """
+
     if user.is_admin:
         sensor_query = session.execute(
             select(Sensor)
@@ -216,6 +249,11 @@ def read_measurements(
 
 
 class PlatformCreateRequest(BaseModel):
+    """
+    Pydantic schema representing data required
+    to create a new platform. Can only be done by an admin.
+    """
+
     name: str = Field(..., title="Name of the platform")
 
 
@@ -225,6 +263,10 @@ def create_platform(
     user: Annotated[User, Depends(get_current_user)],
     session: Session = Depends(get_session),
 ):
+    """
+    POST request to create a new platform.
+    Can only be accessed by an admin.
+    """
 
     if not user.is_admin:
         raise HTTPException(status_code=403, detail="Forbidden")
@@ -238,10 +280,20 @@ def create_platform(
 
 
 class PlatformAddUserRequest(BaseModel):
+    """
+    Pydantic schema representing data required
+    to add a user to a platform. Can only be done by an admin.
+    """
+
     email: str = Field(..., title="Email of the user")
 
 
 class PlatformUserResponse(BaseModel):
+    """
+    Pydantic schema representing data required
+    in the response for getting a single user on a platform.
+    """
+
     id: int = Field(..., title="ID of the user")
     email: str = Field(..., title="Email of the user")
     model_config = {
@@ -255,6 +307,10 @@ def read_users_on_platform(
     user: Annotated[User, Depends(get_current_user)],
     session: Session = Depends(get_session),
 ):
+    """
+    GET request to get all users on a platform.
+    Can only be accessed by an admin.
+    """
 
     if not user.is_admin:
         raise HTTPException(status_code=403, detail="Forbidden")
@@ -279,6 +335,10 @@ def add_user_to_platform(
     user: Annotated[User, Depends(get_current_user)],
     session: Session = Depends(get_session),
 ):
+    """
+    POST request to add a user to a platform.
+    Can only be accessed by an admin.
+    """
 
     if not user.is_admin:
         raise HTTPException(status_code=403, detail="Forbidden")
@@ -310,6 +370,10 @@ def delete_user_from_platform(
     user: Annotated[User, Depends(get_current_user)],
     session: Session = Depends(get_session),
 ):
+    """
+    DELETE request to delete a user from a platform.
+    Can only be accessed by an admin.
+    """
 
     if not user.is_admin:
         raise HTTPException(status_code=403, detail="Forbidden")

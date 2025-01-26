@@ -5,7 +5,6 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 
 DB_PROVIDER = "postgresql"
 DB_DRIVER = "psycopg2"
-# TODO: load using env vars depending on environment
 DB_NAME = os.getenv("DB_NAME") or "testdatabase"
 DB_USER = os.getenv("DB_USER") or "user"
 DB_PORT = os.getenv("DB_PORT") or "5432"
@@ -22,6 +21,9 @@ session_factory = sessionmaker(engine, expire_on_commit=False)
 
 
 def get_session():
+    """
+    Opens a new session to the database.
+    """
     db = session_factory()
     try:
         yield db

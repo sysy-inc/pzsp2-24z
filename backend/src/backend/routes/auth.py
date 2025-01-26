@@ -12,7 +12,10 @@ from sqlalchemy.orm import Session
 from src.backend.utils.database_utils.db_controller import get_session
 from src.backend.utils.database_utils.models import User
 from src.backend.utils.database_utils.user_repository import (
-    DuplicateUserError, UserNotFoundError, UserRepository)
+    DuplicateUserError,
+    UserNotFoundError,
+    UserRepository,
+)
 
 # TODO Replace with env variable from secrets
 # Generate with:
@@ -72,6 +75,9 @@ def authenticate_user(
 
 
 def create_access_token(data: dict[Any, Any], expires_delta: timedelta | None = None):
+    """
+    Create an access token.
+    """
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
@@ -174,6 +180,9 @@ class UserResponse(BaseModel):
 def read_currently_logged_in_user_id(
     user: User = Depends(get_current_user),
 ) -> UserResponse:
+    """
+    Get full user details for the currently logged in user.
+    """
     return UserResponse(
         id=user.id,
         name=user.name,
