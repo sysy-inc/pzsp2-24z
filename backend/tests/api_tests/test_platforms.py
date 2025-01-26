@@ -5,9 +5,14 @@ from fastapi.testclient import TestClient
 from psycopg2.extensions import connection
 
 from src.backend.app import app
-from tests.api_tests.conftest import (add_user_to_platform, call_no_params,
-                                      get_auth_token, make_user_admin,
-                                      postgres_db_fixture, register_user)
+from tests.api_tests.conftest import (
+    add_user_to_platform,
+    call_no_params,
+    get_auth_token,
+    make_user_admin,
+    postgres_db_fixture,
+    register_user,
+)
 
 client = TestClient(app)
 
@@ -395,7 +400,7 @@ def test_delete_user_from_platform_ok(connection: connection):
     token = get_auth_token("test@admin", "admin", client)
 
     response = client.delete(
-        "/api/platforms/2/users/2",
+        "/api/platforms/2/users/john.doe@example.com",
         headers={"Authorization": f"Bearer {token}"},
     )
 
@@ -426,7 +431,7 @@ def test_delete_user_from_platform_user_not_on_platform(connection: connection):
     token = get_auth_token("test@admin", "admin", client)
 
     response = client.delete(
-        "/api/platforms/2/users/99",
+        "/api/platforms/2/users/admin@admin",
         headers={"Authorization": f"Bearer {token}"},
     )
 

@@ -44,7 +44,9 @@ key = bytes(
 
 class UDPServer(asyncio.DatagramProtocol):
     def __init__(
-        self, save_to_db_callback: Callable[[str], Coroutine[Any, Any, None]], key
+        self,
+        save_to_db_callback: Callable[[str], Coroutine[Any, Any, None]],
+        key: bytes,
     ):
         self.save_to_db = save_to_db_callback
         self.key = key
