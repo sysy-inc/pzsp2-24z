@@ -30,6 +30,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/create_database.sql:/docker-entrypoint-initdb.d/create_database.sql
       - ./scripts/init_database.sql:/docker-entrypoint-initdb.d/init_database.sql
+      - ./scripts/add_admin.sql:/docker-entrypoint-initdb.d/add_admin.sql
       - ./scripts/populate_db.sql:/docker-entrypoint-initdb.d/populate_db.sql
 
   frontend:
