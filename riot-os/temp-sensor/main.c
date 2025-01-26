@@ -153,14 +153,22 @@ int stop_sending(int argc, char **argv) {
 void *data_sender_thread(void *arg) {
     (void)arg;
 
+#ifndef TEST_UDP_IPV6
     gpio_t pin = GPIO_PIN(PORT_A, 4);
+#endif
     uint8_t humidity_integral = 0;
     uint8_t humidity_decimal = 0;
     uint8_t temp_integral = 0;
     uint8_t temp_decimal = 0;
 
+
+#ifdef TEST_UDP_IPV6
+    for (int i = 0; i < 5; i++) {
+#endif
+#ifndef TEST
     while (running) {
         read_dht(&pin, &humidity_integral, &humidity_decimal, &temp_integral, &temp_decimal);
+#endif
 
         char json_temp[MAX_LEN];
         char json_humidity[MAX_LEN];
@@ -186,6 +194,9 @@ void *data_sender_thread(void *arg) {
 
     printf("Data sender thread exiting.\n");
     thread_handle = 0;
+#ifdef TEST_UDP_IPV6
+    exit(0);
+#endif
     return NULL;
 }
 

@@ -13,27 +13,59 @@ class MeasurementMessage(BaseModel):
     sensor_id: int
     value: float
 
-key = bytes([
-    0x60, 0x3d, 0xeb, 0x10, 0x15, 0xca, 0x71, 0xbe,
-    0x2b, 0x73, 0xae, 0xf0, 0x85, 0x7d, 0x77, 0x81,
-    0x1f, 0x35, 0x2c, 0x07, 0x3b, 0x61, 0x08, 0xd7,
-    0x2d, 0x98, 0x10, 0xa3, 0x09, 0x14, 0xdf, 0xf4
-])
+
+key = bytes(
+    [
+        0x60,
+        0x3D,
+        0xEB,
+        0x10,
+        0x15,
+        0xCA,
+        0x71,
+        0xBE,
+        0x2B,
+        0x73,
+        0xAE,
+        0xF0,
+        0x85,
+        0x7D,
+        0x77,
+        0x81,
+        0x1F,
+        0x35,
+        0x2C,
+        0x07,
+        0x3B,
+        0x61,
+        0x08,
+        0xD7,
+        0x2D,
+        0x98,
+        0x10,
+        0xA3,
+        0x09,
+        0x14,
+        0xDF,
+        0xF4,
+    ]
+)
 
 
 received_messages: list[str] = []
 
+
 def decrypt(data):
     ciphertext_length = int.from_bytes(data[:4], byteorder="little")
     iv = data[4:20]  # Next 16 bytes for IV
-    ciphertext = data[20:20 + ciphertext_length]  # Remaining bytes for ciphertext
+    ciphertext = data[20 : 20 + ciphertext_length]  # Remaining bytes for ciphertext
 
     # Decrypt the ciphertext
     cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
     decryptor = cipher.decryptor()
     decrypted_padded = decryptor.update(ciphertext) + decryptor.finalize()
-    decrypted = decrypted_padded.rstrip(b'\x00')    # unpad data
-    return decrypted.decode('utf-8')
+    decrypted = decrypted_padded.rstrip(b"\x00")  # unpad data
+    return decrypted.decode("utf-8")
 
 
 def udp_server(
@@ -66,9 +98,13 @@ def test_sending_unencrypted_data_udp_ipv6():
     # Might be problematic when missing sudo privileges
     subprocess.run(
         [
+            "sudo",
             "make",
             "HOST_IPV6=fe80::fcc1:23ff:fee8:2472",
             "HOST_PORT=12345",
+            "MEASUREMENT_INTERVAL_MSEC=500",
+            "SENSOR_ID_TEMP=1",
+            "SENSOR_ID_HUM=2",
             "TEST_UDP_IPV6=yes",
             "TEST=yes",
             "all",
@@ -97,8 +133,3 @@ def test_sending_unencrypted_data_udp_ipv6():
         MeasurementMessage.model_validate_json(message)
 
     print(f"Received messages: {received_messages}")
-
-
-if __name__ == "__main__":
-    test_sending_unencrypted_data_udp_ipv6()
-    # udp_server()
