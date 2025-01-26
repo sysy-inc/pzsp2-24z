@@ -71,7 +71,9 @@ def decrypt(data):
 def udp_server(
     host: str = "::", port: int = 12345, duration: int = 10, timeout: int = 2
 ):
-    """Run a UDP server that collects messages for a specified duration."""
+    """
+    Run a UDP server that collects messages for a specified duration.
+    """
     print("IN UDP THREAD.")
     with socket.socket(socket.AF_INET6, socket.SOCK_DGRAM) as server_socket:
         server_socket.bind((host, port))
@@ -92,8 +94,16 @@ def udp_server(
         print("UDP server stopped.")
 
 
-def test_sending_unencrypted_data_udp_ipv6():
-    """Encapsulate the entire E2E test."""
+def test_sending_encrypted_data_udp_ipv6():
+    """
+    Integration tests between UDP server and RIOT OS instance.
+    Tested steps:
+    1. RIOT OS compilation.
+    2. RIOT OS sending encrypted UDP packet over IPv6.
+    3. UDP server receiving packets.
+    4. Decryption of packets.
+    5. Validation of received packets.
+    """
     print("Compiling RIOT OS app...")
     # Might be problematic when missing sudo privileges
     subprocess.run(

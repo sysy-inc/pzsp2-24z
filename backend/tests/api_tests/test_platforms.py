@@ -38,6 +38,9 @@ DB_QUERIES = [
     queries=DB_QUERIES,
 )
 def test_get_all_platforms(_):
+    """
+    Tests the GET /api/platforms/ endpoint.
+    """
 
     register_user("test@admin", "admin", client)
 
@@ -95,6 +98,9 @@ def test_get_all_platforms(_):
     queries=DB_QUERIES,
 )
 def test_get_single_platform(_):
+    """
+    Tests the GET /api/platforms/{platform_id} endpoint.
+    """
 
     register_user("test@admin", "admin", client)
 
@@ -180,6 +186,10 @@ def test_get_platform_measurements(
     expected_status_code: int,
     expected_response: list[dict[str, Any]],
 ):
+    """
+    Tests the GET /api/platforms/{platform_id}/measurements/ endpoint.
+    """
+
     @postgres_db_fixture(
         db_host=DB_HOST,
         db_name=DB_NAME,
@@ -222,6 +232,9 @@ def test_get_platform_measurements(
     queries=DB_QUERIES,
 )
 def test_create_platform_ok(connection: connection):
+    """
+    Tests the POST /api/platforms/ endpoint, valid request.
+    """
 
     register_user("test@admin", "admin", client)
 
@@ -256,6 +269,9 @@ def test_create_platform_ok(connection: connection):
     queries=DB_QUERIES,
 )
 def test_create_platform_bad_request(connection: connection):
+    """
+    Tests the POST /api/platforms/ endpoint, invalid request.
+    """
 
     register_user("test@admin", "admin", client)
     make_user_admin("test@admin", DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT)
@@ -296,6 +312,9 @@ def test_create_platform_bad_request(connection: connection):
     queries=DB_QUERIES,
 )
 def test_create_platform_unauthorized(connection: connection):
+    """
+    Tests the POST /api/platforms/ endpoint, unauthorized request.
+    """
 
     register_user("test@user", "user", client)
 
@@ -327,6 +346,9 @@ def test_create_platform_unauthorized(connection: connection):
     queries=DB_QUERIES,
 )
 def test_add_user_to_platform_ok(connection: connection):
+    """
+    Tests the POST /api/platforms/{platform_id}/users/ endpoint, valid request.
+    """
 
     register_user("test@admin", "admin", client)
     make_user_admin("test@admin", DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT)
@@ -363,6 +385,10 @@ def test_add_user_to_platform_ok(connection: connection):
     queries=DB_QUERIES,
 )
 def test_add_user_to_platform_bad_request(connection: connection):
+    """
+    Tests the POST /api/platforms/{platform_id}/users/ endpoint.
+    Invalid request - user is already on the platform.
+    """
 
     register_user("test@admin", "admin", client)
     make_user_admin("test@admin", DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT)
@@ -394,6 +420,10 @@ def test_add_user_to_platform_bad_request(connection: connection):
     queries=DB_QUERIES,
 )
 def test_delete_user_from_platform_ok(connection: connection):
+    """
+    Tests the DELETE /api/platforms/{platform_id}/users/{user_id} endpoint.
+    Valid request - user is on the platform.
+    """
 
     register_user("test@admin", "admin", client)
     make_user_admin("test@admin", DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT)
@@ -425,6 +455,10 @@ def test_delete_user_from_platform_ok(connection: connection):
     queries=DB_QUERIES,
 )
 def test_delete_user_from_platform_user_not_on_platform(connection: connection):
+    """
+    Tests the DELETE /api/platforms/{platform_id}/users/{user_id} endpoint.
+    Invalid request - user is not on the platform.
+    """
 
     register_user("test@admin", "admin", client)
     make_user_admin("test@admin", DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT)
@@ -455,6 +489,10 @@ def test_delete_user_from_platform_user_not_on_platform(connection: connection):
     queries=DB_QUERIES,
 )
 def test_delete_user_from_platform_unauthorized(connection: connection):
+    """
+    Tests the DELETE /api/platforms/{platform_id}/users/{user_id} endpoint.
+    Unauthorized request - user is not an admin.
+    """
 
     register_user("test@user", "user", client)
     token = get_auth_token("test@user", "user", client)

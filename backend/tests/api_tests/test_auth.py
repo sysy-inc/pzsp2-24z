@@ -1,8 +1,12 @@
 from fastapi.testclient import TestClient
 
 from src.backend.app import app
-from tests.api_tests.conftest import (call_no_params, get_auth_token,
-                                      postgres_db_fixture, register_user)
+from tests.api_tests.conftest import (
+    call_no_params,
+    get_auth_token,
+    postgres_db_fixture,
+    register_user,
+)
 
 client = TestClient(app)
 
@@ -28,6 +32,9 @@ DB_QUERIES = [
     queries=DB_QUERIES,
 )
 def test_register_new_user(_):
+    """
+    Test registering a new user.
+    """
 
     response = client.post(
         "/auth/register",
@@ -53,6 +60,9 @@ def test_register_new_user(_):
     queries=DB_QUERIES,
 )
 def test_register_existing_user(_):
+    """
+    Test registering an existing user.
+    """
 
     register_user("test@user", "user", client)
 
@@ -80,6 +90,9 @@ def test_register_existing_user(_):
     queries=DB_QUERIES,
 )
 def test_login_success(_):
+    """
+    Test logging in a user.
+    """
 
     register_user("test@user", "user", client)
 
@@ -104,6 +117,9 @@ def test_login_success(_):
     queries=DB_QUERIES,
 )
 def test_login_success_invalid_password(_):
+    """
+    Test logging in a user with an invalid password.
+    """
 
     register_user("test@user", "user", client)
 
@@ -127,6 +143,9 @@ def test_login_success_invalid_password(_):
     queries=DB_QUERIES,
 )
 def test_login_non_existent_user(_):
+    """
+    Test logging in a non-existent user.
+    """
 
     response = client.post(
         "/auth/token",
@@ -148,6 +167,9 @@ def test_login_non_existent_user(_):
     queries=DB_QUERIES,
 )
 def test_login_currently_logged_in(_):
+    """
+    Test logging in a user that is already logged in.
+    """
 
     register_user("test@user", "user", client)
 

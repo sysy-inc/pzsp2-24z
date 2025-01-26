@@ -26,6 +26,13 @@ from cryptography.hazmat.backends import default_backend
     ],
 )
 def test_udp_server_save_to_db(connection: connection):
+    """
+    Integration test for UDP server receiving encrypted messages and saving measurements to the database.
+    Tested Steps:
+    1. Encrypted UDP packed received by the server.
+    2. UDP packed correctly decrypted.
+    3. Measurement saved to the database.
+    """
     with TestClient(app):
         server_address = ("::", 5000)
         data = {  # type: ignore
