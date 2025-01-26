@@ -56,3 +56,9 @@ INSERT INTO measurements (sensor_id, value, date) VALUES
 INSERT INTO measurements (sensor_id, value, date) VALUES
     (3, 22.9, '2024-12-11 13:00:00'), -- Temperature: 22.9°C
     (4, 51.7, '2024-12-11 13:00:00'); -- Humidity: 51.7%
+
+
+-- 5 | test  | admin   | test@admin           | $2b$12$MkvgdA/39OBUj9YDdRP4YupCzgzgfj1IEBUCG0uhjaHY2FMN7BfiO | t
+
+INSERT INTO users (name, surname, email, hashed_pwd, is_admin) VALUES
+    ('test', 'admin', 'test@admin', '$2b$12$MkvgdA/39OBUj9YDdRP4YupCzgzgfj1IEBUCG0uhjaHY2FMN7BfiO', true);

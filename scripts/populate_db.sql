@@ -101,6 +101,3 @@ INSERT INTO measurements (sensor_id, value, date) VALUES (2, 51.6, '2025-01-19 2
 INSERT INTO measurements (sensor_id, value, date) VALUES (2, 51.2, '2025-01-19 23:02:24');
 INSERT INTO measurements (sensor_id, value, date) VALUES (2, 51.8, '2025-01-19 23:31:12');
 INSERT INTO measurements (sensor_id, value, date) VALUES (2, 51.5, '2025-01-20 00:00:00');
-
-INSERT INTO users_platforms (user_id, platform_id) VALUES
-    (3, 1);

@@ -68,11 +68,18 @@ const CurrentWeatherPage: React.FC = () => {
     };
 
     fetchWeatherData();
+    const interval = setInterval(fetchWeatherData, 4500);
+
+    return () => {
+      clearInterval(interval);
+    }
+
   }, [selectedPlatformId]);
 
   const handleBack = () => {
     navigate("/main");
   };
+
 
   return (
     <Box
