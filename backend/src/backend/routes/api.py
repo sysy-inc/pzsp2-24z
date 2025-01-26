@@ -7,7 +7,8 @@ from src.backend.utils.data_models import MeasurementsResponse
 from src.backend.utils.database_utils.fetching import (
     fetch_latest_measurements_for_platform,
     fetch_latest_measurements_for_platform_within_range,
-    fetch_user_platform_access)
+    fetch_user_platform_access,
+)
 
 api_router = APIRouter()
 
